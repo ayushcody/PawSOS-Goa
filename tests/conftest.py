@@ -12,6 +12,7 @@ TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos_test"
 )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+os.environ["ANTHROPIC_API_KEY"] = ""  # tests must never call the real API
 os.environ["MEDIA_DIR"] = tempfile.mkdtemp(prefix="pawsos-test-media-")
 
 import pytest
@@ -24,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_engine
 from app.main import create_app
+from app.triage.service import get_triager
 
 
 @pytest.fixture(scope="session")
@@ -52,6 +54,17 @@ def db(_migrated_db) -> Session:
 
 
 @pytest.fixture
-def client() -> TestClient:
-    # A fresh app per test, so simulator chats never leak between tests.
-    return TestClient(create_app())
+def app():
+    """A fresh app per test, so simulator chats never leak between tests.
+
+    By default there is no triager, as if no API key were set. Slice 3 tests
+    put a fake one in with app.dependency_overrides[get_triager].
+    """
+    application = create_app()
+    application.dependency_overrides[get_triager] = lambda: None
+    return application
+
+
+@pytest.fixture
+def client(app) -> TestClient:
+    return TestClient(app)

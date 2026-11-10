@@ -41,6 +41,16 @@ class Case(Base):
     public_id: Mapped[str | None] = mapped_column(String(16), unique=True)  # "PAW-0042"
     state: Mapped[str] = mapped_column(String(20))
     location: Mapped[Any] = mapped_column(_point())
+
+    # Filled in by triage (slice 3). Empty until then.
+    species: Mapped[str | None] = mapped_column(String(20))
+    injury_type: Mapped[str | None] = mapped_column(String(200))
+    urgency: Mapped[str | None] = mapped_column(String(10))
+    aggression_risk: Mapped[str | None] = mapped_column(String(10))
+    first_aid: Mapped[list[str] | None] = mapped_column(JSONB)
+    triage_status: Mapped[str | None] = mapped_column(String(20))  # "ok" or "needs_review"
+    triaged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

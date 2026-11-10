@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
     media_dir: str = "uploads"
 
+    anthropic_api_key: str | None = None
+    anthropic_model: str = "claude-opus-5-5"
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -11,7 +11,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 0 | Project memory (these docs) | Tue 10 Nov | Done 10 Nov |
 | 1 | Skeleton, health check, simulator, echo bot | Wed 11 Nov | Done 10 Nov (a day early). `TODO(me)` open: fallback test in `tests/test_slice1.py` |
 | 2 | Case creation with photo and location | Thu 12 Nov | Done 10 Nov (two days early). `TODO(me)` open: `in_goa()` in `app/cases/geo.py` |
-| 3 | Vision triage | Fri 13 Nov | Not started |
+| 3 | Vision triage | Fri 13 Nov | Done 10 Nov (three days early), hand-tested by Ayush with a real key. `TODO(me)` open: four-steps test in `tests/test_slice3.py` |
 | 4 | Zones, routing, dedup | Sat 14 Nov | Not started |
 | 5 | Volunteer dispatch, buttons, escalation | Sun 15 to Mon 16 Nov | Not started |
 | – | **Checkpoint: must-have demo rehearsal** | Tue 17 Nov | – |
@@ -101,7 +101,7 @@ Full run on the simulator: report, triage, duplicate report merged, routed, time
 - `docs/DEMO.md` (3 minutes, with a simulator fallback path), `docs/ARCHITECTURE.md` (one page), README checked from a clean clone.
 
 ### 10. Voice notes (stretch)
-- `SpeechToText` interface and stub land in slice 2 or 3 so the seam exists. Real Bhashini only if Sun 22 Nov has spare hours.
+- `SpeechToText` interface and stub, then real Bhashini only if Sun 22 Nov has spare hours.
 
 ## If we fall behind: cut order
 

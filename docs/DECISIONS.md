@@ -50,5 +50,24 @@ Gave up: durable storage. Supabase Storage can replace `app/channels/media.py` l
 ## D-012 Plain text now gets "how to report" instead of an echo (10 Nov)
 The slice 1 echo was scaffolding.
 
+## D-013 Triage never blocks a rescue (10 Nov)
+If the model is unreachable, declines, gives an unusable reply twice, cannot see an animal, or no API key is set, the case still moves to `TRIAGED` at urgency `high` with `triage_status = needs_review`, and the citizen gets fixed safe-distance guidance.
+Why: a wasted trip costs less than a missed emergency.
+
+## D-014 The not-a-diagnosis line is added by our code (10 Nov)
+The prompt forbids diagnosis, and `messages.triage_message()` always appends the fixed line, so the promise does not depend on the model remembering it.
+
+## D-015 The citizen hears back twice (10 Nov)
+First the case ID, at once. Then the first-aid steps a few seconds later, when triage returns. The case is saved before triage starts, so a triage failure cannot lose it.
+
+## D-016 Photos are shrunk before triage (10 Nov)
+Longest side 1568 px, JPEG. Faster, cheaper, and always under the API's image size limit. The original stays on disk.
+
+## D-017 State machine brought forward from slice 4 (10 Nov)
+Triage is the first real state change (`REPORTED -> TRIAGED`), so `app/cases/state_machine.py` and its full transitions table landed in slice 3.
+
+## D-018 A declined triage request goes to a person, not to another model (10 Nov)
+The API can re-run a declined request on a fallback model. We do not use that: one retry, then human review, keeps the behaviour easy to explain.
+
 ## Open
 - Nothing right now.

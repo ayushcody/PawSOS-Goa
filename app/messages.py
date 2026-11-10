@@ -39,6 +39,29 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Please keep a safe distance from the animal."
         ),
     },
+    "triage_result": {
+        "en": "Case {case_id}: {urgency_line}\n\nWhile you wait:\n{steps}\n\n{disclaimer}",
+    },
+    "urgency_low": {"en": "this does not look urgent, but a team will still be told."},
+    "urgency_medium": {"en": "this needs attention soon."},
+    "urgency_high": {"en": "this looks urgent."},
+    "urgency_critical": {"en": "this looks very urgent. We are alerting a team now."},
+    "aggression_warning": {
+        "en": "The animal may be frightened or aggressive. Please stay well back.",
+    },
+    "not_a_diagnosis": {
+        "en": (
+            "This is general safety guidance from a photo, not a diagnosis. "
+            "A trained team will assess the animal."
+        ),
+    },
+    "triage_needs_review": {
+        "en": (
+            "Case {case_id}: a team member will look at your photo. "
+            "Until then, please keep a safe distance, keep others away, "
+            "and do not feed or move the animal."
+        ),
+    },
     "outside_goa": {
         "en": (
             "That location looks outside Goa. PawSOS covers Goa only. "
@@ -63,3 +86,24 @@ def render(key: str, language: str = DEFAULT_LANGUAGE, **values: object) -> str:
     translations = MESSAGES[key]
     template = translations.get(language, translations[DEFAULT_LANGUAGE])
     return template.format(**values)
+
+
+def triage_message(
+    case_id: str,
+    urgency: str,
+    first_aid: list[str],
+    aggressive: bool = False,
+    language: str = DEFAULT_LANGUAGE,
+) -> str:
+    """The message a citizen gets after triage. It always ends with the not-a-diagnosis line."""
+    steps = list(first_aid)
+    if aggressive:
+        steps.insert(0, render("aggression_warning", language))
+    return render(
+        "triage_result",
+        language,
+        case_id=case_id,
+        urgency_line=render(f"urgency_{urgency}", language),
+        steps="\n".join(f"{n}. {step}" for n, step in enumerate(steps, start=1)),
+        disclaimer=render("not_a_diagnosis", language),
+    )

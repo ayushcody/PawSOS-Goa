@@ -19,6 +19,7 @@ from app.channels import media
 from app.channels.base import ChannelAdapter, InboundMessage
 from app.conversation import handle_inbound
 from app.db import get_session
+from app.triage.service import Triager, get_triager
 
 PAGE = Path(__file__).with_name("simulator.html")
 
@@ -88,6 +89,7 @@ class SimulatorAdapter(ChannelAdapter):
 def build_router(channel: SimulatorAdapter) -> APIRouter:
     router = APIRouter(prefix="/sim", tags=["simulator"])
     SessionDep = Annotated[Session, Depends(get_session)]
+    TriagerDep = Annotated[Triager | None, Depends(get_triager)]
 
     @router.get("", response_class=HTMLResponse)
     def page() -> str:
@@ -102,7 +104,9 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         return LOCATION_PRESETS
 
     @router.post("/inbound")
-    async def inbound(body: SimInbound, session: SessionDep) -> dict[str, bool]:
+    async def inbound(
+        body: SimInbound, session: SessionDep, triager: TriagerDep
+    ) -> dict[str, bool]:
         if body.kind == "location" and body.latitude is not None and body.longitude is not None:
             channel.record_inbound(
                 body.from_number, "Location", latitude=body.latitude, longitude=body.longitude
@@ -110,7 +114,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         else:
             channel.record_inbound(body.from_number, body.text or f"[{body.kind}]")
         message = InboundMessage(**body.model_dump())
-        await handle_inbound(message, channel, session)
+        await handle_inbound(message, channel, session, triager)
         return {"ok": True}
 
     @router.post("/inbound/photo")
@@ -118,6 +122,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         from_number: Annotated[str, Form(min_length=3, max_length=20)],
         file: UploadFile,
         session: SessionDep,
+        triager: TriagerDep,
     ) -> dict[str, bool]:
         data = await file.read(media.MAX_BYTES + 1)
         mime = file.content_type or ""
@@ -132,7 +137,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         message = InboundMessage(
             from_number=from_number, kind="image", media_name=name, media_mime=mime
         )
-        await handle_inbound(message, channel, session)
+        await handle_inbound(message, channel, session, triager)
         return {"ok": True}
 
     @router.get("/messages")

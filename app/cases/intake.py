@@ -23,6 +23,7 @@ DRAFT_WINDOW = timedelta(minutes=30)
 class IntakeResult:
     status: Literal["need_location", "need_photo", "case_created"]
     case_id: str | None = None  # the public ID, e.g. "PAW-0042"
+    case: Case | None = None
 
 
 def format_case_id(number: int) -> str:
@@ -91,4 +92,4 @@ def _open_case_if_complete(session: Session, draft: Report) -> IntakeResult:
         to_state=CaseState.REPORTED,
         data={"report_id": draft.id, "photos": photo_count},
     )
-    return IntakeResult("case_created", case_id=case.public_id)
+    return IntakeResult("case_created", case_id=case.public_id, case=case)
