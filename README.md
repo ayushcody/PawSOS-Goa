@@ -12,7 +12,7 @@ Built for the Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Pl
 
 ## Status
 
-In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, merging duplicate reports, alerting the zone's team with Accept and Decline buttons, escalating on a decline, a closed team or no answer, status updates to the reporter through to resolved, and a bite flow that gives wash-the-wound guidance and the nearest listed health centre. Booking, the dashboard and real WhatsApp are not built yet.
+In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, merging duplicate reports, alerting the zone's team with Accept and Decline buttons, escalating on a decline, a closed team or no answer, status updates to the reporter through to resolved, a bite flow that gives wash-the-wound guidance and the nearest listed health centre, and booking a camp slot with BOOK (Google Calendar sync is written but not yet run against Google). The dashboard and real WhatsApp are not built yet.
 
 ## Setup
 
@@ -25,7 +25,7 @@ python3.12 -m venv .venv
 cp .env.example .env          # the defaults work for local development
 docker compose up -d          # local Postgres with PostGIS
 .venv/bin/alembic upgrade head
-.venv/bin/python -m seed.load  # zones, placeholder teams, health centres
+.venv/bin/python -m seed.load  # zones, placeholder teams, health centres, demo camps
 .venv/bin/uvicorn app.main:app --port 8040
 ```
 

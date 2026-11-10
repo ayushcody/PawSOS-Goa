@@ -4,12 +4,15 @@
 """
 
 import json
-from datetime import time
+from datetime import date, datetime, time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+import app.models  # noqa: F401  (registers every table)
+from app.booking.models import Camp, CampSlot
 from app.cases.bites import HealthCentre
 from app.cases.geo import point
 from app.db import get_engine
@@ -67,7 +70,35 @@ def load_seed(session: Session) -> dict[str, int]:
         centre.verified = False  # every entry is still marked [VERIFY]
         session.add(centre)
     session.flush()
-    return {"zones": len(zones), "teams": len(teams), "health_centres": len(centres)}
+
+    goa = ZoneInfo("Asia/Kolkata")
+    camps = _read("camps.json", "camps")
+    for row in camps:
+        camp = session.scalar(select(Camp).where(Camp.slug == row["slug"])) or Camp(slug=row["slug"])
+        camp.name = row["name"]
+        camp.short_name = row["short_name"]
+        camp.services = row["services"]
+        camp.venue = row["venue"]
+        camp.zone_id = zones[row["zone"]].id
+        camp.location = point(row["latitude"], row["longitude"])
+        session.add(camp)
+        session.flush()
+        day = date.fromisoformat(row["date"])
+        for slot_row in row["slots"]:
+            starts_at = datetime.combine(day, time.fromisoformat(slot_row["start"]), tzinfo=goa)
+            slot = session.scalar(
+                select(CampSlot).where(CampSlot.camp_id == camp.id, CampSlot.starts_at == starts_at)
+            ) or CampSlot(camp_id=camp.id, starts_at=starts_at)
+            slot.ends_at = datetime.combine(day, time.fromisoformat(slot_row["end"]), tzinfo=goa)
+            slot.capacity = slot_row["capacity"]
+            session.add(slot)
+    session.flush()
+    return {
+        "zones": len(zones),
+        "teams": len(teams),
+        "health_centres": len(centres),
+        "camps": len(camps),
+    }
 
 
 if __name__ == "__main__":
@@ -75,6 +106,6 @@ if __name__ == "__main__":
         counts = load_seed(session)
         session.commit()
     print(
-        f"Loaded {counts['zones']} zones, {counts['teams']} teams "
-        f"and {counts['health_centres']} health centres."
+        f"Loaded {counts['zones']} zones, {counts['teams']} teams, "
+        f"{counts['health_centres']} health centres and {counts['camps']} camps."
     )

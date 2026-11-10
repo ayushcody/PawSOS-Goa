@@ -26,13 +26,14 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app import clock as app_clock
+from app.booking.calendar import get_calendar
 from app.db import get_engine
 from app.main import create_app
 from app.triage.service import get_triager
 from seed.load import load_seed
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def _migrated_db() -> None:
     """Bring the test database up to the latest migration, once per test run."""
     try:
@@ -51,7 +52,7 @@ def db(_migrated_db) -> Session:
     engine = get_engine()
     with engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE bite_reports, health_centres, dispatches, events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
+            text("TRUNCATE bookings, booking_drafts, camp_slots, camps, bite_reports, health_centres, dispatches, events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
         )
     with Session(engine) as session:
         yield session
@@ -69,6 +70,9 @@ class FakeClock:
     def set_goa_time(self, hour: int, minute: int = 0) -> None:
         today = datetime.now(ZoneInfo("Asia/Kolkata"))
         self._now = today.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+    def set(self, moment: datetime) -> None:
+        self._now = moment
 
     def advance(self, seconds: int) -> None:
         self._now += timedelta(seconds=seconds)
@@ -99,6 +103,7 @@ def app():
     """
     application = create_app()
     application.dependency_overrides[get_triager] = lambda: None
+    application.dependency_overrides[get_calendar] = lambda: None
     return application
 
 

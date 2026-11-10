@@ -122,5 +122,30 @@ Our own simple threshold for the demo, not an official definition. The third bit
 ## D-034 Bite detection is by keyword (10 Nov)
 English words plus a few Hindi and Marathi ones, matched as whole words so "rabbit" and "a bit of blood" do not trigger it. It will miss phrasings we did not list; those people get the normal "how to report" reply.
 
+## D-035 Booking by numbered replies, not buttons (10 Nov)
+BOOK lists camps, a number picks one, a number picks a slot. WhatsApp allows only three reply buttons, and a camp can have more slots than that. Numbers work the same on every channel.
+
+## D-036 The booking is saved first; the calendar entry is an extra (10 Nov)
+If Google is not configured, is slow (10 second limit) or fails, the person still gets their booking and reference. `calendar_event_id` stays empty and the audit event records `calendar_synced: false`.
+Gave up: automatic retry of a failed sync.
+
+## D-037 Calendar IDs come from `CAMP_CALENDARS` in `.env` (10 Nov)
+Written as `camp-slug=calendar-id,camp-slug=calendar-id`. They differ per Google account, so they are configuration, not seed data.
+
+## D-038 The calendar entry shows only the last four digits of the owner's number (10 Nov)
+The calendar may be shared with camp volunteers.
+
+## D-039 Reminder rule: once, within the 24 hours before the slot (10 Nov)
+A job checks every five minutes. Someone who books less than 24 hours ahead gets the reminder at the next check, shortly after the confirmation.
+
+## D-040 One booking per phone number per camp; no cancel-a-booking yet (10 Nov)
+CANCEL only leaves the conversation. Cancelling a confirmed booking is not built.
+
+## D-041 Demo camps have fixed dates: 28 and 29 Nov 2026 (10 Nov)
+After the hackathon demo (23 Nov) and clearly labelled as invented. BOOK shows nothing once they pass; change the dates in `seed/camps.json` and reload to demo later.
+
+## D-042 One module registers every table (10 Nov)
+`app/models.py` imports all model modules. Tables refer to each other across modules, and importing them piecemeal caused a circular import.
+
 ## Open
 - Nothing right now.

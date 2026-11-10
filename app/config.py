@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
     media_dir: str = "uploads"
 
+    google_service_account_file: str | None = None
+    # One calendar per camp, written as "camp-slug=calendar-id,camp-slug=calendar-id".
+    camp_calendars: str = ""
+
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5-5"
 

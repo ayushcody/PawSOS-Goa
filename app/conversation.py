@@ -8,6 +8,8 @@ button taps come in here too.
 from sqlalchemy.orm import Session
 
 from app import messages
+from app.booking import flow as booking
+from app.booking.calendar import CalendarClient
 from app.cases import bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
@@ -25,6 +27,7 @@ async def handle_inbound(
     channel: ChannelAdapter,
     session: Session,
     triager: Triager | None = None,
+    calendar: CalendarClient | None = None,
 ) -> None:
     number = message.from_number
 
@@ -72,7 +75,11 @@ async def handle_inbound(
 
     if result is None:
         text = (message.text or "").strip()
-        if message.kind == "text" and text and bites.is_bite_report(text):
+        outbox = booking.handle_text(session, number, text, calendar) if text else None
+        if message.kind == "text" and outbox is not None:
+            session.commit()
+            await deliver(channel, outbox)
+        elif message.kind == "text" and text and bites.is_bite_report(text):
             # A person is hurt: answer at once, before anything else.
             bites.start(session, number)
             session.commit()

@@ -106,9 +106,3 @@ class Event(Base):
     actor: Mapped[str | None] = mapped_column(String(50))
     data: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-
-# Zones and teams live in app/routing, but cases point at them, so make sure
-# those tables are always registered whenever the case tables are.
-from app.cases import bites as _bites  # noqa: F401
-from app.routing import models as _routing_models  # noqa: F401

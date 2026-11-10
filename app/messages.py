@@ -11,7 +11,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     "welcome": {
         "en": (
             "Hello, this is PawSOS Goa. "
-            "To report an animal that needs help, send a photo and your location."
+            "To report an animal that needs help, send a photo and your location. "
+            "To book a sterilisation or vaccination camp slot for your pet, reply BOOK."
         ),
     },
     "how_to_report": {
@@ -171,6 +172,46 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": (
             "Please go to the nearest government hospital today and ask for anti-rabies treatment.\n\n"
             "If the animal is still nearby, send its photo and location and we will alert a team."
+        ),
+    },
+    # --- booking a camp slot ---
+    "book_choose_camp": {
+        "en": "Upcoming camps:\n{options}\n\nReply with the number of the camp, or CANCEL.",
+    },
+    "book_camp_line": {"en": "{place}: {services}, {date}. {venue}"},
+    "book_no_camps": {
+        "en": "There are no upcoming camps to book right now. Please check again soon.",
+    },
+    "book_choose_slot": {
+        "en": "{camp}, {date}. Free slots:\n{options}\n\nReply with the number of the slot, or CANCEL.",
+    },
+    "book_slot_line": {"en": "{time} ({left} places left)"},
+    "book_camp_full": {
+        "en": "Sorry, {camp} is fully booked. Reply BOOK to see other camps.",
+    },
+    "book_slot_full": {"en": "Sorry, that slot has just filled up."},
+    "book_invalid_choice": {
+        "en": "Please reply with one of the numbers shown, or CANCEL.",
+    },
+    "book_cancelled": {
+        "en": "No problem, nothing was booked. Reply BOOK to start again.",
+    },
+    "book_already": {
+        "en": "You already have a booking at {camp}: {ref}, {date}, {time}.",
+    },
+    "book_confirmed": {
+        "en": (
+            "Booked. Your reference is {ref}.\n"
+            "{camp}\n{date}, {time}\n{venue}\n\n"
+            "Please bring your pet on a leash or in a carrier. "
+            "We will remind you the day before."
+        ),
+    },
+    "book_reminder": {
+        "en": (
+            "Reminder: your pet's camp slot is coming up.\n"
+            "{camp}\n{date}, {time}\n{venue}\n"
+            "Reference {ref}."
         ),
     },
     "outside_goa": {

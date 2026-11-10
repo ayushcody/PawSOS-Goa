@@ -17,6 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import messages
+from app.booking.calendar import CalendarClient, get_calendar
 from app.channels import media
 from app.channels.base import Button, ChannelAdapter, InboundMessage
 from app.conversation import handle_inbound
@@ -102,6 +103,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
     router = APIRouter(prefix="/sim", tags=["simulator"])
     SessionDep = Annotated[Session, Depends(get_session)]
     TriagerDep = Annotated[Triager | None, Depends(get_triager)]
+    CalendarDep = Annotated[CalendarClient | None, Depends(get_calendar)]
 
     @router.get("", response_class=HTMLResponse)
     def page() -> str:
@@ -122,7 +124,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
 
     @router.post("/inbound")
     async def inbound(
-        body: SimInbound, session: SessionDep, triager: TriagerDep
+        body: SimInbound, session: SessionDep, triager: TriagerDep, calendar: CalendarDep
     ) -> dict[str, bool]:
         if body.kind == "location" and body.latitude is not None and body.longitude is not None:
             channel.record_inbound(
@@ -131,7 +133,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         else:
             channel.record_inbound(body.from_number, body.text or f"[{body.kind}]")
         message = InboundMessage(**body.model_dump())
-        await handle_inbound(message, channel, session, triager)
+        await handle_inbound(message, channel, session, triager, calendar)
         return {"ok": True}
 
     @router.post("/inbound/photo")
@@ -154,7 +156,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         message = InboundMessage(
             from_number=from_number, kind="image", media_name=name, media_mime=mime
         )
-        await handle_inbound(message, channel, session, triager)
+        await handle_inbound(message, channel, session, triager, None)
         return {"ok": True}
 
     @router.get("/messages")

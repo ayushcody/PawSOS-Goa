@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
+from app import models  # noqa: F401  (registers every table)
 from app.channels import media, simulator
 from app.config import get_settings
 from app.jobs import scheduler

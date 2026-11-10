@@ -1,0 +1,37 @@
+{
+  "_note": "DEMO CAMPS. These two camps, their dates, venues and slots are invented for the demo. No such camps have been announced. Mapusa and Canacona were chosen because both held zero sterilisation camps in 2025. Times are Goa time (Asia/Kolkata).",
+  "camps": [
+    {
+      "slug": "mapusa-2026-11-28",
+      "name": "Mapusa sterilisation and vaccination camp (demo)",
+      "short_name": "Mapusa",
+      "services": "sterilisation and vaccination",
+      "venue": "Municipal market ground, Mapusa (placeholder venue)",
+      "zone": "mapusa",
+      "latitude": 15.5937,
+      "longitude": 73.8142,
+      "date": "2026-11-28",
+      "slots": [
+        {"start": "09:00", "end": "10:00", "capacity": 5},
+        {"start": "10:00", "end": "11:00", "capacity": 5},
+        {"start": "11:00", "end": "12:00", "capacity": 5}
+      ]
+    },
+    {
+      "slug": "canacona-2026-11-29",
+      "name": "Canacona sterilisation and vaccination camp (demo)",
+      "short_name": "Canacona",
+      "services": "sterilisation and vaccination",
+      "venue": "Community hall, Chaudi, Canacona (placeholder venue)",
+      "zone": "canacona",
+      "latitude": 15.0100,
+      "longitude": 74.0230,
+      "date": "2026-11-29",
+      "slots": [
+        {"start": "09:00", "end": "10:00", "capacity": 5},
+        {"start": "10:00", "end": "11:00", "capacity": 5},
+        {"start": "11:00", "end": "12:00", "capacity": 5}
+      ]
+    }
+  ]
+}
