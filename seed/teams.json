@@ -1,0 +1,230 @@
+{
+  "_note": "PLACEHOLDERS. Every team name, phone number and opening time here is invented for the demo. Phone numbers use the +91 00000 0xxxx range, which is not assigned to anyone. Only Panaji's 8 am to 8 pm hours reflect a published helpline window. A team with no hours is treated as always open.",
+  "teams": [
+    {
+      "name": "Panaji partner team (placeholder)",
+      "phone": "+910000000101",
+      "kind": "partner",
+      "zone": "panaji",
+      "taluka": null,
+      "opens_at": "08:00",
+      "closes_at": "20:00"
+    },
+    {
+      "name": "Mapusa partner team (placeholder)",
+      "phone": "+910000000102",
+      "kind": "partner",
+      "zone": "mapusa",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Pernem partner team (placeholder)",
+      "phone": "+910000000103",
+      "kind": "partner",
+      "zone": "pernem",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Bicholim partner team (placeholder)",
+      "phone": "+910000000104",
+      "kind": "partner",
+      "zone": "bicholim",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Sankhalim partner team (placeholder)",
+      "phone": "+910000000105",
+      "kind": "partner",
+      "zone": "sankhalim",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Valpoi partner team (placeholder)",
+      "phone": "+910000000106",
+      "kind": "partner",
+      "zone": "valpoi",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Ponda partner team (placeholder)",
+      "phone": "+910000000107",
+      "kind": "partner",
+      "zone": "ponda",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Mormugao partner team (placeholder)",
+      "phone": "+910000000108",
+      "kind": "partner",
+      "zone": "mormugao",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Margao partner team (placeholder)",
+      "phone": "+910000000109",
+      "kind": "partner",
+      "zone": "margao",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Cuncolim partner team (placeholder)",
+      "phone": "+910000000110",
+      "kind": "partner",
+      "zone": "cuncolim",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Quepem partner team (placeholder)",
+      "phone": "+910000000111",
+      "kind": "partner",
+      "zone": "quepem",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Curchorem-Cacora partner team (placeholder)",
+      "phone": "+910000000112",
+      "kind": "partner",
+      "zone": "curchorem-cacora",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Sanguem partner team (placeholder)",
+      "phone": "+910000000113",
+      "kind": "partner",
+      "zone": "sanguem",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Canacona partner team (placeholder)",
+      "phone": "+910000000114",
+      "kind": "partner",
+      "zone": "canacona",
+      "taluka": null,
+      "opens_at": "09:00",
+      "closes_at": "18:00"
+    },
+    {
+      "name": "Tiswadi taluka officer (placeholder)",
+      "phone": "+910000000201",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Tiswadi",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Bardez taluka officer (placeholder)",
+      "phone": "+910000000202",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Bardez",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Pernem taluka officer (placeholder)",
+      "phone": "+910000000203",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Pernem",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Bicholim taluka officer (placeholder)",
+      "phone": "+910000000204",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Bicholim",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Sattari taluka officer (placeholder)",
+      "phone": "+910000000205",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Sattari",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Ponda taluka officer (placeholder)",
+      "phone": "+910000000206",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Ponda",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Mormugao taluka officer (placeholder)",
+      "phone": "+910000000207",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Mormugao",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Salcete taluka officer (placeholder)",
+      "phone": "+910000000208",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Salcete",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Quepem taluka officer (placeholder)",
+      "phone": "+910000000209",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Quepem",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Sanguem taluka officer (placeholder)",
+      "phone": "+910000000210",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Sanguem",
+      "opens_at": null,
+      "closes_at": null
+    },
+    {
+      "name": "Canacona taluka officer (placeholder)",
+      "phone": "+910000000211",
+      "kind": "taluka_officer",
+      "zone": null,
+      "taluka": "Canacona",
+      "opens_at": null,
+      "closes_at": null
+    }
+  ]
+}

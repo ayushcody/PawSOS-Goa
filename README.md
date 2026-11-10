@@ -12,7 +12,7 @@ Built for the Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Pl
 
 ## Status
 
-In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today: the WhatsApp simulator, and opening a case from a photo and a location. Triage, routing, the dashboard and real WhatsApp are not built yet.
+In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, and merging duplicate reports. Alerting teams, the dashboard and real WhatsApp are not built yet.
 
 ## Setup
 
@@ -25,6 +25,7 @@ python3.12 -m venv .venv
 cp .env.example .env          # the defaults work for local development
 docker compose up -d          # local Postgres with PostGIS
 .venv/bin/alembic upgrade head
+.venv/bin/python -m seed.load  # 14 zones and placeholder teams
 .venv/bin/uvicorn app.main:app --port 8040
 ```
 

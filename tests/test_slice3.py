@@ -79,7 +79,7 @@ def test_triage_result_is_saved_and_sent(app, client, db):
 
     case = db.scalars(select(Case)).one()
     assert fake.calls == 1
-    assert case.state == CaseState.TRIAGED
+    assert case.state == CaseState.NEW  # triaged, then routed in slice 4
     assert (case.species, case.urgency, case.aggression_risk) == ("dog", "high", "low")
     assert case.first_aid == GOOD["first_aid"]
     assert case.triage_status == "ok"
@@ -96,7 +96,7 @@ def test_triage_writes_a_state_change_to_the_audit_log(app, client, db):
     app.dependency_overrides[get_triager] = lambda: FakeTriager(TriageResult(**GOOD))
     report_a_case(client)
 
-    event = db.scalars(select(Event).where(Event.type == "state_changed")).one()
+    event = db.scalars(select(Event).where(Event.to_state == "TRIAGED")).one()
     assert (event.from_state, event.to_state, event.actor) == ("REPORTED", "TRIAGED", "triage")
     assert event.data["urgency"] == "high"
 
@@ -122,7 +122,7 @@ def test_when_triage_cannot_help_the_case_still_moves_on(app, client, db, outcom
     report_a_case(client)
 
     case = db.scalars(select(Case)).one()
-    assert case.state == CaseState.TRIAGED
+    assert case.state == CaseState.NEW  # triaged, then routed in slice 4
     assert case.triage_status == "needs_review"
     assert case.urgency == "high"
     assert case.first_aid is None
@@ -273,8 +273,8 @@ def test_final_states_lead_nowhere():
 
 def test_an_unlisted_transition_is_refused_and_changes_nothing(client, db):
     report_a_case(client)
-    case = db.scalars(select(Case)).one()  # now TRIAGED
+    case = db.scalars(select(Case)).one()  # triaged, then NEW
 
     with pytest.raises(state_machine.InvalidTransition):
         state_machine.transition(db, case, CaseState.RESOLVED, actor="test")
-    assert case.state == CaseState.TRIAGED
+    assert case.state == CaseState.NEW  # triaged, then routed in slice 4

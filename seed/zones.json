@@ -1,0 +1,173 @@
+{
+  "_note": "APPROXIMATE. Centre points and service radii are rough town-centre estimates for a demo, not official boundaries. Replace with real ward boundaries before any real use.",
+  "zones": [
+    {
+      "slug": "panaji",
+      "name": "Corporation of the City of Panaji",
+      "kind": "corporation",
+      "taluka": "Tiswadi",
+      "district": "North Goa",
+      "latitude": 15.4909,
+      "longitude": 73.8278,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Panaji"
+    },
+    {
+      "slug": "mapusa",
+      "name": "Mapusa Municipal Council",
+      "kind": "council",
+      "taluka": "Bardez",
+      "district": "North Goa",
+      "latitude": 15.5937,
+      "longitude": 73.8142,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Mapusa"
+    },
+    {
+      "slug": "pernem",
+      "name": "Pernem Municipal Council",
+      "kind": "council",
+      "taluka": "Pernem",
+      "district": "North Goa",
+      "latitude": 15.723,
+      "longitude": 73.7951,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Pernem"
+    },
+    {
+      "slug": "bicholim",
+      "name": "Bicholim Municipal Council",
+      "kind": "council",
+      "taluka": "Bicholim",
+      "district": "North Goa",
+      "latitude": 15.5889,
+      "longitude": 73.9654,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Bicholim"
+    },
+    {
+      "slug": "sankhalim",
+      "name": "Sankhalim Municipal Council",
+      "kind": "council",
+      "taluka": "Bicholim",
+      "district": "North Goa",
+      "latitude": 15.5607,
+      "longitude": 74.0124,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Sankhalim"
+    },
+    {
+      "slug": "valpoi",
+      "name": "Valpoi Municipal Council",
+      "kind": "council",
+      "taluka": "Sattari",
+      "district": "North Goa",
+      "latitude": 15.532,
+      "longitude": 74.1367,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Valpoi"
+    },
+    {
+      "slug": "ponda",
+      "name": "Ponda Municipal Council",
+      "kind": "council",
+      "taluka": "Ponda",
+      "district": "South Goa",
+      "latitude": 15.4027,
+      "longitude": 74.0078,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Ponda"
+    },
+    {
+      "slug": "mormugao",
+      "name": "Mormugao Municipal Council",
+      "kind": "council",
+      "taluka": "Mormugao",
+      "district": "South Goa",
+      "latitude": 15.3982,
+      "longitude": 73.8113,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Mormugao"
+    },
+    {
+      "slug": "margao",
+      "name": "Margao Municipal Council",
+      "kind": "council",
+      "taluka": "Salcete",
+      "district": "South Goa",
+      "latitude": 15.2832,
+      "longitude": 73.9862,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Margao"
+    },
+    {
+      "slug": "cuncolim",
+      "name": "Cuncolim Municipal Council",
+      "kind": "council",
+      "taluka": "Salcete",
+      "district": "South Goa",
+      "latitude": 15.1773,
+      "longitude": 73.9939,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Cuncolim"
+    },
+    {
+      "slug": "quepem",
+      "name": "Quepem Municipal Council",
+      "kind": "council",
+      "taluka": "Quepem",
+      "district": "South Goa",
+      "latitude": 15.2128,
+      "longitude": 74.0772,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Quepem"
+    },
+    {
+      "slug": "curchorem-cacora",
+      "name": "Curchorem-Cacora Municipal Council",
+      "kind": "council",
+      "taluka": "Quepem",
+      "district": "South Goa",
+      "latitude": 15.263,
+      "longitude": 74.108,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Curchorem-Cacora"
+    },
+    {
+      "slug": "sanguem",
+      "name": "Sanguem Municipal Council",
+      "kind": "council",
+      "taluka": "Sanguem",
+      "district": "South Goa",
+      "latitude": 15.229,
+      "longitude": 74.151,
+      "radius_m": 4000,
+      "approximate": true,
+      "short_name": "Sanguem"
+    },
+    {
+      "slug": "canacona",
+      "name": "Canacona Municipal Council",
+      "kind": "council",
+      "taluka": "Canacona",
+      "district": "South Goa",
+      "latitude": 15.01,
+      "longitude": 74.023,
+      "radius_m": 5000,
+      "approximate": true,
+      "short_name": "Canacona"
+    }
+  ]
+}

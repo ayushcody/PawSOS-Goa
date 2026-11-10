@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 from app.db import get_engine
 from app.main import create_app
 from app.triage.service import get_triager
+from seed.load import load_seed
 
 
 @pytest.fixture(scope="session")
@@ -47,10 +48,18 @@ def db(_migrated_db) -> Session:
     engine = get_engine()
     with engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE events, photos, reports, cases RESTART IDENTITY CASCADE")
+            text("TRUNCATE events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
         )
     with Session(engine) as session:
         yield session
+
+
+@pytest.fixture
+def seeded(db) -> Session:
+    """The database with the 14 zones and their placeholder teams loaded."""
+    load_seed(db)
+    db.commit()
+    return db
 
 
 @pytest.fixture

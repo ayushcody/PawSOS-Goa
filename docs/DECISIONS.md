@@ -69,5 +69,19 @@ Triage is the first real state change (`REPORTED -> TRIAGED`), so `app/cases/sta
 ## D-018 A declined triage request goes to a person, not to another model (10 Nov)
 The API can re-run a declined request on a fallback model. We do not use that: one retry, then human review, keeps the behaviour easy to explain.
 
+## D-019 "Similar animal" means same species, or species unknown (10 Nov)
+Two reports within 200 m and 2 hours merge when triage names the same species, or when it could not name one for either report. Then place and time decide.
+Gave up: two different animals at one spot may merge when triage failed. The team on site sees both photos.
+
+## D-020 A merged case keeps its ID as a pointer (10 Nov)
+The later case moves to `MERGED` with `merged_into_id` set, and its reports move to the case that stays open. The open case keeps the more urgent of the two urgency readings.
+Known rough edge: the second reporter is first told a new case ID, then that it was added to the earlier case. Fixing it means running dedup before the first reply; left for polish.
+
+## D-021 Escalation chain (10 Nov)
+Own zone's partner team, then the nearest neighbouring zone's partner team, then the taluka officer. Built and tested in slice 4; slice 5 walks it.
+
+## D-022 Seed covers zones and teams only so far (10 Nov)
+Health centres arrive with the bite flow (slice 6), camps with booking (slice 7), demo cases with the dashboard (slice 8).
+
 ## Open
 - Nothing right now.

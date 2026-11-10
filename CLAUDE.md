@@ -13,7 +13,7 @@ docker compose up -d                                            # local Postgres
 .venv/bin/uvicorn app.main:app --reload --port 8040             # run; simulator at /sim
 .venv/bin/pytest -q                                             # tests (need the database running)
 .venv/bin/alembic revision -m "what changed"                    # new migration, then write it by hand
-.venv/bin/python -m seed.load                                   # seed data (from slice 4)
+.venv/bin/python -m seed.load                                   # zones and placeholder teams; safe to rerun
 ```
 
 ## Layout

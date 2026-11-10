@@ -62,6 +62,24 @@ MESSAGES: dict[str, dict[str, str]] = {
             "and do not feed or move the animal."
         ),
     },
+    "zone_assigned": {
+        "en": "Case {case_id} is in the {zone} area. The local team will be alerted.",
+    },
+    "merged_new_reporter": {
+        "en": (
+            "Thank you. This animal has already been reported, so your report has been "
+            "added to case {case_id}. You will get updates here."
+        ),
+    },
+    "merged_same_reporter": {
+        "en": "Your new report has been added to your case {case_id}.",
+    },
+    "merged_earlier_reporter": {
+        "en": (
+            "Update on case {case_id}: another person has reported the same animal. "
+            "That makes {count} reports."
+        ),
+    },
     "outside_goa": {
         "en": (
             "That location looks outside Goa. PawSOS covers Goa only. "

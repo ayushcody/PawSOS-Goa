@@ -51,6 +51,11 @@ class Case(Base):
     triage_status: Mapped[str | None] = mapped_column(String(20))  # "ok" or "needs_review"
     triaged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    # Filled in by routing (slice 4).
+    zone_id: Mapped[int | None] = mapped_column(ForeignKey("zones.id"), index=True)
+    zone_is_approximate: Mapped[bool | None] = mapped_column()
+    merged_into_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id"))
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -98,3 +103,8 @@ class Event(Base):
     actor: Mapped[str | None] = mapped_column(String(50))
     data: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# Zones and teams live in app/routing, but cases point at them, so make sure
+# those tables are always registered whenever the case tables are.
+from app.routing import models as _routing_models  # noqa: F401

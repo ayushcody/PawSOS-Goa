@@ -3,7 +3,7 @@
 from alembic import context
 from sqlalchemy import create_engine
 
-import app.cases.models  # noqa: F401  (registers the tables on Base.metadata)
+import app.cases.models  # noqa: F401  (registers every table on Base.metadata)
 from app.config import get_settings
 from app.db import Base
 

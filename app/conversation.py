@@ -1,7 +1,7 @@
 """The single entry point for every inbound message, whatever the channel.
 
-Slice 3: a photo and a location open a case, and the photo is triaged.
-Later slices add routing, but the signature stays the same.
+Slice 4: a photo and a location open a case, the photo is triaged, and the
+case is either merged into an existing one or placed in a zone.
 """
 
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ from app.cases import intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.channels.base import ChannelAdapter, InboundMessage
+from app.routing.flow import route_case
 from app.triage.flow import triage_case
 from app.triage.service import Triager
 
@@ -79,3 +80,30 @@ async def _triage_and_tell(
             aggressive=triage.aggression_risk == "high",
         )
     await channel.send_text(number, text)
+    await _route_and_tell(session, case, channel, number)
+
+
+async def _route_and_tell(
+    session: Session, case: Case, channel: ChannelAdapter, number: str
+) -> None:
+    outcome = route_case(session, case)
+    session.commit()
+
+    async def tell(to: str, key: str, **values: object) -> None:
+        await channel.send_text(to, messages.render(key, **values))
+
+    primary = outcome.merged_into
+    if primary is None:
+        if outcome.zone is not None:
+            await tell(number, "zone_assigned", case_id=case.public_id, zone=outcome.zone.short_name)
+        return
+
+    if number in outcome.earlier_reporters:
+        await tell(number, "merged_same_reporter", case_id=primary.public_id)
+    else:
+        await tell(number, "merged_new_reporter", case_id=primary.public_id)
+    for other in outcome.earlier_reporters:
+        if other != number:
+            await tell(
+                other, "merged_earlier_reporter", case_id=primary.public_id, count=outcome.report_count
+            )
