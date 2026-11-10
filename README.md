@@ -12,27 +12,31 @@ Built for the Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Pl
 
 ## Status
 
-In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Nothing below runs yet; the commands become real in slice 1.
+In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today: the WhatsApp simulator, and opening a case from a photo and a location. Triage, routing, the dashboard and real WhatsApp are not built yet.
 
 ## Setup
+
+Needs Python 3.12 and Docker.
 
 ```bash
 git clone <repo-url> && cd PawSOS-Goa
 python3.12 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
-cp .env.example .env          # then fill in the keys you have
+cp .env.example .env          # the defaults work for local development
+docker compose up -d          # local Postgres with PostGIS
 .venv/bin/alembic upgrade head
-.venv/bin/python -m seed.load
 .venv/bin/uvicorn app.main:app --port 8040
 ```
 
-Then open `http://localhost:8040/sim` for the WhatsApp simulator and `http://localhost:8040/dashboard` for the officials' dashboard.
+Then open `http://localhost:8040/sim` for the WhatsApp simulator.
 
 ## Tests
 
 ```bash
 .venv/bin/pytest -q
 ```
+
+Tests use a separate `pawsos_test` database in the same container.
 
 ## Docs
 

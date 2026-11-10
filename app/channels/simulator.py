@@ -7,14 +7,18 @@ All numbers are invented.
 
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Form, UploadFile
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
+from app import messages
+from app.channels import media
 from app.channels.base import ChannelAdapter, InboundMessage
 from app.conversation import handle_inbound
+from app.db import get_session
 
 PAGE = Path(__file__).with_name("simulator.html")
 
@@ -26,12 +30,35 @@ PERSONAS = [
     {"number": "+910000000102", "label": "Team: Mapusa (placeholder)"},
 ]
 
+# Approximate town centres, for the simulator's location picker only.
+LOCATION_PRESETS = [
+    {"label": "Panaji (approx.)", "latitude": 15.4909, "longitude": 73.8278},
+    {"label": "Mapusa (approx.)", "latitude": 15.5937, "longitude": 73.8142},
+    {"label": "Margao (approx.)", "latitude": 15.2832, "longitude": 73.9862},
+    {"label": "Vasco da Gama (approx.)", "latitude": 15.3982, "longitude": 73.8113},
+    {"label": "Ponda (approx.)", "latitude": 15.4027, "longitude": 74.0078},
+    {"label": "Outside Goa: Mumbai (approx.)", "latitude": 19.0760, "longitude": 72.8777},
+]
+
 
 class SimMessage(BaseModel):
     id: int
     direction: Literal["in", "out"]  # "in" = sent by the person, "out" = sent by PawSOS
     text: str
     at: datetime
+    media_url: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+
+
+class SimInbound(BaseModel):
+    """What the simulator page may post as JSON. Photos go through /sim/inbound/photo."""
+
+    from_number: str = Field(min_length=3, max_length=20)
+    kind: Literal["text", "image", "location", "button"] = "text"
+    text: str | None = Field(default=None, max_length=1000)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
 
 
 class SimulatorAdapter(ChannelAdapter):
@@ -41,16 +68,15 @@ class SimulatorAdapter(ChannelAdapter):
         self._transcripts: dict[str, list[SimMessage]] = {}
         self._next_id = 1
 
-    def _append(self, number: str, direction: Literal["in", "out"], text: str) -> SimMessage:
+    def _append(self, number: str, direction: Literal["in", "out"], text: str, **extra) -> None:
         entry = SimMessage(
-            id=self._next_id, direction=direction, text=text, at=datetime.now(UTC)
+            id=self._next_id, direction=direction, text=text, at=datetime.now(UTC), **extra
         )
         self._next_id += 1
         self._transcripts.setdefault(number, []).append(entry)
-        return entry
 
-    def record_inbound(self, number: str, text: str) -> SimMessage:
-        return self._append(number, "in", text)
+    def record_inbound(self, number: str, text: str, **extra) -> None:
+        self._append(number, "in", text, **extra)
 
     async def send_text(self, to_number: str, text: str) -> None:
         self._append(to_number, "out", text)
@@ -61,6 +87,7 @@ class SimulatorAdapter(ChannelAdapter):
 
 def build_router(channel: SimulatorAdapter) -> APIRouter:
     router = APIRouter(prefix="/sim", tags=["simulator"])
+    SessionDep = Annotated[Session, Depends(get_session)]
 
     @router.get("", response_class=HTMLResponse)
     def page() -> str:
@@ -70,10 +97,42 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
     def personas() -> list[dict[str, str]]:
         return PERSONAS
 
+    @router.get("/locations")
+    def locations() -> list[dict]:
+        return LOCATION_PRESETS
+
     @router.post("/inbound")
-    async def inbound(message: InboundMessage) -> dict[str, bool]:
-        channel.record_inbound(message.from_number, message.text or f"[{message.kind}]")
-        await handle_inbound(message, channel)
+    async def inbound(body: SimInbound, session: SessionDep) -> dict[str, bool]:
+        if body.kind == "location" and body.latitude is not None and body.longitude is not None:
+            channel.record_inbound(
+                body.from_number, "Location", latitude=body.latitude, longitude=body.longitude
+            )
+        else:
+            channel.record_inbound(body.from_number, body.text or f"[{body.kind}]")
+        message = InboundMessage(**body.model_dump())
+        await handle_inbound(message, channel, session)
+        return {"ok": True}
+
+    @router.post("/inbound/photo")
+    async def inbound_photo(
+        from_number: Annotated[str, Form(min_length=3, max_length=20)],
+        file: UploadFile,
+        session: SessionDep,
+    ) -> dict[str, bool]:
+        data = await file.read(media.MAX_BYTES + 1)
+        mime = file.content_type or ""
+        try:
+            name = media.save_image(data, mime)
+        except media.MediaError:
+            channel.record_inbound(from_number, "[a file that could not be read]")
+            await channel.send_text(from_number, messages.render("photo_rejected"))
+            return {"ok": False}
+
+        channel.record_inbound(from_number, "Photo", media_url=f"/media/{name}")
+        message = InboundMessage(
+            from_number=from_number, kind="image", media_name=name, media_mime=mime
+        )
+        await handle_inbound(message, channel, session)
         return {"ok": True}
 
     @router.get("/messages")

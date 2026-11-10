@@ -8,9 +8,11 @@ Read `docs/SPEC.md` (what), `docs/PLAN.md` (when, progress), `docs/DECISIONS.md`
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"   # setup
+docker compose up -d                                            # local Postgres + PostGIS on port 5440
+.venv/bin/alembic upgrade head                                  # apply migrations
 .venv/bin/uvicorn app.main:app --reload --port 8040             # run; simulator at /sim
-.venv/bin/pytest -q                                             # tests
-.venv/bin/alembic upgrade head                                  # migrations (from slice 2)
+.venv/bin/pytest -q                                             # tests (need the database running)
+.venv/bin/alembic revision -m "what changed"                    # new migration, then write it by hand
 .venv/bin/python -m seed.load                                   # seed data (from slice 4)
 ```
 

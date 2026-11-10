@@ -1,8 +1,9 @@
 """PawSOS Goa: the one FastAPI service."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 
-from app.channels import simulator
+from app.channels import media, simulator
 from app.config import get_settings
 
 
@@ -19,6 +20,13 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "channel": settings.channel}
+
+    @app.get("/media/{name}")
+    def get_media(name: str) -> FileResponse:
+        path = media.path_for(name)
+        if path is None:
+            raise HTTPException(status_code=404, detail="Not found")
+        return FileResponse(path)
 
     return app
 

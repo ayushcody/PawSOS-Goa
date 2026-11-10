@@ -1,0 +1,24 @@
+# Local development database: Postgres with PostGIS.
+# The user and password below are for this local container only. Never reuse them anywhere real.
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    # The official image is built for Intel only; on Apple silicon Docker emulates it.
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: pawsos
+      POSTGRES_PASSWORD: pawsos
+      POSTGRES_DB: pawsos
+    ports:
+      - "5440:5432"
+    volumes:
+      - pawsos_db:/var/lib/postgresql/data
+      - ./docker/initdb/01-test-db.sql:/docker-entrypoint-initdb.d/20-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pawsos -d pawsos"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pawsos_db:

@@ -15,18 +15,24 @@
   header h1 { margin:0; font-size:17px; font-weight:600; }
   header p { margin:2px 0 8px; font-size:12px; opacity:.85; }
   header label { font-size:12px; opacity:.85; display:block; margin-bottom:4px; }
-  select { width:100%; padding:8px; border-radius:8px; border:0; font-size:14px; }
+  select, .panel input { width:100%; padding:8px; border-radius:8px; border:0; font-size:14px; }
   #chat { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:6px; }
   .msg { max-width:80%; padding:7px 10px 5px; border-radius:8px; font-size:14.5px; line-height:1.35;
          white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(0,0,0,.13); }
   .msg.in { align-self:flex-end; background:var(--bubble-in); }
   .msg.out { align-self:flex-start; background:var(--bubble-out); }
+  .msg img { display:block; max-width:100%; max-height:220px; border-radius:6px; margin-bottom:4px; }
+  .msg .pin { font-size:12.5px; color:var(--muted); }
   .msg time { display:block; text-align:right; font-size:10.5px; color:var(--muted); margin-top:2px; }
   .empty { margin:auto; color:var(--muted); font-size:13px; text-align:center; }
-  form { display:flex; gap:8px; padding:10px; background:#f0f2f5; }
-  input[type=text] { flex:1; padding:11px 14px; border-radius:22px; border:0; font-size:15px; outline:none; }
-  button { background:var(--green); color:#fff; border:0; border-radius:22px; padding:0 18px; font-size:15px; cursor:pointer; }
-  button:disabled { opacity:.5; }
+  .panel { background:#f0f2f5; padding:10px; border-top:1px solid #d9dee1; display:none; gap:8px; flex-direction:column; }
+  .panel.open { display:flex; }
+  .panel .row { display:flex; gap:8px; }
+  .panel select, .panel input { border:1px solid #d1d7db; }
+  form { display:flex; gap:6px; padding:10px; background:#f0f2f5; align-items:center; }
+  input[type=text]#text { flex:1; min-width:0; padding:11px 14px; border-radius:22px; border:0; font-size:15px; outline:none; }
+  button { background:var(--green); color:#fff; border:0; border-radius:22px; padding:10px 16px; font-size:15px; cursor:pointer; }
+  button.icon { background:#fff; color:var(--green); padding:8px 11px; font-size:13px; border:1px solid #d1d7db; white-space:nowrap; }
   .note { font-size:11px; color:var(--muted); text-align:center; padding:4px 10px 8px; background:#f0f2f5; }
 </style>
 </head>
@@ -39,17 +45,28 @@
     <select id="persona"></select>
   </header>
   <div id="chat"><div class="empty">Say hi to start.</div></div>
+
+  <div class="panel" id="locationPanel">
+    <select id="preset" aria-label="Place"></select>
+    <div class="row">
+      <input id="lat" type="number" step="any" placeholder="Latitude" aria-label="Latitude">
+      <input id="lng" type="number" step="any" placeholder="Longitude" aria-label="Longitude">
+    </div>
+    <button type="button" id="sendLocation">Send location</button>
+  </div>
+
   <form id="form">
+    <button type="button" class="icon" id="photoBtn" title="Send a photo">Photo</button>
+    <button type="button" class="icon" id="locationBtn" title="Send a location">Location</button>
+    <input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
     <input id="text" type="text" placeholder="Type a message" autocomplete="off" maxlength="1000">
     <button id="send" type="submit">Send</button>
   </form>
   <div class="note">Chats are kept in memory and clear when the server restarts.</div>
 </div>
 <script>
-const chat = document.getElementById('chat');
-const persona = document.getElementById('persona');
-const form = document.getElementById('form');
-const input = document.getElementById('text');
+const $ = (id) => document.getElementById(id);
+const chat = $('chat'), persona = $('persona'), input = $('text');
 let lastId = 0;
 let loading = false;
 
@@ -63,7 +80,22 @@ function addMessage(m) {
   if (empty) empty.remove();
   const div = document.createElement('div');
   div.className = 'msg ' + m.direction;
-  div.textContent = m.text;           // textContent: message text is never treated as HTML
+  if (m.media_url) {
+    const img = document.createElement('img');
+    img.src = m.media_url;
+    img.alt = 'Photo sent';
+    img.onload = () => { chat.scrollTop = chat.scrollHeight; };
+    div.appendChild(img);
+  }
+  const body = document.createElement('span');
+  body.textContent = m.text;          // textContent: message text is never treated as HTML
+  div.appendChild(body);
+  if (m.latitude !== null && m.longitude !== null) {
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.textContent = m.latitude.toFixed(4) + ', ' + m.longitude.toFixed(4);
+    div.appendChild(pin);
+  }
   const t = document.createElement('time');
   t.textContent = new Date(m.at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
   div.appendChild(t);
@@ -84,29 +116,67 @@ async function poll() {
   finally { loading = false; }
 }
 
-form.addEventListener('submit', async (e) => {
+async function postJson(body) {
+  await fetch('/sim/inbound', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(Object.assign({from_number: persona.value}, body)),
+  });
+  poll();
+}
+
+$('form').addEventListener('submit', (e) => {
   e.preventDefault();
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
-  await fetch('/sim/inbound', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({from_number: persona.value, kind: 'text', text}),
-  });
+  postJson({kind: 'text', text});
+});
+
+$('photoBtn').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', async () => {
+  const file = $('file').files[0];
+  if (!file) return;
+  const data = new FormData();
+  data.append('from_number', persona.value);
+  data.append('file', file);
+  $('file').value = '';
+  await fetch('/sim/inbound/photo', {method: 'POST', body: data});
   poll();
+});
+
+$('locationBtn').addEventListener('click', () => $('locationPanel').classList.toggle('open'));
+$('preset').addEventListener('change', () => {
+  const [lat, lng] = $('preset').value.split(',');
+  $('lat').value = lat; $('lng').value = lng;
+});
+$('sendLocation').addEventListener('click', () => {
+  const latitude = parseFloat($('lat').value), longitude = parseFloat($('lng').value);
+  if (Number.isNaN(latitude) || Number.isNaN(longitude)) return;
+  $('locationPanel').classList.remove('open');
+  postJson({kind: 'location', latitude, longitude});
 });
 
 persona.addEventListener('change', () => { clearChat(); poll(); });
 
 (async function init() {
-  const people = await (await fetch('/sim/personas')).json();
+  const [people, places] = await Promise.all([
+    fetch('/sim/personas').then(r => r.json()),
+    fetch('/sim/locations').then(r => r.json()),
+  ]);
   for (const p of people) {
     const o = document.createElement('option');
     o.value = p.number;
     o.textContent = p.label + '  ' + p.number;
     persona.appendChild(o);
   }
+  for (const p of places) {
+    const o = document.createElement('option');
+    o.value = p.latitude + ',' + p.longitude;
+    o.textContent = p.label;
+    $('preset').appendChild(o);
+  }
+  $('preset').dispatchEvent(new Event('change'));
   poll();
   setInterval(poll, 1000);
 })();

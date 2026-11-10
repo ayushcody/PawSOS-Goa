@@ -10,7 +10,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 |---|-------|-----------|--------|
 | 0 | Project memory (these docs) | Tue 10 Nov | Done 10 Nov |
 | 1 | Skeleton, health check, simulator, echo bot | Wed 11 Nov | Done 10 Nov (a day early). `TODO(me)` open: fallback test in `tests/test_slice1.py` |
-| 2 | Case creation with photo and location | Thu 12 Nov | Not started |
+| 2 | Case creation with photo and location | Thu 12 Nov | Done 10 Nov (two days early). `TODO(me)` open: `in_goa()` in `app/cases/geo.py` |
 | 3 | Vision triage | Fri 13 Nov | Not started |
 | 4 | Zones, routing, dedup | Sat 14 Nov | Not started |
 | 5 | Volunteer dispatch, buttons, escalation | Sun 15 to Mon 16 Nov | Not started |

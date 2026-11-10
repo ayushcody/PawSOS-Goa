@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     channel: Literal["simulator", "whatsapp"] = "simulator"
     escalation_timeout_seconds: int = 600
 
+    # Default points at the local Docker database (docker-compose.yml).
+    database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
+    media_dir: str = "uploads"
+
 
 @lru_cache
 def get_settings() -> Settings:

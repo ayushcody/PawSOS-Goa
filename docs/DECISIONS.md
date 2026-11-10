@@ -30,5 +30,25 @@ Gave up: nothing; it can move if it grows.
 ## D-007 Simulator chats live in memory (10 Nov)
 Transcripts clear when the server restarts. Cases will be in the database from slice 2; the chat window itself does not need to survive.
 
+## D-008 Local Postgres with PostGIS in Docker for development and tests (10 Nov)
+`docker compose up -d` starts it on port 5440 with two databases: `pawsos` (development) and `pawsos_test` (wiped by tests). Supabase gets the same migrations later by changing `DATABASE_URL`.
+Why: tests run offline and cannot damage demo data.
+Gave up: the official PostGIS image is Intel-only, so on Apple silicon it runs emulated (slower to start, fine for our size).
+
+## D-009 A draft is a report with no case (10 Nov)
+While we wait for the photo or the location, the report row simply has no `case_id`. A draft older than 30 minutes is ignored.
+Why: no extra table, and the audit trail of what arrived when is kept.
+
+## D-010 Plain (blocking) database calls (10 Nov)
+SQLAlchemy is used in its ordinary synchronous style inside async handlers.
+Why: far simpler to read and test. Gave up: throughput under heavy load, which a demo does not have.
+
+## D-011 Photos on local disk under `uploads/` (10 Nov)
+Saved with random names and served at `/media/<name>`. Only JPEG, PNG and WebP up to 10 MB, checked by type and by the first bytes of the file.
+Gave up: durable storage. Supabase Storage can replace `app/channels/media.py` later.
+
+## D-012 Plain text now gets "how to report" instead of an echo (10 Nov)
+The slice 1 echo was scaffolding.
+
 ## Open
-- **Local database for tests and development** (decide in slice 2): Supabase project directly, or a local Postgres with PostGIS in Docker for tests. Leaning local for tests so they run offline.
+- Nothing right now.
