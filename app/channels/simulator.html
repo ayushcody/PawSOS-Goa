@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PawSOS simulator</title>
+<style>
+  :root { --green:#075e54; --bubble-out:#ffffff; --bubble-in:#d9fdd3; --bg:#efeae2; --ink:#111b21; --muted:#667781; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:#d1d7db; color:var(--ink);
+         min-height:100vh; display:flex; justify-content:center; align-items:center; padding:16px; }
+  .phone { width:100%; max-width:420px; height:min(760px, calc(100vh - 32px)); background:var(--bg);
+           border-radius:18px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+  header { background:var(--green); color:#fff; padding:12px 14px; }
+  header h1 { margin:0; font-size:17px; font-weight:600; }
+  header p { margin:2px 0 8px; font-size:12px; opacity:.85; }
+  header label { font-size:12px; opacity:.85; display:block; margin-bottom:4px; }
+  select { width:100%; padding:8px; border-radius:8px; border:0; font-size:14px; }
+  #chat { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:6px; }
+  .msg { max-width:80%; padding:7px 10px 5px; border-radius:8px; font-size:14.5px; line-height:1.35;
+         white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 1px .5px rgba(0,0,0,.13); }
+  .msg.in { align-self:flex-end; background:var(--bubble-in); }
+  .msg.out { align-self:flex-start; background:var(--bubble-out); }
+  .msg time { display:block; text-align:right; font-size:10.5px; color:var(--muted); margin-top:2px; }
+  .empty { margin:auto; color:var(--muted); font-size:13px; text-align:center; }
+  form { display:flex; gap:8px; padding:10px; background:#f0f2f5; }
+  input[type=text] { flex:1; padding:11px 14px; border-radius:22px; border:0; font-size:15px; outline:none; }
+  button { background:var(--green); color:#fff; border:0; border-radius:22px; padding:0 18px; font-size:15px; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  .note { font-size:11px; color:var(--muted); text-align:center; padding:4px 10px 8px; background:#f0f2f5; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header>
+    <h1>PawSOS Goa</h1>
+    <p>Simulator. Not connected to WhatsApp. All numbers are invented.</p>
+    <label for="persona">You are</label>
+    <select id="persona"></select>
+  </header>
+  <div id="chat"><div class="empty">Say hi to start.</div></div>
+  <form id="form">
+    <input id="text" type="text" placeholder="Type a message" autocomplete="off" maxlength="1000">
+    <button id="send" type="submit">Send</button>
+  </form>
+  <div class="note">Chats are kept in memory and clear when the server restarts.</div>
+</div>
+<script>
+const chat = document.getElementById('chat');
+const persona = document.getElementById('persona');
+const form = document.getElementById('form');
+const input = document.getElementById('text');
+let lastId = 0;
+let loading = false;
+
+function clearChat() {
+  lastId = 0;
+  chat.innerHTML = '<div class="empty">Say hi to start.</div>';
+}
+
+function addMessage(m) {
+  const empty = chat.querySelector('.empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'msg ' + m.direction;
+  div.textContent = m.text;           // textContent: message text is never treated as HTML
+  const t = document.createElement('time');
+  t.textContent = new Date(m.at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+  div.appendChild(t);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function poll() {
+  if (loading || !persona.value) return;
+  loading = true;
+  const who = persona.value;
+  try {
+    const res = await fetch('/sim/messages?phone=' + encodeURIComponent(who) + '&after=' + lastId);
+    const items = await res.json();
+    if (who !== persona.value) return;   // persona changed while we waited
+    for (const m of items) { addMessage(m); lastId = m.id; }
+  } catch (e) { /* server restarting; try again on the next tick */ }
+  finally { loading = false; }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await fetch('/sim/inbound', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({from_number: persona.value, kind: 'text', text}),
+  });
+  poll();
+});
+
+persona.addEventListener('change', () => { clearChat(); poll(); });
+
+(async function init() {
+  const people = await (await fetch('/sim/personas')).json();
+  for (const p of people) {
+    const o = document.createElement('option');
+    o.value = p.number;
+    o.textContent = p.label + '  ' + p.number;
+    persona.appendChild(o);
+  }
+  poll();
+  setInterval(poll, 1000);
+})();
+</script>
+</body>
+</html>

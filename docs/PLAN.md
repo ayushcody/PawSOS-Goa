@@ -8,8 +8,8 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 
 | # | Slice | Target day | Status |
 |---|-------|-----------|--------|
-| 0 | Project memory (these docs) | Tue 10 Nov | Awaiting OK |
-| 1 | Skeleton, health check, simulator, echo bot | Wed 11 Nov | Not started |
+| 0 | Project memory (these docs) | Tue 10 Nov | Done 10 Nov |
+| 1 | Skeleton, health check, simulator, echo bot | Wed 11 Nov | Done 10 Nov (a day early). `TODO(me)` open: fallback test in `tests/test_slice1.py` |
 | 2 | Case creation with photo and location | Thu 12 Nov | Not started |
 | 3 | Vision triage | Fri 13 Nov | Not started |
 | 4 | Zones, routing, dedup | Sat 14 Nov | Not started |

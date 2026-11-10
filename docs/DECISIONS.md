@@ -23,5 +23,12 @@ Gave up: true ward-level routing. Real boundaries can replace the seed later wit
 ## D-005 Port 8040 (10 Nov)
 Avoids ports used by other projects on this machine.
 
+## D-006 One entry point: `app/conversation.py` (10 Nov)
+Every channel calls `handle_inbound(message, channel)`. It sits at the top level because it belongs to no single feature folder; it will hand off to cases, triage and routing.
+Gave up: nothing; it can move if it grows.
+
+## D-007 Simulator chats live in memory (10 Nov)
+Transcripts clear when the server restarts. Cases will be in the database from slice 2; the chat window itself does not need to survive.
+
 ## Open
 - **Local database for tests and development** (decide in slice 2): Supabase project directly, or a local Postgres with PostGIS in Docker for tests. Leaning local for tests so they run offline.
