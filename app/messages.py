@@ -146,6 +146,33 @@ MESSAGES: dict[str, dict[str, str]] = {
     "button_decline": {"en": "Decline"},
     "button_on_site": {"en": "On site"},
     "button_resolved": {"en": "Resolved"},
+    # --- bite flow ---
+    "bite_first_aid": {
+        "en": (
+            "I am sorry that happened. Please do this now:\n"
+            "1. Wash the wound with soap and running water for 15 minutes.\n"
+            "2. Do not put oil, turmeric, chilli or any home remedy on it.\n"
+            "3. Go to a health centre today for anti-rabies treatment, even if the wound is small.\n\n"
+            "Share your location (tap attach, then Location) and I will find the nearest "
+            "health centre on our list.\n\n"
+            "This is general first-aid guidance, not medical advice."
+        ),
+    },
+    "bite_nearest_centre": {
+        "en": (
+            "Nearest health centre on our list: {name}, about {km} km away.\n"
+            "{map_link}\n"
+            "Go today and ask for anti-rabies treatment. Our list has not been verified yet, "
+            "so please call ahead if you can.\n\n"
+            "If the animal is still nearby, send its photo and location and we will alert a team."
+        ),
+    },
+    "bite_no_centre": {
+        "en": (
+            "Please go to the nearest government hospital today and ask for anti-rabies treatment.\n\n"
+            "If the animal is still nearby, send its photo and location and we will alert a team."
+        ),
+    },
     "outside_goa": {
         "en": (
             "That location looks outside Goa. PawSOS covers Goa only. "

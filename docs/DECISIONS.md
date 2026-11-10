@@ -107,5 +107,20 @@ The reporter is told we are still trying, and `chain_exhausted` is logged. Nothi
 ## D-029 `IGNORE_OPENING_HOURS` for demos at night (10 Nov)
 Seeded partner teams close at 18:00 (Panaji 20:00). Set it to `true` to treat every team as open.
 
+## D-030 A bite report is separate from an animal case (10 Nov)
+It is about a person, so it has its own `bite_reports` table and does not alert a rescue team. The reply invites the person to also report the animal with a photo and location.
+
+## D-031 Bite first aid is fixed copy, not model output (10 Nov)
+Wash with soap and running water for 15 minutes, no home remedies, go for anti-rabies treatment today. It is sent the moment a bite is mentioned, before we ask for a location, and it says it is not medical advice.
+
+## D-032 Health centres are real public hospitals, all marked [VERIFY] (10 Nov)
+Ten entries with approximate locations and no phone numbers. Whether each offers anti-rabies treatment is unconfirmed, and the message to the citizen says the list is not verified. Must be confirmed with the Directorate of Health Services before real use.
+
+## D-033 Hotspot rule: 3 bites within 500 m in 30 days (10 Nov)
+Our own simple threshold for the demo, not an official definition. The third bite and later ones are flagged `is_hotspot`.
+
+## D-034 Bite detection is by keyword (10 Nov)
+English words plus a few Hindi and Marathi ones, matched as whole words so "rabbit" and "a bit of blood" do not trigger it. It will miss phrasings we did not list; those people get the normal "how to report" reply.
+
 ## Open
 - Nothing right now.

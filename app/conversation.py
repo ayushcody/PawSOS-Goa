@@ -8,7 +8,7 @@ button taps come in here too.
 from sqlalchemy.orm import Session
 
 from app import messages
-from app.cases import intake
+from app.cases import bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.channels.base import ChannelAdapter, InboundMessage, deliver
@@ -52,11 +52,32 @@ async def handle_inbound(
         if not in_goa(message.latitude, message.longitude):
             await reply("outside_goa")
             return
+        bite = bites.pending_for(session, number)
+        if bite is not None:
+            # They told us they were bitten, so this location is theirs, not an animal's.
+            outcome = bites.add_location(session, bite, message.latitude, message.longitude)
+            session.commit()
+            if outcome.centre is None:
+                await reply("bite_no_centre")
+            else:
+                centre = outcome.centre
+                await reply(
+                    "bite_nearest_centre",
+                    name=centre.name,
+                    km=centre.distance_km,
+                    map_link=f"https://maps.google.com/?q={centre.latitude:.5f},{centre.longitude:.5f}",
+                )
+            return
         result = intake.add_location(session, number, message.latitude, message.longitude)
 
     if result is None:
         text = (message.text or "").strip()
-        if message.kind == "text" and text:
+        if message.kind == "text" and text and bites.is_bite_report(text):
+            # A person is hurt: answer at once, before anything else.
+            bites.start(session, number)
+            session.commit()
+            await reply("bite_first_aid")
+        elif message.kind == "text" and text:
             await reply("welcome" if text.lower() in GREETINGS else "how_to_report")
         else:
             await reply("unsupported")

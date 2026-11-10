@@ -10,6 +10,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.cases.bites import HealthCentre
 from app.cases.geo import point
 from app.db import get_engine
 from app.routing.models import Team, Zone
@@ -54,11 +55,26 @@ def load_seed(session: Session) -> dict[str, int]:
         team.closes_at = _time(row["closes_at"])
         session.add(team)
     session.flush()
-    return {"zones": len(zones), "teams": len(teams)}
+
+    centres = _read("health_centres.json", "health_centres")
+    for row in centres:
+        centre = session.scalar(
+            select(HealthCentre).where(HealthCentre.slug == row["slug"])
+        ) or HealthCentre(slug=row["slug"])
+        centre.name = row["name"]
+        centre.kind = row["kind"]
+        centre.location = point(row["latitude"], row["longitude"])
+        centre.verified = False  # every entry is still marked [VERIFY]
+        session.add(centre)
+    session.flush()
+    return {"zones": len(zones), "teams": len(teams), "health_centres": len(centres)}
 
 
 if __name__ == "__main__":
     with Session(get_engine()) as session:
         counts = load_seed(session)
         session.commit()
-    print(f"Loaded {counts['zones']} zones and {counts['teams']} teams.")
+    print(
+        f"Loaded {counts['zones']} zones, {counts['teams']} teams "
+        f"and {counts['health_centres']} health centres."
+    )

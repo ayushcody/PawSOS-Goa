@@ -15,7 +15,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 4 | Zones, routing, dedup | Sat 14 Nov | Committed 10 Nov (four days early). Checked by tests and one live run by Claude; no hand-test cases seen in the database. `TODO(me)` open: overnight hours in `is_open()`, `app/routing/teams.py` |
 | 5 | Volunteer dispatch, buttons, escalation | Sun 15 to Mon 16 Nov | Committed 10 Nov (five days early). Checked by tests and one live browser run by Claude; no hand-test cases seen in the database. `TODO(me)` open: `humanize_seconds()` in `app/routing/dispatch.py` |
 | – | **Checkpoint: must-have demo rehearsal** | Tue 17 Nov | – |
-| 6 | Bite flow | Wed 18 Nov | Not started |
+| 6 | Bite flow | Wed 18 Nov | Committed 10 Nov (eight days early). Checked by tests and one live run by Claude. `TODO(me)` open: look-alike words test in `tests/test_slice6.py` |
 | 7 | Booking with Google Calendar | Thu 19 Nov | Not started |
 | 8 | Dashboard | Fri 20 Nov | Not started |
 | 9 | Real WhatsApp hookup with an ngrok guide | Sat 21 Nov | Not started |
@@ -26,7 +26,9 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 ## Still to verify by a person (as of 10 Nov)
 
 - **Real Claude triage**: no `ANTHROPIC_API_KEY` has been set, so the live call has never run.
-- **Slices 2 to 5 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
+- **Slices 2 to 6 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
+
+- **Bite first-aid wording and the health centre list**: Ayush to read the copy in `app/messages.py`; every centre in `seed/health_centres.json` is unconfirmed.
 
 ## What I need from you, and when
 

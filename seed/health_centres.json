@@ -1,0 +1,15 @@
+{
+  "_note": "[VERIFY] EVERY ENTRY. These are public hospitals and health centres in Goa listed from general knowledge. Their locations are APPROXIMATE, and whether each one offers anti-rabies treatment, and at what hours, has NOT been confirmed. No phone numbers are included on purpose. Confirm each entry with the Directorate of Health Services before any real use.",
+  "health_centres": [
+    {"slug": "gmc-bambolim", "name": "Goa Medical College and Hospital, Bambolim [VERIFY]", "kind": "medical college hospital", "latitude": 15.4633, "longitude": 73.8576},
+    {"slug": "dh-north-mapusa", "name": "North Goa District Hospital, Mapusa [VERIFY]", "kind": "district hospital", "latitude": 15.5916, "longitude": 73.8090},
+    {"slug": "dh-south-margao", "name": "South Goa District Hospital, Margao [VERIFY]", "kind": "district hospital", "latitude": 15.2745, "longitude": 73.9620},
+    {"slug": "sdh-ponda", "name": "Sub District Hospital, Ponda [VERIFY]", "kind": "sub district hospital", "latitude": 15.4010, "longitude": 74.0100},
+    {"slug": "sdh-chicalim", "name": "Sub District Hospital, Chicalim [VERIFY]", "kind": "sub district hospital", "latitude": 15.3930, "longitude": 73.8400},
+    {"slug": "chc-pernem", "name": "Community Health Centre, Pernem [VERIFY]", "kind": "community health centre", "latitude": 15.7000, "longitude": 73.7900},
+    {"slug": "chc-sankhalim", "name": "Community Health Centre, Sankhalim [VERIFY]", "kind": "community health centre", "latitude": 15.5600, "longitude": 74.0100},
+    {"slug": "chc-valpoi", "name": "Community Health Centre, Valpoi [VERIFY]", "kind": "community health centre", "latitude": 15.5310, "longitude": 74.1370},
+    {"slug": "chc-curchorem", "name": "Community Health Centre, Curchorem [VERIFY]", "kind": "community health centre", "latitude": 15.2600, "longitude": 74.1100},
+    {"slug": "chc-canacona", "name": "Community Health Centre, Canacona [VERIFY]", "kind": "community health centre", "latitude": 15.0090, "longitude": 74.0400}
+  ]
+}

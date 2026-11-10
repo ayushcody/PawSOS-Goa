@@ -110,4 +110,5 @@ class Event(Base):
 
 # Zones and teams live in app/routing, but cases point at them, so make sure
 # those tables are always registered whenever the case tables are.
+from app.cases import bites as _bites  # noqa: F401
 from app.routing import models as _routing_models  # noqa: F401
