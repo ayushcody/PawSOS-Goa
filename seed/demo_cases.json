@@ -1,0 +1,89 @@
+{
+  "_note": "DEMO DATA. Every case and bite report here is invented so the dashboard has something to show. None of it happened. Positions are an offset in metres (north, east) from the zone's approximate centre in zones.json. Times are relative to when the file is loaded. 'injury' describes what a photo might show; it is never a diagnosis. 'duplicate_of' is the 1-based position of an earlier case in this list.",
+  "cases": [
+    {"zone": "panaji", "north_m": 420, "east_m": -610, "species": "dog", "injury": "limping, visible cut on hind leg", "urgency": "high", "aggression": "low", "state": "RESOLVED", "hours_ago": 30},
+    {"zone": "panaji", "north_m": -800, "east_m": 350, "species": "cat", "injury": "stuck on a ledge, no visible injury", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 52},
+    {"zone": "panaji", "north_m": 1500, "east_m": 900, "species": "dog", "injury": "lying still by the road, visible bleeding", "urgency": "critical", "aggression": "unknown", "state": "ON_SITE", "hours_ago": 0.7},
+    {"zone": "panaji", "north_m": -300, "east_m": -1200, "species": "bird", "injury": "kite on the ground with a drooping wing", "urgency": "medium", "aggression": "low", "state": "ACCEPTED", "hours_ago": 0.4},
+    {"zone": "panaji", "north_m": 2100, "east_m": -400, "species": "cow", "injury": "visible swelling on front leg, standing", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 120},
+    {"zone": "panaji", "north_m": 600, "east_m": 1700, "species": "dog", "injury": "thin, skin looks raw in patches", "urgency": "low", "aggression": "low", "state": "RESOLVED", "hours_ago": 200},
+
+    {"zone": "mapusa", "north_m": 300, "east_m": 500, "species": "dog", "injury": "hit by a vehicle, cannot stand", "urgency": "critical", "aggression": "medium", "state": "RESOLVED", "hours_ago": 26},
+    {"zone": "mapusa", "north_m": -900, "east_m": -300, "species": "dog", "injury": "visible wound on neck", "urgency": "high", "aggression": "medium", "state": "ROUTED", "hours_ago": 0.1},
+    {"zone": "mapusa", "north_m": 1200, "east_m": -1100, "species": "cat", "injury": "kitten in a drain, crying", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 75},
+    {"zone": "mapusa", "north_m": -1500, "east_m": 800, "species": "dog", "injury": "puppies left in a sack, no visible injury", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 160},
+    {"zone": "mapusa", "north_m": 700, "east_m": 1900, "species": "cow", "injury": "plastic rope tight around a leg", "urgency": "high", "aggression": "low", "state": "ESCALATED", "hours_ago": 0.5},
+
+    {"zone": "margao", "north_m": 500, "east_m": -700, "species": "dog", "injury": "limping, front paw held up", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 20},
+    {"zone": "margao", "north_m": -1100, "east_m": 400, "species": "dog", "injury": "visible open wound on back", "urgency": "high", "aggression": "low", "state": "ACCEPTED", "hours_ago": 0.3},
+    {"zone": "margao", "north_m": 1800, "east_m": 1300, "species": "monkey", "injury": "sitting on a transformer, not moving", "urgency": "high", "aggression": "high", "state": "RESOLVED", "hours_ago": 96},
+    {"zone": "margao", "north_m": -400, "east_m": -1900, "species": "cat", "injury": "one eye swollen shut", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 140},
+    {"zone": "margao", "north_m": 900, "east_m": 200, "species": "dog", "injury": "lying still, shallow breathing", "urgency": "critical", "aggression": "unknown", "state": "RESOLVED", "hours_ago": 60},
+    {"zone": "margao", "north_m": 950, "east_m": 260, "species": "dog", "injury": "lying on its side near the bus stand", "urgency": "high", "aggression": "unknown", "state": "MERGED", "hours_ago": 59.8, "duplicate_of": 16},
+
+    {"zone": "mormugao", "north_m": 600, "east_m": 300, "species": "dog", "injury": "tar stuck over much of its coat", "urgency": "high", "aggression": "low", "state": "RESOLVED", "hours_ago": 44},
+    {"zone": "mormugao", "north_m": -700, "east_m": -900, "species": "bird", "injury": "seabird tangled in fishing line", "urgency": "medium", "aggression": "low", "state": "ON_SITE", "hours_ago": 1.1},
+    {"zone": "mormugao", "north_m": 1400, "east_m": -200, "species": "dog", "injury": "small cut on ear, bleeding a little", "urgency": "low", "aggression": "low", "state": "RESOLVED", "hours_ago": 180},
+    {"zone": "mormugao", "north_m": -200, "east_m": 1600, "species": "cat", "injury": "fell from a height, dragging hind legs", "urgency": "critical", "aggression": "low", "state": "RESOLVED", "hours_ago": 110},
+
+    {"zone": "ponda", "north_m": 400, "east_m": -500, "species": "dog", "injury": "snare wire around its waist", "urgency": "critical", "aggression": "medium", "state": "RESOLVED", "hours_ago": 36},
+    {"zone": "ponda", "north_m": -1300, "east_m": 700, "species": "snake", "injury": "inside a house, no visible injury", "urgency": "high", "aggression": "high", "state": "RESOLVED", "hours_ago": 68},
+    {"zone": "ponda", "north_m": 1700, "east_m": 400, "species": "cow", "injury": "calf in a pit, cannot climb out", "urgency": "high", "aggression": "low", "state": "ACCEPTED", "hours_ago": 0.6},
+    {"zone": "ponda", "north_m": -500, "east_m": -1500, "species": "dog", "injury": "staggering, snapping at passers-by", "urgency": "critical", "aggression": "high", "state": "ESCALATED", "hours_ago": 0.8},
+
+    {"zone": "bicholim", "north_m": 300, "east_m": 400, "species": "dog", "injury": "visible wound on hind leg", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 150},
+    {"zone": "bicholim", "north_m": -800, "east_m": -600, "species": "cat", "injury": "trapped behind a shop shutter", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 28},
+
+    {"zone": "sankhalim", "north_m": 500, "east_m": -300, "species": "dog", "injury": "limping, visible swelling on paw", "urgency": "medium", "aggression": "medium", "state": "ESCALATED", "hours_ago": 1.5, "no_team": true},
+    {"zone": "sankhalim", "north_m": -600, "east_m": 700, "species": "dog", "injury": "thin, large patch of missing fur", "urgency": "low", "aggression": "low", "state": "RESOLVED", "hours_ago": 210},
+
+    {"zone": "valpoi", "north_m": 400, "east_m": 300, "species": "dog", "injury": "visible deep cut on shoulder", "urgency": "high", "aggression": "medium", "state": "ESCALATED", "hours_ago": 2.2, "no_team": true},
+    {"zone": "valpoi", "north_m": -700, "east_m": -500, "species": "monkey", "injury": "young monkey alone, visible cut on arm", "urgency": "medium", "aggression": "medium", "state": "RESOLVED", "hours_ago": 90},
+
+    {"zone": "pernem", "north_m": 600, "east_m": -400, "species": "dog", "injury": "hit by a vehicle, bleeding from the mouth", "urgency": "critical", "aggression": "low", "state": "RESOLVED", "hours_ago": 48},
+    {"zone": "pernem", "north_m": -500, "east_m": 900, "species": "bird", "injury": "owl on the ground, not flying", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 130},
+
+    {"zone": "cuncolim", "north_m": 300, "east_m": 600, "species": "dog", "injury": "collar grown tight, visible wound on neck", "urgency": "high", "aggression": "low", "state": "RESOLVED", "hours_ago": 72},
+    {"zone": "quepem", "north_m": -400, "east_m": -300, "species": "cow", "injury": "broken horn, visible bleeding", "urgency": "high", "aggression": "medium", "state": "RESOLVED", "hours_ago": 100},
+
+    {"zone": "curchorem-cacora", "north_m": 500, "east_m": 500, "species": "dog", "injury": "limping badly on a hind leg", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 40},
+    {"zone": "curchorem-cacora", "north_m": -900, "east_m": 200, "state": "ROUTED", "hours_ago": 0.2, "needs_review": true},
+
+    {"zone": "sanguem", "north_m": 300, "east_m": -400, "species": "dog", "injury": "visible wound on tail", "urgency": "low", "aggression": "low", "state": "CANCELLED", "hours_ago": 85},
+
+    {"zone": "canacona", "north_m": 700, "east_m": 300, "species": "dog", "injury": "tangled in a fishing net on the beach", "urgency": "high", "aggression": "low", "state": "RESOLVED", "hours_ago": 56},
+    {"zone": "canacona", "north_m": -1200, "east_m": -800, "species": "cow", "injury": "lying in the road, no visible injury", "urgency": "medium", "aggression": "low", "state": "RESOLVED", "hours_ago": 170}
+  ],
+  "bites": [
+    {"zone": "valpoi", "north_m": 150, "east_m": 100, "days_ago": 2},
+    {"zone": "valpoi", "north_m": 220, "east_m": -60, "days_ago": 6},
+    {"zone": "valpoi", "north_m": 40, "east_m": 240, "days_ago": 11},
+    {"zone": "valpoi", "north_m": 310, "east_m": 180, "days_ago": 17},
+    {"zone": "valpoi", "north_m": -90, "east_m": 30, "days_ago": 24},
+
+    {"zone": "sankhalim", "north_m": -200, "east_m": 150, "days_ago": 4},
+    {"zone": "sankhalim", "north_m": -120, "east_m": 320, "days_ago": 13},
+    {"zone": "sankhalim", "north_m": -330, "east_m": 240, "days_ago": 21},
+
+    {"zone": "panaji", "north_m": 900, "east_m": -300, "days_ago": 3},
+    {"zone": "panaji", "north_m": -1400, "east_m": 1100, "days_ago": 9},
+    {"zone": "panaji", "north_m": 2300, "east_m": 600, "days_ago": 19},
+
+    {"zone": "mapusa", "north_m": 400, "east_m": -800, "days_ago": 1},
+    {"zone": "mapusa", "north_m": -1100, "east_m": 900, "days_ago": 8},
+    {"zone": "mapusa", "north_m": 1600, "east_m": 300, "days_ago": 26},
+
+    {"zone": "margao", "north_m": 700, "east_m": 800, "days_ago": 5},
+    {"zone": "margao", "north_m": -1500, "east_m": -400, "days_ago": 12},
+    {"zone": "margao", "north_m": 300, "east_m": -1700, "days_ago": 22},
+
+    {"zone": "mormugao", "north_m": 500, "east_m": -600, "days_ago": 7},
+    {"zone": "mormugao", "north_m": -900, "east_m": 1200, "days_ago": 15},
+
+    {"zone": "ponda", "north_m": 800, "east_m": 500, "days_ago": 10},
+    {"zone": "ponda", "north_m": -600, "east_m": -900, "days_ago": 27},
+
+    {"zone": "canacona", "north_m": 300, "east_m": -500, "days_ago": 14},
+    {"zone": "bicholim", "north_m": -400, "east_m": 300, "days_ago": 18}
+  ]
+}

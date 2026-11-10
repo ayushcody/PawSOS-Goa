@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from app import models  # noqa: F401  (registers every table)
 from app.channels import media, simulator
 from app.config import get_settings
+from app.dashboard import routes as dashboard
 from app.jobs import scheduler
 
 
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="PawSOS Goa", lifespan=lifespan)
     app.state.simulator = sim_channel
     app.include_router(simulator.build_router(sim_channel))
+    app.include_router(dashboard.build_router())
 
     @app.get("/health")
     def health() -> dict[str, str]:

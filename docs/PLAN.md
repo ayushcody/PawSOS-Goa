@@ -17,7 +17,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | – | **Checkpoint: must-have demo rehearsal** | Tue 17 Nov | – |
 | 6 | Bite flow | Wed 18 Nov | Committed 10 Nov (eight days early). Checked by tests and one live run by Claude. `TODO(me)` open: look-alike words test in `tests/test_slice6.py` |
 | 7 | Booking with Google Calendar | Thu 19 Nov | Committed 10 Nov. Checked by tests and one live simulator run by Claude; no hand run by a person is recorded in the database. **Real Google Calendar sync not yet run** (needs the service account file and `CAMP_CALENDARS`). `TODO(me)` open: `format_time_range()` in `app/booking/flow.py` |
-| 8 | Dashboard | Fri 20 Nov | Not started |
+| 8 | Dashboard | Fri 20 Nov | Committed 11 Nov (nine days early). Checked by tests and one browser run by Claude; no new case from a hand run is recorded in the database, and the password prompt has not been tried in a browser. `TODO(me)` open: `case_sort_key()` in `app/dashboard/queries.py` |
 | 9 | Real WhatsApp hookup with an ngrok guide | Sat 21 Nov | Not started |
 | 11 | Demo script and seed polish | Sun 22 Nov | Not started |
 | 10 | Voice notes (stretch) | Only if ahead | Not started |
@@ -29,6 +29,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 - **Slices 2 to 6 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
 
 - **Real Google Calendar sync**: never run; needs the Google Cloud setup and two calendar IDs in `.env`.
+- **Dashboard on the demo machine and network**: the map loads Leaflet and map tiles from the internet. Check it on the venue's connection, and set `DASHBOARD_PASSWORD` before the server is reachable from outside (slice 9).
 - **Bite first-aid wording and the health centre list**: Ayush to read the copy in `app/messages.py`; every centre in `seed/health_centres.json` is unconfirmed.
 
 ## What I need from you, and when

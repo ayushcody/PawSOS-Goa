@@ -45,6 +45,7 @@ def find_duplicate(session: Session, case: Case) -> Case | None:
         .where(
             Case.id != case.id,
             Case.state.in_(OPEN_STATES),
+            Case.is_demo.is_(False),  # a real report never merges into an invented case
             Case.created_at >= datetime.now(UTC) - DEDUP_WINDOW,
             # ST_DWithin on geography measures in metres and uses the GiST index.
             func.ST_DWithin(Case.location, here, DEDUP_RADIUS_M),

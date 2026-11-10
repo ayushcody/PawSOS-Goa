@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
     media_dir: str = "uploads"
 
+    # If set, /dashboard asks for this password. Empty means open (local development).
+    dashboard_password: str | None = None
+
     google_service_account_file: str | None = None
     # One calendar per camp, written as "camp-slug=calendar-id,camp-slug=calendar-id".
     camp_calendars: str = ""

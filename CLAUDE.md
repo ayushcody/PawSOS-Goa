@@ -14,6 +14,7 @@ docker compose up -d                                            # local Postgres
 .venv/bin/pytest -q                                             # tests (need the database running)
 .venv/bin/alembic revision -m "what changed"                    # new migration, then write it by hand
 .venv/bin/python -m seed.load                                   # zones and placeholder teams; safe to rerun
+.venv/bin/python -m seed.demo                                   # 40 invented cases for the dashboard; --clear removes them
 ```
 
 ## Layout

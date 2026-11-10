@@ -147,5 +147,29 @@ After the hackathon demo (23 Nov) and clearly labelled as invented. BOOK shows n
 ## D-042 One module registers every table (10 Nov)
 `app/models.py` imports all model modules. Tables refer to each other across modules, and importing them piecemeal caused a circular import.
 
+## D-043 The dashboard is one static page plus one JSON endpoint (10 Nov)
+`/dashboard` serves a fixed HTML file; it fetches `/dashboard/data` and redraws every 15 seconds, so a case reported during the demo appears on the map without a reload. The spec said server-rendered pages; this needs no template library and is the same pattern as the simulator.
+
+## D-044 Leaflet and map tiles come from the internet (10 Nov)
+Leaflet loads from the unpkg CDN (with integrity hashes) and tiles from OpenStreetMap. Without a connection the map is blank; the tiles, lists and counts still work.
+Gave up: an offline map.
+
+## D-045 Demo cases are flagged, separate, and inert (10 Nov)
+`python -m seed.demo` loads 40 invented cases and 23 invented bite reports, marked `is_demo`, tagged "demo" on the dashboard, and removable with `--clear`. Each case is walked through the real state machine so its audit trail is real in shape. They have no dispatch rows, so the escalation job never alerts anyone about them, and a real report never merges into one.
+Known side effect: demo bite reports do count when the live bite flow checks for a hotspot nearby.
+
+## D-046 Sterilisation panel shows only the spec's figures (10 Nov)
+Seven municipalities have a 2025 figure in SPEC section 1. The other seven show "No figure". An empty column means unknown, never zero.
+
+## D-047 The next-camp suggestion is a counting rule (10 Nov)
+Among municipalities with no camp scheduled: most bite reports to PawSOS in the last 30 days; a tie goes to one that held no camps in 2025. The rule is printed on the page, and it is described as a count, not a prediction.
+
+## D-048 Optional dashboard password; no phone numbers on the dashboard (10 Nov)
+If `DASHBOARD_PASSWORD` is set, `/dashboard` and `/dashboard/data` ask for it (HTTP Basic, any user name). Empty means open, for local work only. Reporter numbers are never sent to the page.
+Not covered: photos under `/media/` are reachable by anyone who has the link; names are random and unguessable. No per-user accounts.
+
+## D-049 The dashboard reads the last 30 days and filters in Python (10 Nov)
+Fine at hackathon scale. A real deployment would filter in SQL and page the list.
+
 ## Open
 - Nothing right now.

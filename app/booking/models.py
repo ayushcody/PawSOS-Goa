@@ -61,6 +61,22 @@ class Booking(Base):
         return f"BK-{self.id:04d}"
 
 
+class SterilisationCount(Base):
+    """What is known about one zone's sterilisation work in one year.
+
+    An empty column means "no figure", which is not the same as zero.
+    """
+
+    __tablename__ = "sterilisation_counts"
+    __table_args__ = (UniqueConstraint("zone_id", "year"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    zone_id: Mapped[int] = mapped_column(ForeignKey("zones.id"))
+    year: Mapped[int] = mapped_column(Integer)
+    camps_held: Mapped[int | None] = mapped_column(Integer)
+    dogs_sterilised: Mapped[int | None] = mapped_column(Integer)
+
+
 class BookingDraft(Base):
     """Where someone is in the BOOK conversation. One row per phone number."""
 

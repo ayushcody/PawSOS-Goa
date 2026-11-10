@@ -1,0 +1,13 @@
+{
+  "_note": "Only the 2025 figures listed in docs/SPEC.md section 1. A missing field means we have no figure for it; it does not mean zero. Municipalities not listed here have no figure at all. Do not add numbers that are not in the spec.",
+  "year": 2025,
+  "counts": [
+    {"zone": "panaji", "dogs_sterilised": 2918},
+    {"zone": "ponda", "dogs_sterilised": 1121},
+    {"zone": "curchorem-cacora", "dogs_sterilised": 243},
+    {"zone": "canacona", "camps_held": 0},
+    {"zone": "sankhalim", "camps_held": 0},
+    {"zone": "valpoi", "camps_held": 0},
+    {"zone": "mapusa", "camps_held": 0}
+  ]
+}

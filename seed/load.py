@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 import app.models  # noqa: F401  (registers every table)
-from app.booking.models import Camp, CampSlot
+from app.booking.models import Camp, CampSlot, SterilisationCount
 from app.cases.bites import HealthCentre
 from app.cases.geo import point
 from app.db import get_engine
@@ -92,6 +92,19 @@ def load_seed(session: Session) -> dict[str, int]:
             slot.ends_at = datetime.combine(day, time.fromisoformat(slot_row["end"]), tzinfo=goa)
             slot.capacity = slot_row["capacity"]
             session.add(slot)
+    session.flush()
+
+    sterilisation = json.loads((SEED_DIR / "sterilisation_2025.json").read_text(encoding="utf-8"))
+    for row in sterilisation["counts"]:
+        zone_id, year = zones[row["zone"]].id, sterilisation["year"]
+        count = session.scalar(
+            select(SterilisationCount).where(
+                SterilisationCount.zone_id == zone_id, SterilisationCount.year == year
+            )
+        ) or SterilisationCount(zone_id=zone_id, year=year)
+        count.camps_held = row.get("camps_held")  # missing stays empty: "no figure"
+        count.dogs_sterilised = row.get("dogs_sterilised")
+        session.add(count)
     session.flush()
     return {
         "zones": len(zones),

@@ -52,7 +52,7 @@ The state machine lives in one module (`app/cases/state_machine.py`) with an exp
 | Data | Supabase Postgres with PostGIS | Tables: cases, reports, photos, teams, zones, camps, bookings, events. Migrations only, no manual SQL. |
 | Calendar | Google Calendar API | One calendar per camp. |
 | Jobs | APScheduler | Escalation timers and reminders. Move to Redis only if needed. |
-| Dashboard | Server-rendered pages with Leaflet | Keep it simple. |
+| Dashboard | One page with Leaflet, fed by one JSON endpoint | Keep it simple. See D-043. |
 
 ### Modules
 

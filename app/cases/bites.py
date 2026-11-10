@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from geoalchemy2 import Geography, Geometry
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, cast, func, select
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, cast, false, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from app.cases.audit import log_event
@@ -66,6 +66,7 @@ class BiteReport(Base):
     location: Mapped[Any | None] = _point_column(nullable=True)  # empty until they share it
     health_centre_id: Mapped[int | None] = mapped_column(ForeignKey("health_centres.id"))
     is_hotspot: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
