@@ -171,5 +171,24 @@ Not covered: photos under `/media/` are reachable by anyone who has the link; na
 ## D-049 The dashboard reads the last 30 days and filters in Python (10 Nov)
 Fine at hackathon scale. A real deployment would filter in SQL and page the list.
 
+## D-050 Invented numbers go to the simulator, real numbers to WhatsApp (11 Nov)
+Every invented number starts with `+91000000`, which no real Indian number does. `RoutedChannel` sends those to the simulator and everything else to WhatsApp. So one demo can mix both: a real phone reports, a placeholder team accepts in the simulator, the update returns to the phone. With WhatsApp off, nothing leaves the machine.
+Gave up: a real phone playing a team. Team numbers are seed data, and seed data has no real numbers.
+
+## D-051 The webhook answers Meta at once and works afterwards (11 Nov)
+Triage can take several seconds; Meta resends a message if we are slow. We check the signature, return 200, then handle the message in a background task. Message ids already seen are skipped (kept in memory, so a restart forgets them). One person's messages are handled one at a time, so a photo and a location sent together land in the same report.
+
+## D-052 No signature, no entry; half-configured means off (11 Nov)
+Every webhook call must carry a valid `X-Hub-Signature-256` made with our app secret. If any of the four WhatsApp settings is missing, WhatsApp stays off and the webhook answers 503. There is no "skip the check in development" switch.
+
+## D-053 The staff password now covers the simulator too (11 Nov)
+Once ngrok is running the server is public. Without a password anyone with the address could type into `/sim` as any persona. `DASHBOARD_PASSWORD` protects `/sim` and `/dashboard`; the server warns at startup if WhatsApp is on and it is empty. `/health`, `/media/` and the webhook stay open (Meta must reach them).
+
+## D-054 Phone numbers are masked in logs (11 Nov)
+Real numbers now reach the server. Log lines and error messages never contain a full number or the access token.
+
+## D-055 Known WhatsApp limits we accept for the hackathon (11 Nov)
+Free-form messages only within 24 hours of the person's last message, so a day-before camp reminder to someone who booked earlier will be refused (we use no templates). Photos go out as a link to `PUBLIC_BASE_URL`, untested on real WhatsApp. The Graph API version is `WHATSAPP_API_VERSION` (default v27.0, the latest on 11 Nov 2026).
+
 ## Open
 - Nothing right now.

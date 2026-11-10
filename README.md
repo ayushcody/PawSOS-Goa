@@ -12,7 +12,7 @@ Built for the Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Pl
 
 ## Status
 
-In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, merging duplicate reports, alerting the zone's team with Accept and Decline buttons, escalating on a decline, a closed team or no answer, status updates to the reporter through to resolved, a bite flow that gives wash-the-wound guidance and the nearest listed health centre, booking a camp slot with BOOK (Google Calendar sync is written but not yet run against Google), and an officials' dashboard at `/dashboard` with a map, a case list with filters, sterilisation figures and a next-camp suggestion. Real WhatsApp is not built yet.
+In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, merging duplicate reports, alerting the zone's team with Accept and Decline buttons, escalating on a decline, a closed team or no answer, status updates to the reporter through to resolved, a bite flow that gives wash-the-wound guidance and the nearest listed health centre, booking a camp slot with BOOK (Google Calendar sync is written but not yet run against Google), and an officials' dashboard at `/dashboard` with a map, a case list with filters, sterilisation figures and a next-camp suggestion. Real WhatsApp through Meta's Cloud API is written and tested against a stand-in, but has not yet been run with a real phone; see [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md).
 
 ## Setup
 
@@ -45,5 +45,6 @@ Tests use a separate `pawsos_test` database in the same container.
 - [docs/SPEC.md](docs/SPEC.md): what we are building
 - [docs/PLAN.md](docs/PLAN.md): slices, dates, progress
 - [docs/DECISIONS.md](docs/DECISIONS.md): trade-offs and why
+- [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md): connecting a real WhatsApp test number with ngrok
 
 All seed data is synthetic, and demo cases are tagged "demo" on the dashboard. Zone centres and radii are approximate. Health centres are marked `[VERIFY]`.

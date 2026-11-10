@@ -17,6 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import messages
+from app.auth import require_password
 from app.booking.calendar import CalendarClient, get_calendar
 from app.channels import media
 from app.channels.base import Button, ChannelAdapter, InboundMessage
@@ -99,8 +100,13 @@ class SimulatorAdapter(ChannelAdapter):
         return [m for m in self._transcripts.get(number, []) if m.id > after]
 
 
-def build_router(channel: SimulatorAdapter) -> APIRouter:
-    router = APIRouter(prefix="/sim", tags=["simulator"])
+def build_router(channel: SimulatorAdapter, outbound: ChannelAdapter | None = None) -> APIRouter:
+    """`channel` keeps the chat transcripts. Replies go out through `outbound`, which
+    may send some of them to real WhatsApp instead (see app/channels/routed.py)."""
+    outbound = outbound or channel
+    router = APIRouter(
+        prefix="/sim", tags=["simulator"], dependencies=[Depends(require_password)]
+    )
     SessionDep = Annotated[Session, Depends(get_session)]
     TriagerDep = Annotated[Triager | None, Depends(get_triager)]
     CalendarDep = Annotated[CalendarClient | None, Depends(get_calendar)]
@@ -133,7 +139,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         else:
             channel.record_inbound(body.from_number, body.text or f"[{body.kind}]")
         message = InboundMessage(**body.model_dump())
-        await handle_inbound(message, channel, session, triager, calendar)
+        await handle_inbound(message, outbound, session, triager, calendar)
         return {"ok": True}
 
     @router.post("/inbound/photo")
@@ -156,7 +162,7 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         message = InboundMessage(
             from_number=from_number, kind="image", media_name=name, media_mime=mime
         )
-        await handle_inbound(message, channel, session, triager, None)
+        await handle_inbound(message, outbound, session, triager, None)
         return {"ok": True}
 
     @router.get("/messages")

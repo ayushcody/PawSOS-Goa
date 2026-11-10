@@ -15,6 +15,11 @@ TEST_DATABASE_URL = os.environ.get(
 )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["ANTHROPIC_API_KEY"] = ""  # tests must never call the real API
+# Whatever is in .env, tests start with WhatsApp off and no staff password.
+os.environ["CHANNEL"] = "simulator"
+os.environ["DASHBOARD_PASSWORD"] = ""
+for _name in ("ACCESS_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "APP_SECRET"):
+    os.environ[f"WHATSAPP_{_name}"] = ""
 os.environ["MEDIA_DIR"] = tempfile.mkdtemp(prefix="pawsos-test-media-")
 
 import pytest

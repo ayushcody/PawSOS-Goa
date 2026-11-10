@@ -21,12 +21,19 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
     media_dir: str = "uploads"
 
-    # If set, /dashboard asks for this password. Empty means open (local development).
+    # If set, /dashboard and /sim ask for this password. Empty means open (local development).
     dashboard_password: str | None = None
 
     google_service_account_file: str | None = None
     # One calendar per camp, written as "camp-slug=calendar-id,camp-slug=calendar-id".
     camp_calendars: str = ""
+
+    # WhatsApp Business Cloud API. All four values are needed when CHANNEL=whatsapp.
+    whatsapp_access_token: str | None = None
+    whatsapp_phone_number_id: str | None = None
+    whatsapp_verify_token: str | None = None  # a string we choose; Meta repeats it back once
+    whatsapp_app_secret: str | None = None  # proves a webhook call really came from Meta
+    whatsapp_api_version: str = "v27.0"
 
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5-5"
