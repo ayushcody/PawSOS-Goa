@@ -130,7 +130,9 @@ def add_location(
                 func.ST_X(cast(HealthCentre.location, Geometry)),  # longitude
             ).where(HealthCentre.id == found.id)
         ).one()
-        centre = NearestCentre(found.name, round(metres / 1000, 1), lat, lng)
+        # [VERIFY] is a note for us; the message to the person says the same in plain words.
+        public_name = found.name.replace(" [VERIFY]", "")
+        centre = NearestCentre(public_name, round(metres / 1000, 1), lat, lng)
 
     # How many bites (this one included) within 500 m in the last 30 days?
     nearby = session.scalar(

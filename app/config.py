@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     # For demos outside working hours: treat every team as open.
     ignore_opening_hours: bool = False
 
+    # A booking is reminded once, this many hours before its slot; the job looks this often.
+    # For a demo, a large window and a short check show a reminder seconds after booking.
+    reminder_window_hours: int = 24
+    reminder_check_seconds: int = 300
+
     # Default points at the local Docker database (docker-compose.yml).
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"
     media_dir: str = "uploads"

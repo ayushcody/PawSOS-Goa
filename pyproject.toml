@@ -36,7 +36,7 @@ build-backend = "setuptools.build_meta"
 include = ["app*", "seed*"]
 
 [tool.setuptools.package-data]
-app = ["channels/*.html"]
+app = ["channels/*.html", "dashboard/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

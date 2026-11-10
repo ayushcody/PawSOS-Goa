@@ -1,7 +1,7 @@
 """Background jobs.
 
 Two jobs. Every few seconds: look for team alerts that have gone unanswered
-past their deadline and move those cases along. Every five minutes: send
+past their deadline and move those cases along. Every five minutes (by default): send
 day-before reminders for camp bookings. Deadlines and bookings live in the
 database, so nothing is lost if the server restarts.
 """
@@ -60,7 +60,12 @@ def start(channel: ChannelAdapter) -> AsyncIOScheduler:
         coalesce=True,
     )
     scheduler.add_job(
-        run_reminders, "interval", minutes=5, args=[channel], max_instances=1, coalesce=True
+        run_reminders,
+        "interval",
+        seconds=max(5, get_settings().reminder_check_seconds),
+        args=[channel],
+        max_instances=1,
+        coalesce=True,
     )
     scheduler.start()
     return scheduler

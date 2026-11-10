@@ -69,7 +69,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "merged_new_reporter": {
         "en": (
             "Thank you. This animal has already been reported, so your report has been "
-            "added to case {case_id}. You will get updates here."
+            "added to case {case_id}. Please use that case ID from now on; you will get updates here."
         ),
     },
     "merged_same_reporter": {

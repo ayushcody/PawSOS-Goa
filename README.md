@@ -32,6 +32,15 @@ docker compose up -d          # local Postgres with PostGIS
 
 Then open `http://localhost:8040/sim` for the WhatsApp simulator and `http://localhost:8040/dashboard` for the dashboard. The dashboard's map needs an internet connection. Set `DASHBOARD_PASSWORD` in `.env` before letting anyone else reach the server.
 
+## Rehearsing the demo
+
+```bash
+.venv/bin/python -m seed.reset          # shows what a reset would delete
+.venv/bin/python -m seed.reset --yes    # deletes all cases, bite reports and bookings, reloads demo data
+```
+
+Then restart the server and follow [docs/DEMO.md](docs/DEMO.md).
+
 ## Tests
 
 ```bash
@@ -45,6 +54,8 @@ Tests use a separate `pawsos_test` database in the same container.
 - [docs/SPEC.md](docs/SPEC.md): what we are building
 - [docs/PLAN.md](docs/PLAN.md): slices, dates, progress
 - [docs/DECISIONS.md](docs/DECISIONS.md): trade-offs and why
+- [docs/DEMO.md](docs/DEMO.md): the 3-minute demo script, with a fallback path
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the architecture on one page
 - [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md): connecting a real WhatsApp test number with ngrok
 
 All seed data is synthetic, and demo cases are tagged "demo" on the dashboard. Zone centres and radii are approximate. Health centres are marked `[VERIFY]`.

@@ -15,6 +15,7 @@ docker compose up -d                                            # local Postgres
 .venv/bin/alembic revision -m "what changed"                    # new migration, then write it by hand
 .venv/bin/python -m seed.load                                   # zones and placeholder teams; safe to rerun
 .venv/bin/python -m seed.demo                                   # 40 invented cases for the dashboard; --clear removes them
+.venv/bin/python -m seed.reset                                  # shows what a rehearsal reset would delete; --yes does it
 ```
 
 ## Layout
@@ -25,7 +26,7 @@ app/messages.py   every outbound message
 seed/             zones, teams, health centres, camps, demo cases
 migrations/       Alembic
 tests/            pytest, external APIs mocked
-docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE
+docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP
 ```
 
 ## Hard rules

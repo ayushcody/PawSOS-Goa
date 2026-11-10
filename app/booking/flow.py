@@ -21,6 +21,7 @@ from app.booking.calendar import CalendarClient, calendar_id_for
 from app.booking.models import Booking, BookingDraft, Camp, CampSlot
 from app.cases.audit import log_event
 from app.channels.base import Outbound
+from app.config import get_settings
 
 log = logging.getLogger(__name__)
 
@@ -281,8 +282,9 @@ def _sync_to_calendar(
 
 
 def due_reminders(session: Session) -> list[Outbound]:
-    """Remind everyone whose slot starts within the next 24 hours, once each."""
+    """Remind everyone whose slot starts within the reminder window (24 hours), once each."""
     now = clock.now()
+    window = timedelta(hours=get_settings().reminder_window_hours)
     rows = session.execute(
         select(Booking, CampSlot, Camp)
         .join(CampSlot, Booking.slot_id == CampSlot.id)
@@ -291,7 +293,7 @@ def due_reminders(session: Session) -> list[Outbound]:
             Booking.status == "booked",
             Booking.reminder_sent_at.is_(None),
             CampSlot.starts_at > now,
-            CampSlot.starts_at <= now + timedelta(hours=24),
+            CampSlot.starts_at <= now + window,
         )
         .order_by(Booking.id)
         .with_for_update(of=Booking, skip_locked=True)

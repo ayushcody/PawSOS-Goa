@@ -190,5 +190,18 @@ Real numbers now reach the server. Log lines and error messages never contain a 
 ## D-055 Known WhatsApp limits we accept for the hackathon (11 Nov)
 Free-form messages only within 24 hours of the person's last message, so a day-before camp reminder to someone who booked earlier will be refused (we use no templates). Photos go out as a link to `PUBLIC_BASE_URL`, untested on real WhatsApp. The Graph API version is `WHATSAPP_API_VERSION` (default v27.0, the latest on 11 Nov 2026).
 
+## D-056 A reset command for rehearsals, which deletes data on purpose (11 Nov)
+`python -m seed.reset` shows what it would delete; with `--yes` it empties every case, report, alert, audit event, bite report and booking, then reloads seed and demo data. Needed because a rehearsal leaves an open case that the next rehearsal's report would merge into. It never runs by itself and prints the row counts first.
+
+## D-057 Reminder timing is configurable for the demo (11 Nov)
+`REMINDER_WINDOW_HOURS` (default 24) and `REMINDER_CHECK_SECONDS` (default 300). With 720 and 10, a booking made on stage gets its reminder about ten seconds later. The reminder wording says "coming up", so it stays true in the demo.
+
+## D-058 Citizens see a health centre's name without the `[VERIFY]` tag (11 Nov)
+The tag is a note for us and stays in the seed data and the database. The message to the person already says, in plain words, that the list has not been verified and to call ahead.
+
+## D-059 The demo runs on the simulator; a real phone is an optional opening (11 Nov)
+The simulator cannot fail on venue Wi-Fi or an expired Meta token. If triage fails on stage, the built-in human-review fallback carries the case forward, so no recorded triage result is replayed.
+Gave up: the "replay a recorded triage" idea listed under risks in the plan.
+
 ## Open
 - Nothing right now.

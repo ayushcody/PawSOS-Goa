@@ -19,7 +19,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 7 | Booking with Google Calendar | Thu 19 Nov | Committed 10 Nov. Checked by tests and one live simulator run by Claude; no hand run by a person is recorded in the database. **Real Google Calendar sync not yet run** (needs the service account file and `CAMP_CALENDARS`). `TODO(me)` open: `format_time_range()` in `app/booking/flow.py` |
 | 8 | Dashboard | Fri 20 Nov | Committed 11 Nov (nine days early). Checked by tests and one browser run by Claude; no new case from a hand run is recorded in the database, and the password prompt has not been tried in a browser. `TODO(me)` open: `case_sort_key()` in `app/dashboard/queries.py` |
 | 9 | Real WhatsApp hookup with an ngrok guide | Sat 21 Nov | Committed 11 Nov (ten days early). Checked by tests against a stand-in for Meta, and a local dry run of the webhook by Claude. **No real WhatsApp message has been sent or received**: needs Ayush's Meta app and ngrok (`docs/WHATSAPP_SETUP.md`). `TODO(me)` open: `mask_number()` in `app/channels/whatsapp.py` |
-| 11 | Demo script and seed polish | Sun 22 Nov | Not started |
+| 11 | Demo script and seed polish | Sun 22 Nov | Committed 11 Nov (eleven days early). Claude ran the README setup and every demo step on a clean copy with a scratch database. **The script has not been rehearsed aloud or timed by a person, and not run with a real API key.** `TODO(me)` open: your own closing sentence in `docs/DEMO.md` |
 | 10 | Voice notes (stretch) | Only if ahead | Not started |
 | – | **Freeze, final run-through, submit** | Mon 23 Nov, by noon | – |
 
@@ -29,6 +29,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 - **Slices 2 to 6 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
 
 - **Real Google Calendar sync**: never run; needs the Google Cloud setup and two calendar IDs in `.env`.
+- **The demo, aloud, with a stopwatch**: `docs/DEMO.md` times are estimates. Rehearse three times; cut the bite and BOOK steps first if over.
 - **Real WhatsApp end to end**: never run. Follow `docs/WHATSAPP_SETUP.md`; the guide itself is untested until then.
 - **Dashboard on the demo machine and network**: the map loads Leaflet and map tiles from the internet. Check it on the venue's connection, and set `DASHBOARD_PASSWORD` before the server is reachable from outside (slice 9).
 - **Bite first-aid wording and the health centre list**: Ayush to read the copy in `app/messages.py`; every centre in `seed/health_centres.json` is unconfirmed.
@@ -124,5 +125,5 @@ Full run on the simulator: report, triage, duplicate report merged, routed, time
 ## Risks
 
 - **Meta setup delays.** Mitigation: the simulator is the primary demo path from day 1; Meta setup starts Fri 13 Nov.
-- **Live vision call fails on stage.** Mitigation: a recorded triage result can be replayed for the demo photo (labelled as recorded if used).
+- **Live vision call fails on stage.** Mitigation: after one retry the case is flagged for a person and carries on at high urgency, so the demo continues (D-059).
 - **One-day slices are tight.** Slice 5 has two days, and Tue 17 Nov is a buffer.
