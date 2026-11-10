@@ -7,6 +7,8 @@ before any test module is imported, which is why the environment is set here.
 
 import os
 import tempfile
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos_test"
@@ -23,6 +25,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
+from app import clock as app_clock
 from app.db import get_engine
 from app.main import create_app
 from app.triage.service import get_triager
@@ -48,10 +51,35 @@ def db(_migrated_db) -> Session:
     engine = get_engine()
     with engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
+            text("TRUNCATE dispatches, events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
         )
     with Session(engine) as session:
         yield session
+
+
+class FakeClock:
+    """The time the app believes it is. Tests move it by hand."""
+
+    def __init__(self) -> None:
+        self.set_goa_time(12, 0)
+
+    def now(self) -> datetime:
+        return self._now
+
+    def set_goa_time(self, hour: int, minute: int = 0) -> None:
+        today = datetime.now(ZoneInfo("Asia/Kolkata"))
+        self._now = today.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+    def advance(self, seconds: int) -> None:
+        self._now += timedelta(seconds=seconds)
+
+
+@pytest.fixture(autouse=True)
+def clock(monkeypatch) -> FakeClock:
+    """Every test starts at midday in Goa, when the seeded teams are open."""
+    fake = FakeClock()
+    monkeypatch.setattr(app_clock, "now", fake.now)
+    return fake
 
 
 @pytest.fixture

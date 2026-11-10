@@ -13,7 +13,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 2 | Case creation with photo and location | Thu 12 Nov | Done 10 Nov (two days early). `TODO(me)` open: `in_goa()` in `app/cases/geo.py` |
 | 3 | Vision triage | Fri 13 Nov | Committed 10 Nov. **Real API call still unverified**: no case in the database has a model result yet. `TODO(me)` open: four-steps test in `tests/test_slice3.py` |
 | 4 | Zones, routing, dedup | Sat 14 Nov | Committed 10 Nov (four days early). Checked by tests and one live run by Claude; no hand-test cases seen in the database. `TODO(me)` open: overnight hours in `is_open()`, `app/routing/teams.py` |
-| 5 | Volunteer dispatch, buttons, escalation | Sun 15 to Mon 16 Nov | Not started |
+| 5 | Volunteer dispatch, buttons, escalation | Sun 15 to Mon 16 Nov | Committed 10 Nov (five days early). Checked by tests and one live browser run by Claude; no hand-test cases seen in the database. `TODO(me)` open: `humanize_seconds()` in `app/routing/dispatch.py` |
 | – | **Checkpoint: must-have demo rehearsal** | Tue 17 Nov | – |
 | 6 | Bite flow | Wed 18 Nov | Not started |
 | 7 | Booking with Google Calendar | Thu 19 Nov | Not started |
@@ -22,6 +22,11 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 11 | Demo script and seed polish | Sun 22 Nov | Not started |
 | 10 | Voice notes (stretch) | Only if ahead | Not started |
 | – | **Freeze, final run-through, submit** | Mon 23 Nov, by noon | – |
+
+## Still to verify by a person (as of 10 Nov)
+
+- **Real Claude triage**: no `ANTHROPIC_API_KEY` has been set, so the live call has never run.
+- **Slices 2 to 5 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
 
 ## What I need from you, and when
 

@@ -1,10 +1,10 @@
 """Zones (the 14 urban local bodies) and the teams that answer for them."""
 
-from datetime import time
+from datetime import datetime, time
 from typing import Any
 
 from geoalchemy2 import Geography
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Time
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Time, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -47,3 +47,19 @@ class Team(Base):
     closes_at: Mapped[time | None] = mapped_column(Time)
 
     zone: Mapped[Zone | None] = relationship(back_populates="teams")
+
+
+class Dispatch(Base):
+    """One alert sent (or skipped) to one team about one case."""
+
+    __tablename__ = "dispatches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_id: Mapped[int] = mapped_column(ForeignKey("cases.id"), index=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    position: Mapped[int] = mapped_column(Integer)  # place in the escalation chain, from 0
+    # sent, accepted, declined, timed_out, skipped_closed, cancelled
+    status: Mapped[str] = mapped_column(String(20))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

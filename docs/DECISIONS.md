@@ -83,5 +83,29 @@ Own zone's partner team, then the nearest neighbouring zone's partner team, then
 ## D-022 Seed covers zones and teams only so far (10 Nov)
 Health centres arrive with the bite flow (slice 6), camps with booking (slice 7), demo cases with the dashboard (slice 8).
 
+## D-023 One polling job for timeouts, not one timer per alert (10 Nov)
+Each alert stores its deadline in the `dispatches` table. A single APScheduler job runs every few seconds and moves on any alert past its deadline.
+Why: nothing is lost when the server restarts, and tests can run the same function with the clock moved forward.
+Gave up: escalation can be late by up to a tenth of the timeout (at most 15 seconds).
+
+## D-024 Logic returns messages, the caller sends them (10 Nov)
+Dispatch functions change the database and return a list of `Outbound` messages. The caller commits, then delivers. The same code serves button taps and the background job, and a failed send cannot undo saved state.
+
+## D-025 Taps are safe to repeat (10 Nov)
+A second Accept, Decline, On site or Resolved tap repeats the acknowledgement and changes nothing. The case row is locked while a tap is handled, so two taps arriving together are handled in turn.
+
+## D-026 A late Accept still counts (10 Nov)
+A team whose alert timed out can still accept while nobody else has. The team being asked at that moment is told the case was taken.
+Why: a late yes is better than waiting for the next team.
+
+## D-027 On site must come before Resolved (10 Nov)
+Tapping Resolved first re-sends the On site prompt. It keeps the lifecycle exactly as specified.
+
+## D-028 When the whole chain is silent, the case stays ESCALATED (10 Nov)
+The reporter is told we are still trying, and `chain_exhausted` is logged. Nothing re-alerts automatically; the dashboard (slice 8) should surface these.
+
+## D-029 `IGNORE_OPENING_HOURS` for demos at night (10 Nov)
+Seeded partner teams close at 18:00 (Panaji 20:00). Set it to `true` to treat every team as open.
+
 ## Open
 - Nothing right now.

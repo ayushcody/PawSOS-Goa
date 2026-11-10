@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:8040"
     channel: Literal["simulator", "whatsapp"] = "simulator"
     escalation_timeout_seconds: int = 600
+    # For demos outside working hours: treat every team as open.
+    ignore_opening_hours: bool = False
 
     # Default points at the local Docker database (docker-compose.yml).
     database_url: str = "postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos"

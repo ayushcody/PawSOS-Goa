@@ -12,23 +12,25 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, Form, UploadFile
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import messages
 from app.channels import media
-from app.channels.base import ChannelAdapter, InboundMessage
+from app.channels.base import Button, ChannelAdapter, InboundMessage
 from app.conversation import handle_inbound
 from app.db import get_session
+from app.routing.models import Team
 from app.triage.service import Triager, get_triager
 
 PAGE = Path(__file__).with_name("simulator.html")
 
 # Invented numbers. Never use real ones here.
-PERSONAS = [
+CITIZENS = [
     {"number": "+910000000001", "label": "Citizen 1"},
     {"number": "+910000000002", "label": "Citizen 2"},
-    {"number": "+910000000101", "label": "Team: Panaji (placeholder)"},
-    {"number": "+910000000102", "label": "Team: Mapusa (placeholder)"},
+    {"number": "+910000000003", "label": "Citizen 3"},
 ]
 
 # Approximate town centres, for the simulator's location picker only.
@@ -50,6 +52,7 @@ class SimMessage(BaseModel):
     media_url: str | None = None
     latitude: float | None = None
     longitude: float | None = None
+    buttons: list[dict[str, str]] = []
 
 
 class SimInbound(BaseModel):
@@ -60,6 +63,7 @@ class SimInbound(BaseModel):
     text: str | None = Field(default=None, max_length=1000)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
+    button_id: str | None = Field(default=None, max_length=64)
 
 
 class SimulatorAdapter(ChannelAdapter):
@@ -82,6 +86,14 @@ class SimulatorAdapter(ChannelAdapter):
     async def send_text(self, to_number: str, text: str) -> None:
         self._append(to_number, "out", text)
 
+    async def send_buttons(self, to_number: str, text: str, buttons: list[Button]) -> None:
+        self._append(
+            to_number, "out", text, buttons=[{"id": b.id, "title": b.title} for b in buttons]
+        )
+
+    async def send_image(self, to_number: str, media_name: str) -> None:
+        self._append(to_number, "out", "Photo", media_url=f"/media/{media_name}")
+
     def transcript(self, number: str, after: int = 0) -> list[SimMessage]:
         return [m for m in self._transcripts.get(number, []) if m.id > after]
 
@@ -96,8 +108,13 @@ def build_router(channel: SimulatorAdapter) -> APIRouter:
         return PAGE.read_text(encoding="utf-8")
 
     @router.get("/personas")
-    def personas() -> list[dict[str, str]]:
-        return PERSONAS
+    def personas(session: SessionDep) -> list[dict[str, str]]:
+        """Citizens, plus every seeded team so you can play their side too."""
+        try:
+            teams = session.scalars(select(Team).order_by(Team.id)).all()
+        except SQLAlchemyError:
+            teams = []  # database not running: the chat page still loads
+        return CITIZENS + [{"number": t.phone, "label": t.name} for t in teams]
 
     @router.get("/locations")
     def locations() -> list[dict]:

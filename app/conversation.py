@@ -1,7 +1,8 @@
 """The single entry point for every inbound message, whatever the channel.
 
-Slice 4: a photo and a location open a case, the photo is triaged, and the
-case is either merged into an existing one or placed in a zone.
+A photo and a location open a case. The photo is triaged, the case is merged
+into an existing one or placed in a zone, and a rescue team is alerted. Team
+button taps come in here too.
 """
 
 from sqlalchemy.orm import Session
@@ -10,7 +11,8 @@ from app import messages
 from app.cases import intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
-from app.channels.base import ChannelAdapter, InboundMessage
+from app.channels.base import ChannelAdapter, InboundMessage, deliver
+from app.routing import dispatch
 from app.routing.flow import route_case
 from app.triage.flow import triage_case
 from app.triage.service import Triager
@@ -28,6 +30,13 @@ async def handle_inbound(
 
     async def reply(key: str, **values: object) -> None:
         await channel.send_text(number, messages.render(key, **values))
+
+    if message.kind == "button" and message.button_id:
+        # A rescue team tapped Accept, Decline, On site or Resolved.
+        outbox = dispatch.handle_button(session, number, message.button_id)
+        session.commit()
+        await deliver(channel, outbox)
+        return
 
     result: intake.IntakeResult | None = None
 
@@ -96,6 +105,9 @@ async def _route_and_tell(
     if primary is None:
         if outcome.zone is not None:
             await tell(number, "zone_assigned", case_id=case.public_id, zone=outcome.zone.short_name)
+        outbox = dispatch.start_dispatch(session, case)
+        session.commit()
+        await deliver(channel, outbox)
         return
 
     if number in outcome.earlier_reporters:

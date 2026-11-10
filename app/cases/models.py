@@ -56,6 +56,9 @@ class Case(Base):
     zone_is_approximate: Mapped[bool | None] = mapped_column()
     merged_into_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id"))
 
+    # Filled in when a team accepts (slice 5).
+    assigned_team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"))
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

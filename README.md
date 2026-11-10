@@ -12,7 +12,7 @@ Built for the Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Pl
 
 ## Status
 
-In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, and merging duplicate reports. Alerting teams, the dashboard and real WhatsApp are not built yet.
+In development. See [docs/PLAN.md](docs/PLAN.md) for progress. Working today, on the simulator: opening a case from a photo and a location, photo triage (tested with a stand-in for the model; the live call is not yet verified), placing the case in a zone, merging duplicate reports, alerting the zone's team with Accept and Decline buttons, escalating on a decline, a closed team or no answer, and status updates to the reporter through to resolved. The bite flow, booking, the dashboard and real WhatsApp are not built yet.
 
 ## Setup
 

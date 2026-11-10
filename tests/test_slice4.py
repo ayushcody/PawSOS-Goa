@@ -126,7 +126,7 @@ def test_a_case_in_panaji_lands_in_the_panaji_zone(client, seeded):
     report(client, CITIZEN_1, PANAJI)
 
     case = cases(seeded)[0]
-    assert case.state == CaseState.NEW
+    assert case.state == CaseState.ROUTED
     assert seeded.get(Zone, case.zone_id).slug == "panaji"
     assert case.zone_is_approximate is False
     assert replies(client, CITIZEN_1)[-1] == messages.render(
@@ -189,7 +189,7 @@ def test_a_second_report_nearby_is_merged_and_both_people_are_told(client, seede
     report(client, CITIZEN_2, north_m=150)
 
     first, second = cases(seeded)
-    assert first.state == CaseState.NEW
+    assert first.state == CaseState.ROUTED
     assert second.state == CaseState.MERGED
     assert second.merged_into_id == first.id
 
@@ -219,7 +219,7 @@ def test_merging_is_in_the_audit_log_of_both_cases(client, seeded):
 def test_a_report_250_metres_away_is_a_separate_case(client, seeded):
     report(client, CITIZEN_1)
     report(client, CITIZEN_2, north_m=250)
-    assert [c.state for c in cases(seeded)] == [CaseState.NEW, CaseState.NEW]
+    assert [c.state for c in cases(seeded)] == [CaseState.ROUTED, CaseState.ROUTED]
 
 
 def test_a_report_after_two_hours_is_a_separate_case(client, seeded):
@@ -228,7 +228,7 @@ def test_a_report_after_two_hours_is_a_separate_case(client, seeded):
     seeded.commit()
 
     report(client, CITIZEN_2)
-    assert [c.state for c in cases(seeded)] == [CaseState.NEW, CaseState.NEW]
+    assert [c.state for c in cases(seeded)] == [CaseState.ROUTED, CaseState.ROUTED]
 
 
 def test_a_finished_case_is_never_merged_into(client, seeded):
@@ -237,14 +237,14 @@ def test_a_finished_case_is_never_merged_into(client, seeded):
     seeded.commit()
 
     report(client, CITIZEN_2)
-    assert cases(seeded)[1].state == CaseState.NEW
+    assert cases(seeded)[1].state == CaseState.ROUTED
 
 
 def test_a_different_animal_in_the_same_place_is_a_separate_case(app, client, seeded):
     use_triager(app, SpeciesInTurn(("dog", "high"), ("cow", "high")))
     report(client, CITIZEN_1)
     report(client, CITIZEN_2)
-    assert [c.state for c in cases(seeded)] == [CaseState.NEW, CaseState.NEW]
+    assert [c.state for c in cases(seeded)] == [CaseState.ROUTED, CaseState.ROUTED]
 
 
 def test_the_same_animal_in_the_same_place_is_merged(app, client, seeded):

@@ -63,7 +63,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         ),
     },
     "zone_assigned": {
-        "en": "Case {case_id} is in the {zone} area. The local team will be alerted.",
+        "en": "Case {case_id} is in the {zone} area. We are alerting a rescue team now.",
     },
     "merged_new_reporter": {
         "en": (
@@ -80,6 +80,72 @@ MESSAGES: dict[str, dict[str, str]] = {
             "That makes {count} reports."
         ),
     },
+    # --- updates to the person who reported ---
+    "citizen_accepted": {
+        "en": "Good news. {team} has accepted case {case_id} and is on the way.",
+    },
+    "citizen_on_site": {
+        "en": "Update on case {case_id}: the team has reached the animal.",
+    },
+    "citizen_resolved": {
+        "en": (
+            "Case {case_id} is resolved. The team has attended to the animal. "
+            "Thank you for reporting."
+        ),
+    },
+    "citizen_escalated": {
+        "en": "Update on case {case_id}: the first team could not take it, so we have alerted the next team.",
+    },
+    "citizen_no_team_yet": {
+        "en": (
+            "Update on case {case_id}: we have not reached a team yet. "
+            "We are still trying and will message you here."
+        ),
+    },
+    # --- messages to rescue teams ---
+    "team_alert": {
+        "en": (
+            "New case {case_id} in {zone}. Urgency: {urgency}.\n"
+            "{seen}\n"
+            "Location: {map_link}\n"
+            "Reports so far: {reports}.\n"
+            "Please answer within {window}."
+        ),
+    },
+    "team_alert_seen": {
+        "en": "From the photo (not a diagnosis): {species}, {injury}.",
+    },
+    "team_alert_not_triaged": {
+        "en": "The photo has not been assessed. Please look at it yourself.",
+    },
+    "team_accepted_ack": {
+        "en": "Thank you. Case {case_id} is yours. Tap On site when you reach the animal.",
+    },
+    "team_on_site_ack": {
+        "en": "Noted: on site for case {case_id}. Tap Resolved once the animal has been attended to.",
+    },
+    "team_resolved_ack": {
+        "en": "Case {case_id} is closed. Thank you.",
+    },
+    "team_declined_ack": {
+        "en": "Understood. Case {case_id} has been passed to the next team.",
+    },
+    "team_alert_expired": {
+        "en": "No answer was received in time, so case {case_id} has been passed to the next team.",
+    },
+    "team_case_taken": {
+        "en": "Case {case_id} has been taken by another team. No action needed.",
+    },
+    "team_not_waiting": {
+        "en": "Case {case_id} is not waiting for an answer from you.",
+    },
+    "not_a_team": {
+        "en": "Those buttons are for rescue teams only.",
+    },
+    "button_accept": {"en": "Accept"},
+    "button_decline": {"en": "Decline"},
+    "button_on_site": {"en": "On site"},
+    "button_resolved": {"en": "Resolved"},
     "outside_goa": {
         "en": (
             "That location looks outside Goa. PawSOS covers Goa only. "

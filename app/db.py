@@ -28,9 +28,14 @@ def _session_factory() -> sessionmaker[Session]:
     return sessionmaker(bind=get_engine(), expire_on_commit=False)
 
 
+def new_session() -> Session:
+    """A session for code that runs outside a web request, such as background jobs."""
+    return _session_factory()()
+
+
 def get_session() -> Iterator[Session]:
     """FastAPI dependency: commit if the request succeeds, roll back if it fails."""
-    session = _session_factory()()
+    session = new_session()
     try:
         yield session
         session.commit()
