@@ -21,13 +21,14 @@ import app.models  # noqa: F401  (registers every table)
 from app.booking.models import Booking, BookingDraft
 from app.cases.bites import BiteReport
 from app.cases.models import Case, Event, Photo, Report
+from app.contacts import Contact
 from app.db import get_engine
 from app.routing.models import Dispatch
 from seed.demo import load_demo
 from seed.load import load_seed
 
 # Everything that records something that happened. Reference data is not listed.
-ACTIVITY_TABLES = [Dispatch, Event, Photo, Report, Case, BiteReport, Booking, BookingDraft]
+ACTIVITY_TABLES = [Dispatch, Event, Photo, Report, Case, BiteReport, Booking, BookingDraft, Contact]
 
 
 def activity_counts(session: Session) -> dict[str, int]:
