@@ -36,12 +36,15 @@ Written on 11 Nov on branch `pickup-tasks`, after `docs/HANDOFF.md`. **Code only
 - **Bhashini speech recognition** for real voice notes, through ffmpeg (D-078, `docs/VOICE_SETUP.md`).
 - **Safer state changes.** A state change checks the database first, so a stale copy cannot reopen a closed case (D-069).
 
-In progress on this branch (being written in parallel; this list will be corrected once it is merged):
+Also on this branch, written the same day (same status: not run, no tests):
 
 - The new citizen messages (STATUS, CANCEL, staff notices) translated into Konkani, Marathi and Hindi and sent in the person's language; the welcome message mentions STATUS and CANCEL; greetings in Devanagari recognised.
-- The second reporter no longer sees a temporary case ID before a merge (the rough edge in D-020).
-- Accurate wording to the reporter when a team chosen by staff declines or does not answer.
-- Triage asked to write the first-aid steps in the citizen's language.
+- The second reporter no longer sees a temporary case ID before a merge, when an open case is nearby (D-079).
+- Accurate wording when a team chosen by staff declines or does not answer (D-080).
+- Triage asked to write the first-aid steps in the citizen's language (D-081).
+- Fixes from a code review of the merged branch: a WhatsApp voice note no longer switches the sender to Konkani (D-082); a case cancelled or assigned while its photo is triaged stops the report flow quietly, and the escalation timer locks in the same order as everything else (D-083); typed descriptions appear in the dashboard's audit trail.
+
+`docs/CHECKLIST.md` lists what to run, and what to expect, on the machine with Docker.
 
 ## Still to verify by a person (as of 11 Nov)
 

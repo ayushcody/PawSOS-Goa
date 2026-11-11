@@ -83,8 +83,8 @@ Each part is scored out of 100: code written 50, tests pass 20, run live on the 
 | # | Part | Done | What is finished | What is left |
 |---|---|---|---|---|
 | 1 | Report: photo and location open a case | 80% | Intake in either order, 30-minute drafts, case IDs, photo checks, audit log | Hand check. `in_goa()` accepts any location (Ayush's task) |
-| 2 | Triage by vision model | 65% | Prompt, checked schema, one retry, human-review fallback, never a diagnosis | **Never run against the real model.** Needs an API key, then prompt tuning on real photos. In progress on `pickup-tasks`: first-aid steps in the citizen's language |
-| 3 | Dedup: 200 m, 2 hours, similar animal | 80% | Merge, every reporter told, more urgent reading kept. A merge now locks the case it joins (written, not run) | Hand check. The second reporter briefly sees a second case ID before the merge; a fix is in progress on `pickup-tasks` |
+| 2 | Triage by vision model | 65% | Prompt, checked schema, one retry, human-review fallback, never a diagnosis | **Never run against the real model.** Needs an API key, then prompt tuning on real photos. Written on `pickup-tasks`, not run: first-aid steps in the citizen's language (D-081) |
+| 3 | Dedup: 200 m, 2 hours, similar animal | 80% | Merge, every reporter told, more urgent reading kept. A merge now locks the case it joins (written, not run) | Hand check. Written on `pickup-tasks`, not run: no temporary case ID when an open case is nearby (D-079) |
 | 4 | Routing and escalation | 80% | Zone lookup, Accept and Decline buttons, escalation on decline, closed hours or timeout; team, then next team, then taluka officer | Hand check. Overnight opening hours and the time wording are Ayush's tasks |
 | 5 | Status updates to the citizen | 80% | Accepted, on site, resolved, escalated, no team yet | Hand check. The STATUS command is row 16 |
 | 6 | Bite flow | 70% | Keyword detection (English, some Hindi and Marathi), first-aid text, nearest health centre, hotspot flag | First-aid wording not reviewed by a person. All 10 health centres are unconfirmed |
@@ -92,20 +92,20 @@ Each part is scored out of 100: code written 50, tests pass 20, run live on the 
 | 8 | Dashboard | 85% | Map with layers, case list with filters, flagged cases, sterilisation figures, next-camp suggestion, optional password | Hand check. Case detail, staff actions and response times are row 17 |
 | 9 | Real WhatsApp | 60% | Adapter, signed webhook, photo download, routing between real and invented numbers, setup guide | **Never run with a real phone.** Needs a Meta app and ngrok. The guide is untested. Templates are row 18 |
 | 10 | Voice notes | 45% | Interface, stand-in, simulated voice note in the simulator, reply flow (tested, run on the simulator). Bhashini speech recognition through ffmpeg, and a setup guide (`docs/VOICE_SETUP.md`): written, not run, no tests of its own | **Never tried with real Bhashini keys or a real voice note.** Whether the default pipeline offers Konkani is unknown |
-| 11 | Konkani, Marathi, Hindi replies | 40% | Translations of 44 citizen messages in each language, the LANGUAGE menu, each number's language saved (migration 0008), language taken from a voice note. Written, not run | **All translations machine-drafted, none checked by a fluent reader** (`docs/TRANSLATIONS.md`). In progress on `pickup-tasks`: translating the new STATUS, CANCEL and staff messages |
+| 11 | Konkani, Marathi, Hindi replies | 40% | Translations of 44 citizen messages in each language, the LANGUAGE menu, each number's language saved (migration 0008), language taken from a voice note. Written, not run | **All translations machine-drafted, none checked by a fluent reader** (`docs/TRANSLATIONS.md`). The STATUS, CANCEL and staff messages are translated too (written, not run) |
 | 12 | Demo script (`docs/DEMO.md`) | 75% | 3-minute script, fallback table, every step run by Claude on a clean copy. Optional beats for the new features added 11 Nov, not run | Not rehearsed aloud or timed |
 | 13 | Architecture page and README | 90% | One-page summary; README setup run from a clean copy. Status tables updated 11 Nov | Update the status tables again once the new work has been run |
 | 14 | Seed data | 90% as demo data | 14 zones, 25 placeholder teams, 10 health centres, 2 demo camps, 40 demo cases, 23 demo bite reports | Zones are approximate circles; teams and camps are invented. Real data is 0% |
 | 15 | Reporter's words in the team alert | 50% | Typed words between photo and location, and voice-note words, shown as `Reporter says: "…"`; links, numbers and hidden characters removed. Written, not run | Run it; tests |
-| 16 | STATUS and CANCEL | 45% | STATUS lists open cases and bookings; CANCEL by number or by ID; cancel stands teams down; a cancelled booking frees its place. Written, not run | Run it; tests. New messages are English only until the translation in progress lands |
-| 17 | Dashboard case detail, staff actions, response times | 50% | Case panel with photos, triage, notes, alert history, audit trail; staff assign a team or cancel with a reason; median and 90th percentile response times. Written, not run | Run it in a browser; tests. Accurate wording to the reporter when a staff-chosen team declines is in progress |
+| 16 | STATUS and CANCEL | 45% | STATUS lists open cases and bookings; CANCEL by number or by ID; cancel stands teams down; a cancelled booking frees its place. Written, not run | Run it; tests. New messages are translated (machine-drafted, unchecked) |
+| 17 | Dashboard case detail, staff actions, response times | 50% | Case panel with photos, triage, notes, alert history, audit trail; staff assign a team or cancel with a reason; median and 90th percentile response times. Written, not run | Run it in a browser; tests. Accurate wording when a staff-chosen team declines is written, not run (D-080) |
 | 18 | WhatsApp templates for the 24-hour window | 50% | Fallback to an approved template for team alerts, "no answer in time" and camp reminders; the three templates are described in `docs/WHATSAPP_SETUP.md`. Written, not run | **Never tried against Meta.** Needs the Meta app and three approved templates |
 
 Overall: nearly all of the code in the specification is now written, but the newest part has never been run. About 80% is demo-ready on the simulator (unchanged, because the new work has not been run), and about 15% is verified for real (also unchanged).
 
 ## What you can pick up
 
-The eight coding tasks first listed here have all been written, on branch `pickup-tasks`, but none has been run or tested:
+The eight coding tasks first listed here have all been written, on branch `pickup-tasks` (pull request into `main`), but none has been run or tested. The same branch also has the follow-ups in `docs/PLAN.md` ("What is new since the handoff") and decisions D-063 to D-083. Work stopped on 11 Nov before anything was run; `docs/CHECKLIST.md` is the first-run list.
 
 | Task | Where | State |
 |---|---|---|
@@ -122,7 +122,9 @@ What is open now. These do not depend on Ayush; tell him which one you take so t
 
 | Task | What it needs | Size |
 |---|---|---|
-| Run the new flows on a machine with Docker: `alembic upgrade head`, the existing tests, then STATUS, CANCEL, LANGUAGE, a description typed between photo and location, the dashboard case panel, a staff assign and cancel, and the response-times panel, on the simulator. Fix what breaks and write tests for it | Python 3.12, Docker; the optional beats in `docs/DEMO.md` are a ready-made checklist | Medium |
+| Run the new flows on a machine with Docker and fix what breaks | Python 3.12, Docker; follow `docs/CHECKLIST.md` line by line | Medium |
+| Write tests for the new features (STATUS/CANCEL, LANGUAGE and `contacts`, dashboard detail and staff actions, response times, template fallback, duplicate check, typed descriptions, reporter-word cleaning) | Docker; every external service replaced by a stand-in, as in the existing tests | Medium |
+| Fix the link cleaning in team alerts: since the last change, bare domains are caught only in lowercase and from a short list, so `EVIL.COM`, `pay.in` or `bad.me` reach the team unchanged. Match case-insensitively against a full list of web endings while still keeping sentences like `market.It is bleeding` (`_LINK` and `_TLDS` in `app/routing/dispatch.py`) | Nothing external | Small |
 | Check the Konkani, Marathi and Hindi messages | A fluent reader for each of the three languages; `docs/TRANSLATIONS.md` is the checklist | Small per language |
 | Try real voice notes | Bhashini keys (registration needs approval, so start early), ffmpeg, and a real phone on WhatsApp; follow `docs/VOICE_SETUP.md` and correct it | Medium |
 | Try real WhatsApp, with templates | A Meta developer app, ngrok, three templates created and approved; follow `docs/WHATSAPP_SETUP.md` and correct it | Medium |
@@ -142,7 +144,7 @@ Eleven small `TODO(me)` tasks are Ayush's learning exercises, each with a skippe
 - Triage never claims a diagnosis.
 - Schema changes go through a new Alembic migration, written by hand, never manual SQL.
 - Tests replace every external service (Anthropic, WhatsApp, Google, Bhashini) with a stand-in. No test may use the network.
-- Record any trade-off in `docs/DECISIONS.md` (next number is D-079) and update `docs/PLAN.md` when something is finished.
+- Record any trade-off in `docs/DECISIONS.md` (next number is D-084) and update `docs/PLAN.md` when something is finished.
 - Say plainly what has been checked and how. "Tests pass" and "I tried it by hand" are different claims.
 
 ## Working together on GitHub

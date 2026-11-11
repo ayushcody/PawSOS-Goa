@@ -278,5 +278,25 @@ Gave up: nothing has been checked by a person yet. Until then the translations a
 `BhashiniSpeechToText` makes Bhashini's two calls: a config call (which speech model serves each language, kept for 6 hours) and a compute call (the config is fetched once more if Bhashini refuses the key with 401 or 403). The first speech model listed for a language is used. WhatsApp sends OGG/Opus, which Bhashini does not list, so `ffmpeg` (a system program, not a Python package) turns it into 16 kHz mono WAV in memory. ffmpeg may read only audio container formats, and only from the pipe, so a crafted file cannot make it open other files or fetch addresses. WhatsApp gives no hint of the language, so `BHASHINI_DEFAULT_LANGUAGE` (default `kok`) is assumed; the read-back (D-061) lets people correct a wrong transcript. Clips are cut at 120 seconds, and ones over 30 seconds ask Bhashini to split on silence. The default pipeline id is in the code. The simulator's pretend voice notes still use the stand-in. Replaces the placeholder in D-060.
 Gave up: a Marathi or Hindi voice note is first heard as Konkani unless the default is changed. Not yet tried with real Bhashini keys or a real voice note.
 
+## D-079 No temporary case ID when an open case is nearby (11 Nov)
+Before telling a new reporter their case ID, a cheap check looks for any case within the dedup radius and time window, by place only (open cases, and ones still being triaged). If there is one, the person gets "your report is in, we are checking whether someone has already reported this animal" with no ID; triage and routing run first, and they then get either the earlier case's ID (merged) or their own (`case_created`). With nothing nearby, nothing changes. Fixes the rough edge noted in D-020.
+Gave up: a different animal nearby also triggers the check, so that person gets their ID a few seconds later. A case created just after the check can still cause the old behaviour; closing that needs a lock. After a merge the first-aid reply carries the earlier case's ID but this person's own urgency reading. If something fails between the acknowledgement and routing, the person never gets an ID (the case is still saved and on the dashboard).
+
+## D-080 A team chosen by staff that declines or times out hands the case back to staff (11 Nov)
+An alert at or past the end of the automatic chain was sent by staff (D-071). When that team declines or does not answer, the team is told the case has gone back to PawSOS staff, and the reporter is told that team could not take it and staff are finding another. The case state and the "no team" flag are unchanged.
+Gave up: the staff variant has no WhatsApp template, so outside the 24-hour window the team does not get the expiry notice. The last automatic team in a chain still hears "passed to the next team" although nobody follows; left alone so slice 5 is unchanged.
+
+## D-081 First-aid steps are written in the reporter's language (11 Nov)
+Triage passes the reporter's saved language to the model, which is asked to write `first_aid` in it. Species, urgency, aggression risk and `injury_type` stay in English, because the schema checks them and teams read `injury_type`. The no-diagnosis rule applies in every language. English keeps the old call, so the test stand-ins still work.
+Gave up: `case.first_aid` is stored in that language, so the dashboard shows it in Konkani, Marathi or Hindi. Not tried against the real model; Devanagari steps may run past the 200-character limit per step, which leads to the retry and then human review.
+
+## D-082 A WhatsApp voice note is heard in the person's saved language, and never changes it (11 Nov)
+WhatsApp does not say which language a voice note is in. Bhashini is asked to listen in the person's saved language if they have one, otherwise in `BHASHINI_DEFAULT_LANGUAGE`. That language is an assumption, not a detection, so it is never saved for the person. Without this, any first voice note would have switched the sender to Konkani for good. Amends D-076: on WhatsApp, a language is now saved only through LANGUAGE.
+Gave up: a person who has never chosen a language is still heard as Konkani first.
+
+## D-083 When a case moves on mid-flow, the newer change wins quietly; locks go case first (11 Nov)
+If a reporter or staff cancel or assign a case while its photo is still being triaged or routed, the state machine refuses the stale step (D-069). The report flow now catches that, rolls back its unfinished part and stops, instead of failing the request. The escalation timer now locks the case before the alert, like button taps, cancels and staff actions, so two of them can never wait on each other forever; a case someone is handling is left for the timer's next tick.
+Gave up: a reporter whose case is cancelled during the duplicate check never gets a case ID, which is fine because the case is closed.
+
 ## Open
 - Nothing right now.
