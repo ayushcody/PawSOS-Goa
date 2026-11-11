@@ -93,8 +93,21 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rstrip(" ,.;:-") + "…"
 
 
-_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.[^\W\d_]{2,}\b(?:/\S*)?")
-_LONG_NUMBER = re.compile(r"\+?\(?\d[\d\s().-]{7,}\d")
+# Common web endings, lowercase only: a sentence typed without a space after the full
+# stop ("market.It is bleeding") must not look like a link. Endings that are also
+# everyday words ("it", "in", "to", "is", "me", "at", "be") are left out on purpose.
+_TLDS = (
+    "com|net|org|co|io|ly|link|xyz|app|info|site|online|top|tk|ml|ga|cf|gq|gl|cc|biz|"
+    "ru|cn|tv|ws|club|shop|live|click|page|dev|me\\.uk|co\\.in|org\\.in|net\\.in|gov\\.in"
+)
+_LINK = re.compile(
+    r"(?i:\b(?:https?://|www\.)\S+)"
+    rf"|\b[\w-]+(?:\.[\w-]+)*\.(?:{_TLDS})\b(?:/\S*)?"
+    r"|\b[\w-]+(?:\.[\w-]+)+/\S+"
+)
+# A run of digits with spaces, dots, dashes or brackets: a phone number only when it has
+# at least 10 digits, so dates (10.11.2026) and house numbers stay.
+_DIGIT_RUN = re.compile(r"\+?\(?\d[\d\s().-]{6,}\d")
 _QUOTES = re.compile(r"[\"“”'‘’`]")
 _DOTS = str.maketrans({"\u3002": ".", "\uff0e": ".", "\uff61": "."})
 
@@ -110,7 +123,10 @@ def _defang(words: str) -> str:
     words = "".join(c for c in words if unicodedata.category(c) != "Cf").translate(_DOTS)
     words = _QUOTES.sub("", words)
     words = _LINK.sub("[link removed]", words)
-    return _LONG_NUMBER.sub("[number removed]", words)
+    return _DIGIT_RUN.sub(
+        lambda m: "[number removed]" if sum(c.isdigit() for c in m.group()) >= 10 else m.group(),
+        words,
+    )
 
 
 def _reporter_notes(session: Session, case: Case) -> list[tuple[str, bool]]:
@@ -303,16 +319,33 @@ def _chosen_by_staff(session: Session, case: Case, dispatch: Dispatch) -> bool:
 
 def process_timeouts(session: Session) -> list[Outbound]:
     """Move on from every alert that has gone unanswered past its deadline."""
-    due = session.scalars(
-        select(Dispatch)
+    due = session.execute(
+        select(Dispatch.id, Dispatch.case_id)
         .where(Dispatch.status == "sent", Dispatch.expires_at <= clock.now())
         .order_by(Dispatch.id)
-        .with_for_update(skip_locked=True)  # a button tap on the same alert waits its turn
     ).all()
 
     outbox: list[Outbound] = []
-    for dispatch in due:
-        case = session.get(Case, dispatch.case_id)
+    for dispatch_id, case_id in due:
+        # Lock the case first, then the alert: the same order as a button tap, a
+        # cancel or a staff action, so the timer and they can never deadlock.
+        # A case someone else is handling right now is left for the next tick.
+        case = session.scalar(
+            select(Case)
+            .where(Case.id == case_id)
+            .with_for_update(skip_locked=True)
+            .execution_options(populate_existing=True)
+        )
+        if case is None:
+            continue
+        dispatch = session.scalar(
+            select(Dispatch)
+            .where(Dispatch.id == dispatch_id, Dispatch.status == "sent")
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if dispatch is None:
+            continue  # answered, cancelled or reassigned since we looked
         team = session.get(Team, dispatch.team_id)
         dispatch.status = "timed_out"
         dispatch.responded_at = clock.now()

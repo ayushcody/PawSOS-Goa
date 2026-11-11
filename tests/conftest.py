@@ -115,5 +115,6 @@ def app():
 
 
 @pytest.fixture
-def client(app) -> TestClient:
+def client(app, db) -> TestClient:
+    # Depends on db so every test starts empty (a saved language must not carry over).
     return TestClient(app)

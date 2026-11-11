@@ -9,6 +9,8 @@ mid-booking, and CANCEL there only leaves it), then STATUS and CANCEL
 (app/citizen.py), then bite words, then everything else.
 """
 
+import logging
+
 from sqlalchemy.orm import Session
 
 from app import citizen, contacts, messages
@@ -17,11 +19,14 @@ from app.booking.calendar import CalendarClient
 from app.cases import bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
+from app.cases.state_machine import InvalidTransition
 from app.channels.base import ChannelAdapter, InboundMessage, deliver
 from app.routing import dedup, dispatch
 from app.routing.flow import RoutingOutcome, route_case
 from app.triage.flow import triage_case
 from app.triage.service import Triager
+
+log = logging.getLogger(__name__)
 
 GREETINGS = {
     "hi", "hello", "hey", "namaste", "namaskar", "start",
@@ -157,6 +162,24 @@ async def handle_inbound(
 
 
 async def _triage_and_tell(
+    session: Session,
+    case: Case,
+    triager: Triager | None,
+    channel: ChannelAdapter,
+    number: str,
+    *,
+    id_sent: bool = True,
+) -> None:
+    try:
+        await _triage_route_tell(session, case, triager, channel, number, id_sent=id_sent)
+    except InvalidTransition as moved:
+        # The case changed under us (cancelled by the reporter or staff, or assigned
+        # by staff) while the photo was being looked at. That change wins; stop here.
+        session.rollback()
+        log.info("Case %s moved on during triage or routing: %s", case.public_id, moved)
+
+
+async def _triage_route_tell(
     session: Session,
     case: Case,
     triager: Triager | None,

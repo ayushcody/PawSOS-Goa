@@ -33,7 +33,7 @@ from app.booking.calendar import CalendarClient, get_calendar
 from app.channels import media, templates
 from app.channels.base import Button, ChannelAdapter, InboundMessage, Outbound
 from app.config import get_settings
-from app.contacts import language_for
+from app.contacts import language_for, saved_language
 from app.conversation import handle_inbound
 from app.db import new_session
 from app.triage.service import Triager, get_triager
@@ -472,12 +472,16 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
             except (media.MediaError, httpx.HTTPError, KeyError, ValueError):
                 audio, mime = b"", ""
             # The audio is used once and never stored; only the words are kept.
-            heard = await speech.listen(listener, audio, mime or item.media_mime or "")
+            # WhatsApp never says which language a voice note is in. Listen in the
+            # person's own language if we know it, else the speech service's default.
+            saved = saved_language(session, item.from_number)
+            heard = await speech.listen(listener, audio, mime or item.media_mime or "", saved)
             return InboundMessage(
                 from_number=item.from_number,
                 kind="voice",
                 text=heard.text if heard else None,
-                language=heard.language if heard else None,
+                # Not a detection: the language was assumed, so it must not be adopted.
+                language=None,
             )
         if item.kind == "unsupported":
             # An empty text message gets the "can't read that yet" reply.

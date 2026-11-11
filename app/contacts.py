@@ -66,6 +66,12 @@ def language_for(session: Session, number: str) -> str:
     return contact.language
 
 
+def saved_language(session: Session, number: str) -> str | None:
+    """The language this person chose or was heard in, or None if we never learned it."""
+    contact = session.get(Contact, number)
+    return contact.language if contact is not None and contact.language else None
+
+
 def _contact(session: Session, number: str) -> Contact:
     contact = session.get(Contact, number)
     if contact is None:
