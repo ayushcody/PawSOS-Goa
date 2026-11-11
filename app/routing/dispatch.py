@@ -9,6 +9,7 @@ The caller commits first, then delivers them.
 """
 
 import re
+import unicodedata
 from datetime import timedelta
 
 from geoalchemy2 import Geometry
@@ -85,20 +86,23 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rstrip(" ,.;:-") + "…"
 
 
-_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+\.(?:com|in|org|net|ly|me|io|link)(?:/\S*)?\b")
-_LONG_NUMBER = re.compile(r"\+?\d[\d\s-]{7,}\d")
+_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}\b(?:/\S*)?")
+_LONG_NUMBER = re.compile(r"\+?\(?\d[\d\s().-]{7,}\d")
 _QUOTES = re.compile(r"[\"“”'‘’`]")
+_INVISIBLE = re.compile("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]")
 
 
 def _defang(words: str) -> str:
     """Reporter words are untrusted: a team must not mistake them for our own lines.
 
-    Links and phone numbers are replaced (the real map link is added by us), and
-    quote marks are removed so the text cannot appear to end the quoted part.
+    Hidden characters and quote marks go first, so they cannot split a link to
+    slip past the checks. Then links and phone numbers are replaced (the real
+    map link is added by us).
     """
+    words = unicodedata.normalize("NFKC", words)
+    words = _QUOTES.sub("", _INVISIBLE.sub("", words))
     words = _LINK.sub("[link removed]", words)
-    words = _LONG_NUMBER.sub("[number removed]", words)
-    return _QUOTES.sub("", words)
+    return _LONG_NUMBER.sub("[number removed]", words)
 
 
 def _reporter_notes(session: Session, case: Case) -> list[tuple[str, bool]]:
