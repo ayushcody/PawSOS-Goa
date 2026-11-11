@@ -7,7 +7,7 @@ button taps come in here too.
 
 from sqlalchemy.orm import Session
 
-from app import messages
+from app import contacts, messages
 from app.booking import flow as booking
 from app.booking.calendar import CalendarClient
 from app.cases import bites, intake
@@ -32,7 +32,9 @@ async def handle_inbound(
     number = message.from_number
 
     async def reply(key: str, **values: object) -> None:
-        await channel.send_text(number, messages.render(key, **values))
+        await channel.send_text(
+            number, messages.render(key, contacts.language_for(session, number), **values)
+        )
 
     if message.kind == "button" and message.button_id:
         # A rescue team tapped Accept, Decline, On site or Resolved.
@@ -42,6 +44,8 @@ async def handle_inbound(
         return
 
     if message.kind == "voice":
+        if contacts.adopt_detected(session, number, message.language):
+            session.commit()  # spoken in Konkani, Marathi or Hindi: answer in it from now on
         heard = (message.text or "").strip()
         if not heard:
             await reply("voice_not_understood")
@@ -87,8 +91,15 @@ async def handle_inbound(
         text = (message.text or "").strip()
         # Speech services add full stops: a spoken "Book." must still mean BOOK.
         command = text.strip(" .!?") if message.kind == "voice" else text
+        language_key = contacts.handle_text(session, number, command) if is_words else None
+        if language_key is not None:
+            # LANGUAGE, or the number they picked from its menu.
+            session.commit()
+            await reply(language_key)
+            return
         outbox = booking.handle_text(session, number, command, calendar) if command else None
         if is_words and outbox is not None:
+            contacts.close_menu(session, number)  # from here on a number is for BOOK
             session.commit()
             await deliver(channel, outbox)
         elif is_words and text and bites.is_bite_report(text):
@@ -125,14 +136,16 @@ async def _triage_and_tell(
 ) -> None:
     triage = await triage_case(session, case, triager)
     session.commit()
+    language = contacts.language_for(session, number)
     if triage is None:
-        text = messages.render("triage_needs_review", case_id=case.public_id)
+        text = messages.render("triage_needs_review", language, case_id=case.public_id)
     else:
         text = messages.triage_message(
             case_id=case.public_id,
             urgency=triage.urgency,
             first_aid=triage.first_aid,
             aggressive=triage.aggression_risk == "high",
+            language=language,
         )
     await channel.send_text(number, text)
     await _route_and_tell(session, case, channel, number)
@@ -145,7 +158,9 @@ async def _route_and_tell(
     session.commit()
 
     async def tell(to: str, key: str, **values: object) -> None:
-        await channel.send_text(to, messages.render(key, **values))
+        await channel.send_text(
+            to, messages.render(key, contacts.language_for(session, to), **values)
+        )
 
     primary = outcome.merged_into
     if primary is None:

@@ -22,6 +22,7 @@ from app.booking.models import Booking, BookingDraft, Camp, CampSlot
 from app.cases.audit import log_event
 from app.channels.base import Outbound
 from app.config import get_settings
+from app.contacts import language_for
 
 log = logging.getLogger(__name__)
 
@@ -59,8 +60,10 @@ def format_time_range(start: datetime, end: datetime) -> str:
     return f"{start:%H:%M} to {end:%H:%M}"
 
 
-def _msg(to: str, key: str, **values: object) -> Outbound:
-    return Outbound(to=to, text=messages.render(key, **values))
+def _msg(to: str, key: str, session: Session | None = None, **values: object) -> Outbound:
+    """A message to a pet owner, in their own language when `session` is given."""
+    language = language_for(session, to) if session is not None else None
+    return Outbound(to=to, text=messages.render(key, language, **values))
 
 
 def _numbered(lines: list[str]) -> str:
@@ -129,13 +132,13 @@ def handle_text(
         return None
     if word in CANCEL_WORDS:
         session.delete(draft)
-        return [_msg(number, "book_cancelled")]
+        return [_msg(number, "book_cancelled", session)]
     if not word.isdigit():
         return None  # something else entirely; let the other flows look at it
 
     choice = int(word)
     if not 1 <= choice <= len(draft.options):
-        return [_msg(number, "book_invalid_choice")]
+        return [_msg(number, "book_invalid_choice", session)]
     chosen_id = draft.options[choice - 1]
 
     if draft.camp_id is None:
@@ -146,7 +149,7 @@ def handle_text(
 def _show_camps(session: Session, number: str) -> list[Outbound]:
     camps = upcoming_camps(session)
     if not camps:
-        return [_msg(number, "book_no_camps")]
+        return [_msg(number, "book_no_camps", session)]
 
     draft = session.get(BookingDraft, number) or BookingDraft(owner_number=number)
     draft.camp_id = None
@@ -164,7 +167,7 @@ def _show_camps(session: Session, number: str) -> list[Outbound]:
         )
         for camp in camps
     ]
-    return [_msg(number, "book_choose_camp", options=_numbered(lines))]
+    return [_msg(number, "book_choose_camp", session, options=_numbered(lines))]
 
 
 def _existing_booking(session: Session, number: str, camp: Camp) -> Booking | None:
@@ -183,6 +186,7 @@ def _show_slots(session: Session, number: str, draft: BookingDraft, camp: Camp) 
             _msg(
                 number,
                 "book_already",
+                session,
                 ref=existing.reference,
                 camp=camp.name,
                 date=format_date(existing.slot.starts_at),
@@ -193,14 +197,17 @@ def _show_slots(session: Session, number: str, draft: BookingDraft, camp: Camp) 
     slots = free_slots(session, camp)
     if not slots:
         session.delete(draft)
-        return [_msg(number, "book_camp_full", camp=camp.name)]
+        return [_msg(number, "book_camp_full", session, camp=camp.name)]
 
     draft.camp_id = camp.id
     draft.options = [slot.id for slot, _ in slots]
     draft.updated_at = clock.now()
     lines = [
         messages.render(
-            "book_slot_line", time=format_time_range(slot.starts_at, slot.ends_at), left=left
+            "book_slot_line",
+            language_for(session, number),
+            time=format_time_range(slot.starts_at, slot.ends_at),
+            left=left,
         )
         for slot, left in slots
     ]
@@ -208,6 +215,7 @@ def _show_slots(session: Session, number: str, draft: BookingDraft, camp: Camp) 
         _msg(
             number,
             "book_choose_slot",
+            session,
             camp=camp.name,
             date=format_date(slots[0][0].starts_at),
             options=_numbered(lines),
@@ -226,7 +234,7 @@ def _book(
     slot = session.scalar(select(CampSlot).where(CampSlot.id == slot_id).with_for_update())
     camp = session.get(Camp, slot.camp_id)
     if places_left(session, slot) <= 0:
-        return [_msg(number, "book_slot_full"), *_show_slots(session, number, draft, camp)]
+        return [_msg(number, "book_slot_full", session), *_show_slots(session, number, draft, camp)]
 
     booking = Booking(slot_id=slot.id, camp_id=camp.id, owner_number=number, status="booked")
     session.add(booking)
@@ -244,6 +252,7 @@ def _book(
         _msg(
             number,
             "book_confirmed",
+            session,
             ref=booking.reference,
             camp=camp.name,
             date=format_date(slot.starts_at),
@@ -306,6 +315,7 @@ def due_reminders(session: Session) -> list[Outbound]:
             _msg(
                 booking.owner_number,
                 "book_reminder",
+                session,
                 ref=booking.reference,
                 camp=camp.name,
                 date=format_date(slot.starts_at),
