@@ -197,9 +197,15 @@ class BhashiniSpeechToText:
                 "ffmpeg is not installed, so the voice note cannot be converted."
             )
         # Read from stdin, write mono 16-bit WAV at SAMPLE_RATE to stdout, nothing on disk.
+        # The audio comes from strangers: allow only plain audio containers and the pipe
+        # protocol, so a crafted file (an HLS or concat playlist, say) cannot make ffmpeg
+        # read local files or fetch URLs.
         command = [
             program,
-            *("-hide_banner", "-loglevel", "error", "-nostdin", "-i", "pipe:0"),
+            *("-hide_banner", "-loglevel", "error", "-nostdin"),
+            *("-protocol_whitelist", "pipe"),
+            *("-format_whitelist", "ogg,matroska,webm,mp3,wav,mov,mp4,m4a,aac,flac"),
+            *("-i", "pipe:0"),
             *("-vn", "-ac", "1", "-ar", str(SAMPLE_RATE), "-t", str(MAX_AUDIO_SECONDS)),
             *("-acodec", "pcm_s16le", "-f", "wav", "pipe:1"),
         ]
