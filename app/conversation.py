@@ -41,6 +41,16 @@ async def handle_inbound(
         await deliver(channel, outbox)
         return
 
+    if message.kind == "voice":
+        heard = (message.text or "").strip()
+        if not heard:
+            await reply("voice_not_understood")
+            return
+        # Say back what we understood, so the person can correct us.
+        await reply("voice_heard", text=heard)
+
+    # Typed words and a voice note's words are treated alike from here on.
+    is_words = message.kind in ("text", "voice")
     result: intake.IntakeResult | None = None
 
     if message.kind == "image" and message.media_name:
@@ -75,22 +85,30 @@ async def handle_inbound(
 
     if result is None:
         text = (message.text or "").strip()
-        outbox = booking.handle_text(session, number, text, calendar) if text else None
-        if message.kind == "text" and outbox is not None:
+        # Speech services add full stops: a spoken "Book." must still mean BOOK.
+        command = text.strip(" .!?") if message.kind == "voice" else text
+        outbox = booking.handle_text(session, number, command, calendar) if command else None
+        if is_words and outbox is not None:
             session.commit()
             await deliver(channel, outbox)
-        elif message.kind == "text" and text and bites.is_bite_report(text):
+        elif is_words and text and bites.is_bite_report(text):
             # A person is hurt: answer at once, before anything else.
             bites.start(session, number)
             session.commit()
             await reply("bite_first_aid")
-        elif message.kind == "text" and text:
-            await reply("welcome" if text.lower() in GREETINGS else "how_to_report")
+        elif message.kind == "voice" and text.lower().strip(" .!") not in GREETINGS:
+            # A spoken description of the animal: keep it with the report.
+            result = intake.add_note(session, number, text, message.language)
+        elif is_words and text:
+            await reply("welcome" if text.lower().strip(" .!") in GREETINGS else "how_to_report")
         else:
             await reply("unsupported")
-        return
+        if result is None:
+            return
 
-    if result.status == "need_location":
+    if result.status == "need_both":
+        await reply("voice_noted")
+    elif result.status == "need_location":
         await reply("ask_location")
     elif result.status == "need_photo":
         await reply("ask_photo")

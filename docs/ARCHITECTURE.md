@@ -65,7 +65,7 @@ Python 3.12, FastAPI, SQLAlchemy and Alembic migrations, Postgres with PostGIS, 
 | Vision triage | Written and tested against a stand-in. **Not yet run against the real model.** |
 | Real WhatsApp | Written and tested against a stand-in. **Not yet run with a real phone.** |
 | Google Calendar sync | Written. **Not yet run against Google.** |
-| Voice notes in Konkani, Marathi, Hindi | Not built |
+| Voice notes in Konkani, Marathi, Hindi | Structure only: an interface and a stand-in for the simulator. **No real speech recognition yet.** |
 | Zones | Approximate circles around 14 town centres, not official boundaries |
 | Teams, camps, dashboard cases | Placeholders and demo data, labelled as such |
 | Health centres | A list from general knowledge, every entry unconfirmed |

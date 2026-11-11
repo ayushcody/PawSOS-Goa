@@ -35,6 +35,7 @@
   input[type=text]#text { flex:1; min-width:0; padding:11px 14px; border-radius:22px; border:0; font-size:15px; outline:none; }
   button { background:var(--green); color:#fff; border:0; border-radius:22px; padding:10px 16px; font-size:15px; cursor:pointer; }
   button.icon { background:#fff; color:var(--green); padding:8px 11px; font-size:13px; border:1px solid #d1d7db; white-space:nowrap; }
+  .hint { font-size:11.5px; color:var(--muted); }
   .note { font-size:11px; color:var(--muted); text-align:center; padding:4px 10px 8px; background:#f0f2f5; }
 </style>
 </head>
@@ -57,9 +58,20 @@
     <button type="button" id="sendLocation">Send location</button>
   </div>
 
+  <div class="panel" id="voicePanel">
+    <input id="spoken" type="text" maxlength="1000" placeholder="What the voice note says" aria-label="What the voice note says">
+    <select id="language" aria-label="Language spoken">
+      <option value="en">English</option><option value="hi">Hindi</option>
+      <option value="mr">Marathi</option><option value="kok">Konkani</option>
+    </select>
+    <button type="button" id="sendVoice">Send as a voice note</button>
+    <div class="hint">Simulated: there is no microphone here, so type what was said.</div>
+  </div>
+
   <form id="form">
     <button type="button" class="icon" id="photoBtn" title="Send a photo">Photo</button>
     <button type="button" class="icon" id="locationBtn" title="Send a location">Location</button>
+    <button type="button" class="icon" id="voiceBtn" title="Send a simulated voice note">Voice</button>
     <input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
     <input id="text" type="text" placeholder="Type a message" autocomplete="off" maxlength="1000">
     <button id="send" type="submit">Send</button>
@@ -169,6 +181,20 @@ $('sendLocation').addEventListener('click', () => {
   if (Number.isNaN(latitude) || Number.isNaN(longitude)) return;
   $('locationPanel').classList.remove('open');
   postJson({kind: 'location', latitude, longitude});
+});
+
+$('voiceBtn').addEventListener('click', () => $('voicePanel').classList.toggle('open'));
+$('sendVoice').addEventListener('click', async () => {
+  const spoken_text = $('spoken').value.trim();
+  if (!spoken_text) return;
+  $('spoken').value = '';
+  $('voicePanel').classList.remove('open');
+  await fetch('/sim/inbound/voice', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({from_number: persona.value, spoken_text, language: $('language').value}),
+  });
+  poll();
 });
 
 persona.addEventListener('change', () => { clearChat(); poll(); });

@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 
-MessageKind = Literal["text", "image", "location", "button"]
+MessageKind = Literal["text", "image", "location", "button", "voice"]
 
 
 class InboundMessage(BaseModel):
@@ -26,7 +26,8 @@ class InboundMessage(BaseModel):
 
     from_number: str = Field(min_length=3, max_length=20)
     kind: MessageKind = "text"
-    text: str | None = None
+    text: str | None = None  # for a voice note: what was said, or None if we could not tell
+    language: str | None = Field(default=None, max_length=8)
     media_name: str | None = None
     media_mime: str | None = None
     latitude: float | None = Field(default=None, ge=-90, le=90)

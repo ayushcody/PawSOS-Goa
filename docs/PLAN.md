@@ -20,7 +20,7 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 8 | Dashboard | Fri 20 Nov | Committed 11 Nov (nine days early). Checked by tests and one browser run by Claude; no new case from a hand run is recorded in the database, and the password prompt has not been tried in a browser. `TODO(me)` open: `case_sort_key()` in `app/dashboard/queries.py` |
 | 9 | Real WhatsApp hookup with an ngrok guide | Sat 21 Nov | Committed 11 Nov (ten days early). Checked by tests against a stand-in for Meta, and a local dry run of the webhook by Claude. **No real WhatsApp message has been sent or received**: needs Ayush's Meta app and ngrok (`docs/WHATSAPP_SETUP.md`). `TODO(me)` open: `mask_number()` in `app/channels/whatsapp.py` |
 | 11 | Demo script and seed polish | Sun 22 Nov | Committed 11 Nov (eleven days early). Claude ran the README setup and every demo step on a clean copy with a scratch database. **The script has not been rehearsed aloud or timed by a person, and not run with a real API key.** `TODO(me)` open: your own closing sentence in `docs/DEMO.md` |
-| 10 | Voice notes (stretch) | Only if ahead | Not started |
+| 10 | Voice notes (stretch) | Only if ahead | Skeleton built and committed 11 Nov: the interface, a stand-in, a simulated voice note in the simulator, and the reply flow. **No real speech recognition exists**: Bhashini is a marked placeholder, and a real WhatsApp voice note is politely declined. Checked by tests and one browser run by Claude. `TODO(me)` open: `clean_transcript()` in `app/voice/speech.py` |
 | – | **Freeze, final run-through, submit** | Mon 23 Nov, by noon | – |
 
 ## Still to verify by a person (as of 10 Nov)

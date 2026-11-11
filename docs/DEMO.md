@@ -83,4 +83,4 @@ Only if you completed `docs/WHATSAPP_SETUP.md` that morning with a fresh access 
 - **Are these real teams and boundaries?** No. Teams are placeholders and service areas are approximate circles around town centres.
 - **Where do the sterilisation figures come from?** They are the 2025 figures in our brief, for seven municipalities. The others show "No figure".
 - **What happens outside working hours?** A closed team is skipped and the next team is alerted straight away.
-- **Other languages?** Every message is stored under a language-neutral key, so Konkani and Marathi can be added without changing code. Only English is written so far. Voice notes are not built.
+- **Other languages?** Every message is stored under a language-neutral key, so Konkani and Marathi can be added without changing code. Only English is written so far. For voice notes the structure is in place, with a stand-in where the speech service will go; real speech recognition is not built, so do not demo it as working.

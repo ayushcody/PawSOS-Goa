@@ -65,6 +65,7 @@ app/
   booking/     camps, slots, Google Calendar
   dashboard/   pages and JSON for the map
   jobs/        scheduler, escalation timers, reminders
+  voice/       speech-to-text interface and stand-in
   messages.py  every outbound message, keyed, language-agnostic keys
 ```
 

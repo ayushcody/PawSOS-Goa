@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     whatsapp_app_secret: str | None = None  # proves a webhook call really came from Meta
     whatsapp_api_version: str = "v27.0"
 
+    # Voice notes: "stub" understands only the simulator's pretend voice notes,
+    # "bhashini" is not built yet, "off" declines every voice note.
+    speech_to_text: Literal["off", "stub", "bhashini"] = "stub"
+    bhashini_user_id: str | None = None
+    bhashini_api_key: str | None = None
+
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5-5"
 

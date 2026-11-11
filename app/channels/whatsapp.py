@@ -33,6 +33,7 @@ from app.config import get_settings
 from app.conversation import handle_inbound
 from app.db import new_session
 from app.triage.service import Triager, get_triager
+from app.voice import speech
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ def mask_number(number: str) -> str:
     TODO(me): Ayush improves this. Right now every number becomes the same
     text, which is safe but makes logs hard to follow when two people write
     in at once. Make it keep only the last four digits:
-        "+919876543210" -> "…3210"
+        "+915550001111" -> "…1111"
         "12"            -> "…"      (too short to show anything safely)
     Rule: if the number has more than 6 characters, return "…" followed by
     its last 4 characters; otherwise return just "…".
@@ -75,7 +76,7 @@ class WhatsAppInbound:
 
     message_id: str
     from_number: str  # with a leading "+"
-    kind: str  # text, image, location, button or unsupported
+    kind: str  # text, image, location, button, voice or unsupported
     text: str | None = None
     media_id: str | None = None
     media_mime: str | None = None
@@ -111,6 +112,10 @@ def _parse_message(raw: dict[str, Any]) -> WhatsAppInbound | None:
         image = raw.get("image", {})
         item.kind, item.media_id = "image", image.get("id")
         item.media_mime = str(image.get("mime_type", "")).split(";")[0].strip()
+    elif kind == "audio":  # a voice note, or any other audio clip
+        audio = raw.get("audio", {})
+        item.kind, item.media_id = "voice", audio.get("id")
+        item.media_mime = str(audio.get("mime_type", "")).split(";")[0].strip()
     elif kind == "location":
         place = raw.get("location", {})
         item.kind = "location"
@@ -283,7 +288,9 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
             raise HTTPException(status_code=503, detail="WhatsApp is not set up on this server.")
         return adapter
 
-    async def _to_inbound(item: WhatsAppInbound) -> InboundMessage | None:
+    async def _to_inbound(
+        item: WhatsAppInbound, listener: speech.SpeechToText | None
+    ) -> InboundMessage | None:
         """Our channel-neutral message, or None if we answered the person ourselves."""
         if item.kind == "image":
             try:
@@ -295,6 +302,19 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
                 return None
             return InboundMessage(
                 from_number=item.from_number, kind="image", media_name=name, media_mime=mime
+            )
+        if item.kind == "voice":
+            try:
+                audio, mime = await _require_adapter().fetch_media(item.media_id or "")
+            except (media.MediaError, httpx.HTTPError, KeyError, ValueError):
+                audio, mime = b"", ""
+            # The audio is used once and never stored; only the words are kept.
+            heard = await speech.listen(listener, audio, mime or item.media_mime or "")
+            return InboundMessage(
+                from_number=item.from_number,
+                kind="voice",
+                text=heard.text if heard else None,
+                language=heard.language if heard else None,
             )
         if item.kind == "unsupported":
             # An empty text message gets the "can't read that yet" reply.
@@ -309,12 +329,15 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         )
 
     async def _process(
-        item: WhatsAppInbound, triager: Triager | None, calendar: CalendarClient | None
+        item: WhatsAppInbound,
+        triager: Triager | None,
+        calendar: CalendarClient | None,
+        listener: speech.SpeechToText | None,
     ) -> None:
         async with locks[item.from_number]:
             session = new_session()
             try:
-                message = await _to_inbound(item)
+                message = await _to_inbound(item, listener)
                 if message is not None:
                     await handle_inbound(message, outbound, session, triager, calendar)
                 session.commit()
@@ -343,6 +366,7 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         background: BackgroundTasks,
         triager: Annotated[Triager | None, Depends(get_triager)],
         calendar: Annotated[CalendarClient | None, Depends(get_calendar)],
+        listener: Annotated[speech.SpeechToText | None, Depends(speech.get_speech_to_text)],
     ) -> dict[str, bool]:
         _require_adapter()
         raw = await request.body()
@@ -358,7 +382,7 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         # would otherwise send the same message again.
         for item in parse_webhook(payload):
             if seen.first_time(item.message_id):
-                background.add_task(_process, item, triager, calendar)
+                background.add_task(_process, item, triager, calendar, listener)
         return {"ok": True}
 
     return router

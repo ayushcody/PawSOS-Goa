@@ -21,7 +21,7 @@ docker compose up -d                                            # local Postgres
 ## Layout
 
 ```
-app/channels  app/cases  app/triage  app/routing  app/booking  app/dashboard  app/jobs
+app/channels  app/cases  app/triage  app/routing  app/booking  app/dashboard  app/jobs  app/voice
 app/messages.py   every outbound message
 seed/             zones, teams, health centres, camps, demo cases
 migrations/       Alembic

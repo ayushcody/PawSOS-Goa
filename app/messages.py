@@ -214,6 +214,20 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Reference {ref}."
         ),
     },
+    # --- voice notes ---
+    "voice_heard": {"en": "I heard: \"{text}\""},
+    "voice_noted": {
+        "en": (
+            "Thank you, I have noted that. To send a team I also need a photo of the animal "
+            "and its location (tap attach, then Location)."
+        ),
+    },
+    "voice_not_understood": {
+        "en": (
+            "Sorry, I could not understand that voice note. "
+            "Please type your message, or send a photo and a location."
+        ),
+    },
     "outside_goa": {
         "en": (
             "That location looks outside Goa. PawSOS covers Goa only. "

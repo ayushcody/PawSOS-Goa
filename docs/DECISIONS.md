@@ -203,5 +203,16 @@ The tag is a note for us and stays in the seed data and the database. The messag
 The simulator cannot fail on venue Wi-Fi or an expired Meta token. If triage fails on stage, the built-in human-review fallback carries the case forward, so no recorded triage result is replayed.
 Gave up: the "replay a recorded triage" idea listed under risks in the plan.
 
+## D-060 Voice notes: the structure first, no real speech service (11 Nov)
+`SpeechToText` is the interface. `StubSpeechToText` understands only the simulator's pretend voice notes (you type what was said). `BhashiniSpeechToText` is a marked placeholder that declines everything. `SPEECH_TO_TEXT` picks one: `stub` (default), `bhashini`, or `off`. A real WhatsApp voice note is downloaded, cannot be transcribed, and gets "please type your message".
+Still to do for real voice: read Bhashini's current API documentation, write the call, test it against a stand-in.
+
+## D-061 A voice note's words are treated like typed words, and said back first (11 Nov)
+We reply "I heard: ..." so the person can correct a wrong transcript. Then the words go through the same paths as text: a bite report, BOOK, a greeting. Anything else is kept as a description on the person's report.
+A case still needs a photo and a location: triage reads the photo, and routing needs the place.
+
+## D-062 Audio is never stored (11 Nov)
+A voice note is fetched, passed to the speech service once, and dropped. Only the words are kept, on the report. The audit event records the language and length, not the words.
+
 ## Open
 - Nothing right now.

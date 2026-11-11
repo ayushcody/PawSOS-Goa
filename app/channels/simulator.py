@@ -25,6 +25,7 @@ from app.conversation import handle_inbound
 from app.db import get_session
 from app.routing.models import Team
 from app.triage.service import Triager, get_triager
+from app.voice import speech
 
 PAGE = Path(__file__).with_name("simulator.html")
 
@@ -66,6 +67,14 @@ class SimInbound(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     button_id: str | None = Field(default=None, max_length=64)
+
+
+class SimVoice(BaseModel):
+    """A pretend voice note: the simulator has no microphone, so you type what was said."""
+
+    from_number: str = Field(min_length=3, max_length=20)
+    spoken_text: str = Field(min_length=1, max_length=1000)
+    language: Literal["en", "hi", "mr", "kok"] = "en"
 
 
 class SimulatorAdapter(ChannelAdapter):
@@ -110,6 +119,7 @@ def build_router(channel: SimulatorAdapter, outbound: ChannelAdapter | None = No
     SessionDep = Annotated[Session, Depends(get_session)]
     TriagerDep = Annotated[Triager | None, Depends(get_triager)]
     CalendarDep = Annotated[CalendarClient | None, Depends(get_calendar)]
+    SpeechDep = Annotated[speech.SpeechToText | None, Depends(speech.get_speech_to_text)]
 
     @router.get("", response_class=HTMLResponse)
     def page() -> str:
@@ -164,6 +174,27 @@ def build_router(channel: SimulatorAdapter, outbound: ChannelAdapter | None = No
         )
         await handle_inbound(message, outbound, session, triager, None)
         return {"ok": True}
+
+    @router.post("/inbound/voice")
+    async def inbound_voice(
+        body: SimVoice, session: SessionDep, calendar: CalendarDep, listener: SpeechDep
+    ) -> dict[str, bool]:
+        channel.record_inbound(
+            body.from_number,
+            f"Voice note, simulated ({speech.LANGUAGES[body.language]}): {body.spoken_text}",
+        )
+        # The words travel as the "audio", through the same interface real audio will use.
+        heard = await speech.listen(
+            listener, body.spoken_text.encode(), speech.SIMULATED_MIME, body.language
+        )
+        message = InboundMessage(
+            from_number=body.from_number,
+            kind="voice",
+            text=heard.text if heard else None,
+            language=heard.language if heard else None,
+        )
+        await handle_inbound(message, outbound, session, None, calendar)
+        return {"ok": heard is not None}
 
     @router.get("/messages")
     def get_messages(phone: str, after: int = 0) -> list[SimMessage]:

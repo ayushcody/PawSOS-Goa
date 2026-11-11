@@ -8,116 +8,33 @@ the 555 range that is reserved for fiction.
 import asyncio
 import hashlib
 import hmac
-import json
 
-import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app import messages
-from app.booking.calendar import get_calendar
 from app.cases.models import Case, Photo, Report
 from app.channels import media, whatsapp
 from app.channels.base import Button
 from app.channels.routed import RoutedChannel, is_simulated
-from app.channels.whatsapp import WhatsAppCloudAdapter, WhatsAppError, mask_number, parse_webhook
+from app.channels.whatsapp import WhatsAppError, mask_number, parse_webhook
 from app.config import get_settings
-from app.main import create_app
 from app.routing.models import Team, Zone
-from app.triage.service import get_triager
+from tests.whatsapp_fakes import (
+    JPEG,
+    NUMBER,
+    PHONE,
+    SECRET,
+    TOKEN,
+    VERIFY,
+    envelope,
+    make_adapter,
+    msg,
+    post,
+)
 
-SECRET = "test-only-app-secret"
-VERIFY = "test-only-verify-token"
-TOKEN = "test-only-access-token"
-PHONE = "15550001111"  # how Meta writes it: no "+"
-NUMBER = "+15550001111"  # how we store it
-JPEG = b"\xff\xd8\xff" + b"0" * 64
 PANAJI = {"latitude": 15.4909, "longitude": 73.8278}
-
-
-class FakeMeta:
-    """Answers like the Graph API and remembers what we sent."""
-
-    def __init__(self) -> None:
-        self.sent: list[dict] = []
-        self.photos: dict[str, tuple[bytes, str]] = {"photo-1": (JPEG, "image/jpeg")}
-        self.refuse_sends = False
-        self.auth_headers: set[str | None] = set()
-
-    def __call__(self, request: httpx.Request) -> httpx.Response:
-        self.auth_headers.add(request.headers.get("Authorization"))
-        if request.method == "POST" and request.url.path == "/v27.0/phone-id-1/messages":
-            if self.refuse_sends:
-                return httpx.Response(400, json={"error": {"message": "Recipient not in allowed list"}})
-            self.sent.append(json.loads(request.content))
-            return httpx.Response(200, json={"messages": [{"id": "wamid.out"}]})
-        if request.url.host == "media.example.test":
-            data, mime = self.photos[request.url.path.strip("/")]
-            return httpx.Response(200, content=data, headers={"Content-Type": mime})
-        media_id = request.url.path.removeprefix("/v27.0/")
-        if request.method == "GET" and media_id in self.photos:
-            data, mime = self.photos[media_id]
-            return httpx.Response(
-                200,
-                json={"url": f"https://media.example.test/{media_id}", "mime_type": mime, "file_size": len(data)},
-            )
-        return httpx.Response(404, json={"error": {"message": "Unknown"}})
-
-    def texts_to(self, phone: str = PHONE) -> list[str]:
-        out = []
-        for body in self.sent:
-            if body["to"] == phone:
-                out.append(body["text"]["body"] if body["type"] == "text" else body["interactive"]["body"]["text"])
-        return out
-
-
-@pytest.fixture
-def meta() -> FakeMeta:
-    return FakeMeta()
-
-
-def make_adapter(meta: FakeMeta) -> WhatsAppCloudAdapter:
-    return WhatsAppCloudAdapter(
-        access_token=TOKEN, phone_number_id="phone-id-1", api_version="v27.0",
-        public_base_url="https://pawsos.example.test/", transport=httpx.MockTransport(meta),
-    )
-
-
-@pytest.fixture
-def wa(meta, monkeypatch) -> TestClient:
-    """The app with WhatsApp switched on and FakeMeta in place of Meta."""
-    settings = get_settings()
-    monkeypatch.setattr(settings, "channel", "whatsapp")
-    monkeypatch.setattr(settings, "whatsapp_verify_token", VERIFY)
-    monkeypatch.setattr(settings, "whatsapp_app_secret", SECRET)
-    monkeypatch.setattr(whatsapp, "from_settings", lambda: make_adapter(meta))
-    application = create_app()
-    application.dependency_overrides[get_triager] = lambda: None
-    application.dependency_overrides[get_calendar] = lambda: None
-    return TestClient(application)
-
-
-_ids = iter(range(1, 10_000))
-
-
-def msg(kind: str, sender: str = PHONE, **content) -> dict:
-    return {"from": sender, "id": f"wamid.in-{next(_ids)}", "timestamp": "1794300000", "type": kind, **content}
-
-
-def envelope(*items: dict, field: str = "messages", key: str = "messages") -> dict:
-    return {
-        "object": "whatsapp_business_account",
-        "entry": [{"id": "waba-1", "changes": [{"field": field, "value": {"messaging_product": "whatsapp", key: list(items)}}]}],
-    }
-
-
-def post(client: TestClient, payload: dict, secret: str | None = SECRET) -> httpx.Response:
-    raw = json.dumps(payload).encode()
-    headers = {"Content-Type": "application/json"}
-    if secret is not None:
-        headers["X-Hub-Signature-256"] = "sha256=" + hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()
-    return client.post("/webhooks/whatsapp", content=raw, headers=headers)
 
 
 def report_from_whatsapp(client: TestClient) -> None:
@@ -226,8 +143,8 @@ def test_delivery_receipts_are_ignored(wa, meta, db):
     assert meta.sent == []
 
 
-def test_a_voice_note_gets_the_cannot_read_reply(wa, meta, db):
-    post(wa, envelope(msg("audio", audio={"id": "audio-1", "mime_type": "audio/ogg"})))
+def test_a_sticker_gets_the_cannot_read_reply(wa, meta, db):
+    post(wa, envelope(msg("sticker", sticker={"id": "sticker-1", "mime_type": "image/webp"})))
     assert meta.texts_to() == [messages.render("unsupported")]
 
 
@@ -297,7 +214,7 @@ def test_one_refused_message_does_not_stop_the_conversation(wa, meta, db):
 
 def test_invented_numbers_go_to_the_simulator_and_real_ones_to_whatsapp():
     assert is_simulated("+910000000001") and is_simulated("+910000000114") and is_simulated("+910000000907")
-    assert not is_simulated(NUMBER) and not is_simulated("+919876500000")
+    assert not is_simulated(NUMBER) and not is_simulated("+915550002222")
 
     sim, real = object(), object()
     assert RoutedChannel(sim, real).channel_for("+910000000001") is sim
@@ -315,7 +232,7 @@ def test_the_simulator_asks_for_the_staff_password_when_one_is_set(client, monke
 
 @pytest.mark.skip(reason="TODO(me): improve mask_number() in app/channels/whatsapp.py")
 def test_mask_number():
-    assert mask_number("+919876543210") == "…3210"
+    assert mask_number("+915550001111") == "…1111"
     assert mask_number("+15550001111") == "…1111"
     assert mask_number("12") == "…"
     assert mask_number("") == "…"

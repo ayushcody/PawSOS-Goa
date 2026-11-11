@@ -17,6 +17,7 @@ os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["ANTHROPIC_API_KEY"] = ""  # tests must never call the real API
 # Whatever is in .env, tests start with WhatsApp off and no staff password.
 os.environ["CHANNEL"] = "simulator"
+os.environ["SPEECH_TO_TEXT"] = "stub"
 os.environ["DASHBOARD_PASSWORD"] = ""
 for _name in ("ACCESS_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "APP_SECRET"):
     os.environ[f"WHATSAPP_{_name}"] = ""
@@ -36,6 +37,7 @@ from app.db import get_engine
 from app.main import create_app
 from app.triage.service import get_triager
 from seed.load import load_seed
+from tests.whatsapp_fakes import meta, wa  # noqa: F401  (fixtures for the WhatsApp tests)
 
 
 @pytest.fixture(scope="session", autouse=True)

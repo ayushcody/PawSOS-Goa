@@ -21,7 +21,7 @@ DRAFT_WINDOW = timedelta(minutes=30)
 
 @dataclass
 class IntakeResult:
-    status: Literal["need_location", "need_photo", "case_created"]
+    status: Literal["need_both", "need_location", "need_photo", "case_created"]
     case_id: str | None = None  # the public ID, e.g. "PAW-0042"
     case: Case | None = None
 
@@ -69,11 +69,26 @@ def add_location(session: Session, number: str, latitude: float, longitude: floa
     return _open_case_if_complete(session, draft)
 
 
+def add_note(session: Session, number: str, text: str, language: str | None) -> IntakeResult:
+    """Keep what the person said (a voice note's words) with their report."""
+    draft = _draft_for(session, number)
+    draft.text = text
+    log_event(
+        session,
+        "voice_note_received",
+        actor=number,
+        data={"report_id": draft.id, "language": language, "characters": len(text)},
+    )
+    return _open_case_if_complete(session, draft)
+
+
 def _open_case_if_complete(session: Session, draft: Report) -> IntakeResult:
     session.flush()
     photo_count = session.scalar(
         select(func.count()).select_from(Photo).where(Photo.report_id == draft.id)
     )
+    if draft.location is None and not photo_count:
+        return IntakeResult("need_both")
     if draft.location is None:
         return IntakeResult("need_location")
     if not photo_count:
