@@ -34,16 +34,24 @@ your phone <--WhatsApp-- Meta <--HTTPS-- PawSOS (Graph API)
    ```
 5. Copy the **Forwarding** address, which looks like `https://something.ngrok-free.app`. This is your public address.
 
+If ngrok is already running a tunnel for another project, a free account may refuse a second one. `cloudflared` works instead and needs no account: `cloudflared tunnel --url http://localhost:8040` prints an address ending `trycloudflare.com`.
+
 On the free plan this address can change each time ngrok restarts. When it does, repeat Part 3 step 2 and Part 4 step 3. If your ngrok dashboard offers a free static domain, use the command it shows for that domain and the address will stay the same.
 
 ## Part 2. Meta app and test number
 
+These steps were followed on 12 Nov 2026 as far as the test number; the names below are the ones Meta showed that day.
+
 1. Go to `https://developers.facebook.com`, log in, and open **My Apps**, then **Create App**.
-2. Choose the use case that mentions WhatsApp (for example "Connect with customers through WhatsApp"). If asked for a business portfolio, create one or pick an existing one. Finish the wizard.
-3. In the app's left menu open **WhatsApp**, then **API Setup**. Meta gives you a test number. On this page:
-   - Under **From**, note the **Phone number ID** (a long number, not the phone number itself).
-   - Under **To**, add your own phone number and enter the code WhatsApp sends you. A test number can only message numbers added here.
-   - Press **Generate access token** and copy it. This temporary token stops working after some hours (Meta's docs say only that it must be regenerated "every few hours"), so generate a fresh one on demo day.
+2. The wizard has five steps:
+   - **App details**: a name and your contact email.
+   - **Use cases**: tick **Connect with customers through WhatsApp** (scroll down; it is the last one).
+   - **Business**: pick a business portfolio or press **Create a business portfolio**. Meta may refuse a name with unusual capitals ("PawSOS Goa" was refused, "Pawsos Goa" accepted). Choose **Verify Later**; a test number needs no verification.
+   - **Requirements** and **Overview**: press **Next**, then **Create app**. Meta asks for your Facebook password again.
+3. On the app's dashboard press **Customize the Connect with customers through WhatsApp use case**, then **Step 1. Try it out** in the left list. Press **Continue** to accept the WhatsApp Business Platform terms. Meta then shows a test number. On this page:
+   - Beside the test number, note the **Phone Number ID** (a long number, not the phone number itself).
+   - Under **Send a message from your test number**, open **Recipient**, add your own phone number and enter the code WhatsApp sends you. A test number can only message numbers added here (five at most).
+   - Press **Generate token** and copy it. This temporary token stops working after some hours (Meta's docs say only that it must be regenerated "every few hours"), so generate a fresh one on demo day.
 4. In the left menu open **App settings**, then **Basic**. Next to **App secret** press **Show** and copy it.
 5. Make up a verify token. Any long random string works; this prints one:
    ```bash
@@ -80,7 +88,7 @@ On the free plan this address can change each time ngrok restarts. When it does,
 ## Part 4. Point Meta at your server
 
 1. The server and ngrok must both be running.
-2. In the Meta app, open **WhatsApp**, then **Configuration**.
+2. In the Meta app, open the WhatsApp use case again and choose **Step 2. Production setup** in the left list (older screens call this **WhatsApp**, then **Configuration**). This step has not been followed yet, so the names may differ.
 3. Under **Webhook**, press **Edit**. Set:
    - **Callback URL**: your ngrok address followed by `/webhooks/whatsapp`
    - **Verify token**: the verify token from your `.env`
