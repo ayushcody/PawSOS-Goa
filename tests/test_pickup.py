@@ -954,3 +954,79 @@ def test_a_reset_puts_everyone_back_to_english(client, seeded):
     seeded.expire_all()
     assert language_for(seeded, ASHA) == "en"
 
+
+
+# ---------- the one-tap "Send location" button ----------
+
+
+def location_requests(client, number=ASHA) -> list[str]:
+    transcript = client.get("/sim/messages", params={"phone": number}).json()
+    return [m["text"] for m in transcript if m["direction"] == "out" and m["location_request"]]
+
+
+def test_after_a_photo_the_person_gets_a_send_location_button(client, seeded):
+    photo(client)
+    assert location_requests(client) == [messages.render("ask_location")]
+    locate(client)  # the answer is an ordinary location message
+    assert case(seeded).state == S.ROUTED
+
+
+def test_a_description_and_a_bite_report_also_ask_with_the_button(client, seeded):
+    photo(client)
+    say(client, "limping near the bus stand")
+    say(client, "a dog bit me", BINA)
+    assert location_requests(client)[-1] == messages.render("note_ask_location")
+    assert location_requests(client, BINA) == [messages.render("bite_first_aid")]
+
+
+def test_other_messages_have_no_location_button(client, seeded):
+    locate(client)  # asks for a photo, not a location
+    say(client, "hello", BINA)
+    assert location_requests(client) == [] and location_requests(client, BINA) == []
+
+
+def test_whatsapp_sends_metas_location_request_message():
+    meta = FakeMeta()
+    asyncio.run(make_adapter(meta).send_location_request("+" + PHONE, "Where is the animal?"))
+    (sent,) = meta.sent
+    assert sent["to"] == PHONE and sent["type"] == "interactive"
+    assert sent["interactive"] == {
+        "type": "location_request_message",
+        "body": {"text": "Where is the animal?"},
+        "action": {"name": "send_location"},
+    }
+
+
+def test_an_outbound_marked_request_location_uses_the_button():
+    meta = FakeMeta()
+    message = Outbound(to="+" + PHONE, text="Where is the animal?", request_location=True)
+    asyncio.run(make_adapter(meta).send(message))
+    assert [body["interactive"]["type"] for body in meta.sent] == ["location_request_message"]
+
+
+def test_if_meta_refuses_the_button_the_words_are_still_sent():
+    class NoLocationRequests(FakeMeta):
+        def __call__(self, request: httpx.Request) -> httpx.Response:
+            if request.method == "POST" and b"location_request_message" in request.content:
+                return httpx.Response(400, json={"error": {"message": "Unsupported", "code": 131009}})
+            return super().__call__(request)
+
+    meta = NoLocationRequests()
+    asyncio.run(make_adapter(meta).send_location_request("+" + PHONE, "Where is the animal?"))
+    assert [body["type"] for body in meta.sent] == ["text"]
+    assert meta.sent[0]["text"]["body"] == "Where is the animal?"
+
+
+def test_every_location_request_fits_whatsapps_limit():
+    for key in ("ask_location", "note_ask_location", "bite_first_aid"):
+        for language in messages.LANGUAGES:
+            assert len(messages.render(key, language)) <= 1024, (key, language)
+
+
+def test_a_real_number_gets_the_button_through_the_routed_channel(wa, meta, seeded):
+    from tests.whatsapp_fakes import envelope, msg, post
+
+    post(wa, envelope(msg("image", image={"id": "photo-1", "mime_type": "image/jpeg"})))
+    (sent,) = meta.sent
+    assert sent["interactive"]["type"] == "location_request_message"
+    assert sent["interactive"]["body"]["text"] == messages.render("ask_location")

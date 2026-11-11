@@ -1,6 +1,6 @@
 # Checklist: run the pick-up work
 
-**Update, later on 11 Nov:** the branch is merged into `main`. Claude ran sections 2 and 3 on a machine with Docker; the results, five fixes and the new tests are in `docs/PLAN.md` ("First run, fixes and tests"). The expected test result is now **278 passed, 11 skipped**, and migrations end at `0009`. The text below is the original first-run list, kept for a hand check by a person.
+**Update, later on 11 Nov:** the branch is merged into `main`. Claude ran sections 2 and 3 on a machine with Docker; the results, five fixes and the new tests are in `docs/PLAN.md` ("First run, fixes and tests"). The expected test result is now **286 passed, 11 skipped**, and migrations end at `0009`. The text below is the original first-run list, kept for a hand check by a person.
 
 Everything on `pickup-tasks` was written on 11 Nov on a machine without Docker. **None of it has been run against a database, on the simulator, or against a real service, and the new features have no tests of their own.** This page is the first run. Tick each line, and write down anything that differs from "Expect".
 

@@ -56,7 +56,9 @@ After the merge, Claude ran `docs/CHECKLIST.md` sections 2 and 3 on a scratch da
 - **Dates and area names stayed in English inside translated replies.** Weekdays, months and the 14 area names now follow the reader's language (machine-drafted, listed in `docs/TRANSLATIONS.md`).
 - **A location sent after a bite report and a photo went only to the bite report.** One location now answers both: the nearest health centre, and the animal's case.
 
-`tests/test_pickup.py` adds 86 tests for the pick-up work and these fixes. The suite is now **278 passed, 11 skipped**.
+`tests/test_pickup.py` adds 86 tests for the pick-up work and these fixes. The suite was then **278 passed, 11 skipped**.
+
+**One-tap location (committed 12 Nov).** After a photo, a description or a bite report, the request for a location now carries a "Send location" button (D-089). Tested against a stand-in for Meta and clicked through on the simulator by Claude; the suite is now **286 passed, 11 skipped**. Not tried on a real phone.
 
 What that run did not cover: the staff cancel button's confirmation box and the phone-width layout (the test browser could not show either), a real photo in the case panel, a cancel sent during a real triage call, and every real service.
 

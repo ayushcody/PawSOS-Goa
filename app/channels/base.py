@@ -70,6 +70,7 @@ class Outbound:
     buttons: list[Button] = field(default_factory=list)
     media_name: str | None = None  # a photo to send just before the text
     template: TemplateFallback | None = None  # WhatsApp only, see TemplateFallback
+    request_location: bool = False  # show a "Send location" button under the text
 
 
 class ChannelAdapter(ABC):
@@ -89,6 +90,15 @@ class ChannelAdapter(ABC):
     async def send_image(self, to_number: str, media_name: str) -> None:
         """Send a stored photo."""
 
+    async def send_location_request(self, to_number: str, text: str) -> None:
+        """Send text with a one-tap "Send location" button under it.
+
+        The person's answer arrives as an ordinary location message. A channel
+        with no such button sends the text alone, which already says how to
+        share a location by hand.
+        """
+        await self.send_text(to_number, text)
+
     async def send(self, message: Outbound) -> None:
         """Send one Outbound: its photo first, then its text or buttons.
 
@@ -99,6 +109,8 @@ class ChannelAdapter(ABC):
             await self.send_image(message.to, message.media_name)
         if message.buttons:
             await self.send_buttons(message.to, message.text, message.buttons)
+        elif message.request_location:
+            await self.send_location_request(message.to, message.text)
         else:
             await self.send_text(message.to, message.text)
 

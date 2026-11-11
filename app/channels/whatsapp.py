@@ -263,8 +263,34 @@ class WhatsAppCloudAdapter(ChannelAdapter):
             },
         }
 
+    @staticmethod
+    def _location_request_body(text: str) -> dict[str, Any]:
+        # Meta's "location request message": the text with a Send location button.
+        # The answer comes back as an ordinary location message. Checked against
+        # Meta's documentation on 11 Nov 2026 (body text: at most 1024 characters).
+        return {
+            "type": "interactive",
+            "interactive": {
+                "type": "location_request_message",
+                "body": {"text": text[:MAX_BUTTON_BODY]},
+                "action": {"name": "send_location"},
+            },
+        }
+
     async def send_text(self, to_number: str, text: str) -> None:
         await self._send(to_number, self._text_body(text))
+
+    async def send_location_request(self, to_number: str, text: str) -> None:
+        try:
+            await self._send(to_number, self._location_request_body(text))
+        except WhatsAppError:
+            # The button is a convenience. If Meta refuses it, the words alone
+            # still tell the person how to share a location.
+            log.warning(
+                "WhatsApp refused a location request to %s; sending plain text instead.",
+                mask_number(to_number),
+            )
+            await self.send_text(to_number, text)
 
     async def send_buttons(self, to_number: str, text: str, buttons: list[Button]) -> None:
         await self._send(to_number, self._buttons_body(text, buttons))
@@ -310,6 +336,9 @@ class WhatsAppCloudAdapter(ChannelAdapter):
         try:
             if message.media_name:
                 await self.send_image(message.to, message.media_name)
+            if message.request_location:
+                await self.send_location_request(message.to, message.text)
+                return
             if message.buttons:
                 body = self._buttons_body(message.text, message.buttons)
             else:

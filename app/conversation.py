@@ -49,6 +49,12 @@ async def handle_inbound(
             number, messages.render(key, contacts.language_for(session, number), **values)
         )
 
+    async def ask_for_location(key: str) -> None:
+        # The same words, with a one-tap "Send location" button where the channel has one.
+        await channel.send_location_request(
+            number, messages.render(key, contacts.language_for(session, number))
+        )
+
     if message.kind == "button" and message.button_id:
         # A rescue team tapped Accept, Decline, On site or Resolved.
         outbox = dispatch.handle_button(session, number, message.button_id)
@@ -126,7 +132,7 @@ async def handle_inbound(
             # A person is hurt: answer at once, before anything else.
             bites.start(session, number)
             session.commit()
-            await reply("bite_first_aid")
+            await ask_for_location("bite_first_aid")
         elif message.kind == "voice" and text.lower().strip(" .!।") not in GREETINGS:
             # A spoken description of the animal: keep it with the report.
             result = intake.add_note(session, number, text, message.language)
@@ -151,7 +157,7 @@ async def handle_inbound(
     elif result.status == "need_location":
         # After words, thank them for the words: "photo received" would read as if
         # the description had been ignored.
-        await reply("note_ask_location" if noted else "ask_location")
+        await ask_for_location("note_ask_location" if noted else "ask_location")
     elif result.status == "need_photo":
         await reply("note_ask_photo" if noted else "ask_photo")
     else:

@@ -40,6 +40,9 @@ class RoutedChannel(ChannelAdapter):
     async def send_image(self, to_number: str, media_name: str) -> None:
         await self.channel_for(to_number).send_image(to_number, media_name)
 
+    async def send_location_request(self, to_number: str, text: str) -> None:
+        await self.channel_for(to_number).send_location_request(to_number, text)
+
     async def send(self, message: Outbound) -> None:
         # Whole messages go to one channel, so WhatsApp can fall back to a template.
         await self.channel_for(message.to).send(message)

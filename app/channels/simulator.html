@@ -122,6 +122,20 @@ function addMessage(m) {
     }
     div.appendChild(row);
   }
+  if (m.location_request) {
+    // WhatsApp shows a "Send location" button here; ours opens the place picker.
+    const row = document.createElement('div');
+    row.className = 'buttons';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Send location';
+    btn.addEventListener('click', () => {
+      $('locationPanel').classList.add('open');
+      $('locationPanel').scrollIntoView({block: 'nearest'});
+    });
+    row.appendChild(btn);
+    div.appendChild(row);
+  }
   const t = document.createElement('time');
   t.textContent = new Date(m.at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
   div.appendChild(t);

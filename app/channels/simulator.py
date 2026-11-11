@@ -57,6 +57,7 @@ class SimMessage(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     buttons: list[dict[str, str]] = []
+    location_request: bool = False  # the message has a "Send location" button
 
 
 class SimInbound(BaseModel):
@@ -105,6 +106,9 @@ class SimulatorAdapter(ChannelAdapter):
 
     async def send_image(self, to_number: str, media_name: str) -> None:
         self._append(to_number, "out", "Photo", media_url=f"/media/{media_name}")
+
+    async def send_location_request(self, to_number: str, text: str) -> None:
+        self._append(to_number, "out", text, location_request=True)
 
     def transcript(self, number: str, after: int = 0) -> list[SimMessage]:
         return [m for m in self._transcripts.get(number, []) if m.id > after]

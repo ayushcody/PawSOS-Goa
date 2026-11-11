@@ -319,5 +319,9 @@ Gave up: camp names, venues and services are seed data and stay in English; the 
 A person who had said they were bitten, then sent a photo of the animal and a location, got only the nearest health centre: the photo stayed waiting. Now, when a photo is waiting, the same location also completes the animal's report. With no photo waiting, the behaviour is unchanged (the location is the person's, and no case is opened).
 Gave up: the animal's case uses the person's location, which may be some way from the animal if they have already moved.
 
+## D-089 After a photo, ask for the location with WhatsApp's "Send location" button (11 Nov)
+WhatsApp cannot carry a photo and a location in one message. To make the second step one tap, the three messages that ask for a location (after a photo, after a description, and after a bite report) are sent as Meta's location request message: the same words with a Send location button. The answer arrives as an ordinary location message, so nothing else changes. The simulator shows the same button, which opens its place picker. Checked against Meta's documentation on 11 Nov 2026. If Meta refuses the button, the words alone are sent.
+Gave up: the words still say "tap attach, then Location", which stays true but does not mention the button; rewording needs three more translations checked. Not yet tried on a real phone.
+
 ## Open
 - Nothing right now.
