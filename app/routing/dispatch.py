@@ -326,3 +326,55 @@ def _resolved(session: Session, case: Case, team: Team) -> list[Outbound]:
 
     state_machine.transition(session, case, S.RESOLVED, actor=team.phone)
     return [ack] + _tell_reporters(session, case, "citizen_resolved")
+
+
+# ---------- staff actions (from the dashboard) ----------
+
+STAFF_CAN_ASSIGN = (S.NEW, S.ROUTED, S.ESCALATED)
+
+
+def assign_team(
+    session: Session, case: Case, team: Team, actor: str = "staff", note: str | None = None
+) -> list[Outbound]:
+    """Staff send a case to a team they chose on the dashboard.
+
+    The team gets the usual alert with Accept and Decline, and anyone else
+    still being asked is stood down. The alert is placed after the end of the
+    automatic chain, so if this team declines or does not answer in time the
+    case comes back to staff flagged "no team", instead of going round the
+    chain again. Only a case still waiting for a team can be assigned: raises
+    InvalidTransition otherwise, and ValueError if the case has no area.
+    """
+    if case.state not in STAFF_CAN_ASSIGN:
+        raise state_machine.InvalidTransition(case.state, S.ROUTED)
+    if case.zone_id is None:
+        raise ValueError("This case has no area, so it cannot be sent to a team.")
+
+    now = clock.now()
+    outbox: list[Outbound] = []
+    waiting = session.scalars(
+        select(Dispatch).where(Dispatch.case_id == case.id, Dispatch.status == "sent")
+    ).all()
+    for other in waiting:
+        other.status = "cancelled"
+        other.responded_at = now
+        if other.team_id != team.id:
+            other_team = session.get(Team, other.team_id)
+            outbox.append(_msg(other_team.phone, "team_case_reassigned", case_id=case.public_id))
+
+    data = {"team": team.name, "reason": note or "assigned by staff"}
+    if case.state != S.ROUTED:
+        state_machine.transition(session, case, S.ROUTED, actor=actor, data=data)
+
+    chain = escalation_chain(session, session.get(Zone, case.zone_id))
+    timeout = timedelta(seconds=get_settings().escalation_timeout_seconds)
+    session.add(
+        Dispatch(
+            case_id=case.id, team_id=team.id, position=len(chain),
+            status="sent", expires_at=now + timeout,
+        )
+    )
+    log_event(session, "team_assigned_by_staff", case_id=case.id, actor=actor, data=data)
+    outbox.append(_alert_message(session, case, team))
+    outbox += _tell_reporters(session, case, "citizen_staff_assigned", team=team.name)
+    return outbox

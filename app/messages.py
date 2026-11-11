@@ -103,6 +103,18 @@ MESSAGES: dict[str, dict[str, str]] = {
             "We are still trying and will message you here."
         ),
     },
+    "citizen_staff_assigned": {
+        "en": (
+            "Update on case {case_id}: our staff have asked {team} to help. "
+            "We will message you here when they answer."
+        ),
+    },
+    "citizen_cancelled": {
+        "en": (
+            "Case {case_id} has been closed by PawSOS staff. "
+            "If the animal still needs help, please send a new photo and location."
+        ),
+    },
     # --- messages to rescue teams ---
     "team_alert": {
         "en": (
@@ -139,6 +151,12 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "team_not_waiting": {
         "en": "Case {case_id} is not waiting for an answer from you.",
+    },
+    "team_case_reassigned": {
+        "en": "Case {case_id} has been passed to another team by PawSOS staff. No action needed.",
+    },
+    "team_case_cancelled": {
+        "en": "Case {case_id} has been closed by PawSOS staff. No action needed. Thank you.",
     },
     "not_a_team": {
         "en": "Those buttons are for rescue teams only.",

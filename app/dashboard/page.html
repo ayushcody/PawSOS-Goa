@@ -73,10 +73,62 @@
   .pin-camp { width: 18px; height: 18px; background: var(--camp); border: 2px solid #fff; border-radius: 4px;
               color: #fff; font: 700 12px/14px sans-serif; text-align: center; box-shadow: 0 0 2px #0006; }
   footer { padding: 4px 20px 24px; }
+  /* response times */
+  .rt-overall { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .rt-overall b { display: block; font-size: 22px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .rt-overall small { color: var(--soft); }
+  table.plain tbody tr { cursor: default; }
+  table.plain tbody tr:hover { background: none; }
+  table.plain td, table.plain th { padding: 5px 6px; }
+  table.plain td { font-variant-numeric: tabular-nums; }
+  /* case detail drawer */
+  .drawer-back { display: none; position: fixed; inset: 0; background: #1c282666; z-index: 1000; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(580px, 100%); z-index: 1001;
+            background: var(--paper); overflow-y: auto; padding: 14px 16px 28px;
+            box-shadow: -4px 0 20px #0003; transform: translateX(105%); transition: transform 0.18s ease-out;
+            visibility: hidden; }
+  body.detail-open { overflow: hidden; }
+  body.detail-open .drawer { transform: none; visibility: visible; }
+  body.detail-open .drawer-back { display: block; }
+  .drawer-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .drawer-head h2 { margin: 0; font-size: 20px; }
+  .drawer-head .close { margin-left: auto; }
+  .drawer .card { margin-bottom: 10px; }
+  .photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .photos img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: #ece8dc; display: block; }
+  dl.facts { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 4px 10px; margin: 0; }
+  dl.facts dt { color: var(--soft); }
+  dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+  .steps { margin: 6px 0 0; padding-left: 20px; }
+  .quote { margin: 6px 0; padding: 6px 10px; border-left: 3px solid var(--line); background: #fff; overflow-wrap: anywhere; }
+  .trail { list-style: none; margin: 0; padding: 0; }
+  .trail li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .trail li:first-child { border-top: 0; }
+  .trail time { color: var(--soft); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .trail .who { color: var(--soft); font-size: 12.5px; }
+  button { font: inherit; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--accent);
+           background: var(--accent); color: #fff; cursor: pointer; }
+  button.secondary { background: #fff; color: var(--accent); }
+  button.danger { background: var(--critical); border-color: var(--critical); }
+  button:disabled { opacity: 0.6; cursor: wait; }
+  input[type="text"] { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; width: 100%; background: #fff; color: var(--ink); }
+  .drawer select { width: 100%; }
+  .action { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .action:first-of-type { border-top: 0; padding-top: 0; }
+  .action .row { display: flex; gap: 8px; }
+  .action .row input { flex: 1; }
+  .result { font-size: 13.5px; min-height: 1em; }
+  .result.error { color: var(--critical); font-weight: 600; }
+  .result.ok { color: var(--accent); font-weight: 600; }
   @media (max-width: 900px) {
     .grid.top, .grid.bottom { grid-template-columns: 1fr; }
     .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     #map { height: 420px; }
+  }
+  @media (max-width: 520px) {
+    dl.facts { grid-template-columns: 100px minmax(0, 1fr); }
+    .trail li { grid-template-columns: 1fr; gap: 0; }
+    .action .row { flex-direction: column; }
   }
 </style>
 </head>
@@ -151,14 +203,29 @@
         <tbody id="cases"></tbody>
       </table>
     </div>
-    <p class="note">Last 30 days. Duplicate reports are merged into one case. "What the photo showed" is an automated description, not a diagnosis.</p>
+    <p class="note">Last 30 days. Duplicate reports are merged into one case. "What the photo showed" is an automated description, not a diagnosis. Tap a case for its photos, history and staff actions.</p>
   </div>
-  <div class="card">
-    <h2>Sterilisation in <span id="ster-year">2025</span>, by municipality</h2>
-    <div id="sterilisation"></div>
-    <p class="note">Only figures we have a source for. "No figure" means not known to us; it does not mean zero.</p>
+  <div class="side">
+    <div class="card">
+      <h2>Response times</h2>
+      <div id="response-times"><span class="muted">Loading…</span></div>
+    </div>
+    <div class="card">
+      <h2>Sterilisation in <span id="ster-year">2025</span>, by municipality</h2>
+      <div id="sterilisation"></div>
+      <p class="note">Only figures we have a source for. "No figure" means not known to us; it does not mean zero.</p>
+    </div>
   </div>
 </section>
+
+<div class="drawer-back" id="detail-back"></div>
+<aside class="drawer" id="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+  <div class="drawer-head">
+    <h2 id="detail-title">Case</h2>
+    <button type="button" class="secondary close" id="detail-close">Close</button>
+  </div>
+  <div id="detail"></div>
+</aside>
 
 <footer class="note">
   Bite reports on this page are reports made to PawSOS, not Goa's official bite statistics.
@@ -223,7 +290,8 @@ function casePopup(c, now) {
     ${c.team ? "Team: " + esc(c.team) + "<br>" : ""}
     ${esc(c.zone_name || "No area")} · ${plural(c.reports, "report")} · ${timeAgo(c.created_at, now)}
     ${c.attention ? '<br><span class="warn">' + esc(ATTENTION_LABEL[c.attention]) + "</span>" : ""}
-    ${c.photo_url ? '<br><a href="' + esc(c.photo_url) + '" target="_blank" rel="noopener">Open photo</a>' : ""}`;
+    <br><a href="#" data-detail="${esc(c.id)}">Case details</a>
+    ${c.photo_url ? ' · <a href="' + esc(c.photo_url) + '" target="_blank" rel="noopener">Open photo</a>' : ""}`;
 }
 
 function drawMap(data, now) {
@@ -364,6 +432,207 @@ function drawSterilisation(data) {
   }).join("");
 }
 
+// ---------- response times ----------
+// A length of time in words, e.g. 45 s, 12 min, 3 h 5 min, 4 days.
+function duration(seconds) {
+  if (seconds == null) return "–";
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60), rest = minutes % 60;
+  if (hours < 48) return rest ? `${hours} h ${rest} min` : `${hours} h`;
+  return `${Math.round(hours / 24)} days`;
+}
+
+function drawResponseTimes(data) {
+  const rt = data.response_times;
+  const a = rt.overall.report_to_accept, r = rt.overall.accept_to_resolve;
+  if (!a.cases && !r.cases) {
+    $("response-times").innerHTML = '<span class="muted">No case has been accepted by a team in the last ' +
+      `${data.window_days} days, so there is nothing to measure yet.</span>`;
+    return;
+  }
+  const figure = (s, label) => `<div><b>${duration(s.median_seconds)}</b>
+    <small>${label}, median${s.cases ? ` · 90th percentile ${duration(s.p90_seconds)} · ${plural(s.cases, "case")}` : ""}</small></div>`;
+  const cell = (s) => (s.cases ? `${duration(s.median_seconds)} / ${duration(s.p90_seconds)}
+    <span class="muted">(${s.cases})</span>` : '<span class="muted">–</span>');
+  $("response-times").innerHTML = `<div class="rt-overall">
+      ${figure(a, "report to accepted")}${figure(r, "accepted to resolved")}</div>
+    <table class="plain"><thead><tr><th>Area</th><th>To accept</th><th>To resolve</th></tr></thead>
+    <tbody>${rt.zones.map((z) => `<tr><td>${esc(z.zone_name)}</td>
+      <td>${cell(z.report_to_accept)}</td><td>${cell(z.accept_to_resolve)}</td></tr>`).join("")}</tbody></table>
+    <p class="note">Each cell: median / 90th percentile (number of cases). Last ${data.window_days} days.
+      ${esc(rt.rule)} A median from a handful of cases is a rough guide only.</p>`;
+}
+
+// ---------- one case in detail ----------
+const goaTime = (iso) => new Date(iso).toLocaleString("en-IN",
+  { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
+const people = (n) => (n === 1 ? "1 person" : `${n} people`);
+let detailId = null;
+
+async function openDetail(id) {
+  detailId = id;
+  map.closePopup();
+  document.body.classList.add("detail-open");
+  $("detail-title").textContent = id;
+  $("detail").innerHTML = '<span class="muted">Loading…</span>';
+  $("detail-close").focus();
+  try {
+    const response = await fetch(`/dashboard/cases/${encodeURIComponent(id)}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const c = await response.json();
+    if (id === detailId) drawDetail(c);
+  } catch (error) {
+    if (id === detailId) $("detail").innerHTML = `<p class="warn">Could not load this case (${esc(error.message)}).</p>`;
+  }
+}
+
+function closeDetail() {
+  detailId = null;
+  document.body.classList.remove("detail-open");
+}
+
+function drawDetail(c) {
+  const t = c.triage;
+  const urgencyChip = `<span class="chip ${t.urgency ? esc(t.urgency) : "none"}">${esc(t.urgency || "unknown")}</span>`;
+  const sections = [];
+
+  sections.push(`<div class="card">
+    <div>${urgencyChip} <b>${esc(c.state_label)}</b>${c.is_demo ? ' <span class="tag">demo</span>' : ""}
+      <span class="muted"> · reported ${goaTime(c.created_at)}</span></div>
+    ${c.attention ? `<p class="warn">${esc(ATTENTION_LABEL[c.attention])}</p>` : ""}
+    ${c.merged_into ? `<p class="muted">This report was merged into ${esc(c.merged_into)}.</p>` : ""}
+  </div>`);
+
+  sections.push(`<div class="card"><h2>Photos (${c.photos.length})</h2>
+    ${c.photos.length ? `<div class="photos">${c.photos.map((p) =>
+      `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="Photo sent ${goaTime(p.at)}" loading="lazy"></a>`).join("")}</div>`
+      : '<span class="muted">No photo stored.</span>'}</div>`);
+
+  let triage;
+  if (t.status === "ok") {
+    triage = `<dl class="facts">
+        <dt>Animal</dt><dd>${esc(t.species || "not identified")}</dd>
+        <dt>What was seen</dt><dd>${esc(t.injury_type || "not described")}</dd>
+        <dt>Urgency</dt><dd>${esc(t.urgency || "unknown")}</dd>
+        <dt>Aggression risk</dt><dd>${esc(t.aggression_risk || "unknown")}</dd>
+        <dt>Checked</dt><dd>${t.at ? goaTime(t.at) : "–"}</dd>
+      </dl>
+      ${t.first_aid.length ? `<div class="muted" style="margin-top:8px">Safety steps sent to the reporter:</div>
+        <ol class="steps">${t.first_aid.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}`;
+  } else if (t.status === "needs_review") {
+    triage = `<p class="warn">Needs a person to review the photo${t.reason ? ": " + esc(t.reason) : ""}.</p>
+      <p class="muted">Urgency was set to ${esc(t.urgency || "high")} until someone looks.</p>`;
+  } else {
+    triage = '<span class="muted">The photo has not been checked yet.</span>';
+  }
+  sections.push(`<div class="card"><h2>What the photo showed</h2>${triage}
+    <p class="note">An automated description from the photo, not a diagnosis. A trained team assesses the animal.</p></div>`);
+
+  sections.push(`<div class="card"><h2>Reports</h2>
+    <div>${plural(c.reports, "report")} from ${people(c.reporters)}. Phone numbers are not shown.</div>
+    ${c.notes.map((n) => `<div class="quote">${esc(n.text)}<br><span class="muted">${esc(n.reporter)} · ${goaTime(n.at)}</span></div>`).join("")}
+  </div>`);
+
+  sections.push(`<div class="card"><h2>Area and team</h2>
+    <dl class="facts">
+      <dt>Area</dt><dd>${esc(c.zone_name || "No area")}${c.zone_is_approximate ? ' <span class="tag">nearest</span>' : ""}</dd>
+      <dt>Team</dt><dd>${esc(c.team || "None has accepted yet")}</dd>
+    </dl>
+    <p><button type="button" class="secondary" data-map="${esc(c.id)}">Show on map</button></p>
+    ${c.dispatches.length ? `<table class="plain"><thead><tr><th>Team alerted</th><th>Outcome</th><th>Sent</th></tr></thead>
+      <tbody>${c.dispatches.map((d) => `<tr><td>${esc(d.team)}</td><td>${esc(d.status_label)}${d.answered_at ? `<br><span class="muted">${goaTime(d.answered_at)}</span>` : ""}</td>
+        <td>${goaTime(d.sent_at)}</td></tr>`).join("")}</tbody></table>`
+      : '<span class="muted">No team has been alerted.</span>'}
+  </div>`);
+
+  if (c.can_assign || c.can_cancel) {
+    const option = (team) => `<option value="${team.id}">${esc(team.name)}${team.role ? " · " + esc(team.role)
+      : (team.zone_name ? " · " + esc(team.zone_name) : "")}${team.distance_km != null ? ` (${team.distance_km} km)` : ""}</option>`;
+    const suggested = c.team_choices.filter((team) => team.suggested);
+    const others = c.team_choices.filter((team) => !team.suggested);
+    const assign = c.can_assign ? `<div class="action">
+        <label for="assign-team"><b>Send to a team</b></label>
+        <select id="assign-team">
+          ${suggested.length ? `<optgroup label="This case's usual chain">${suggested.map(option).join("")}</optgroup>` : ""}
+          ${others.length ? `<optgroup label="Other teams, nearest first">${others.map(option).join("")}</optgroup>` : ""}
+        </select>
+        <div class="row"><input type="text" id="assign-note" maxlength="200" placeholder="Note for the log (optional)">
+          <button type="button" id="assign-btn">Alert this team</button></div>
+        <span class="note">The team gets the usual alert with Accept and Decline. Anyone still being asked is stood down,
+          and the reporter is told. If this team declines or does not answer, the case comes back here.</span>
+      </div>` : `<div class="action"><span class="muted">Sending to another team is only possible while the case is
+        waiting for one${c.team ? `; ${esc(c.team)} has already accepted it` : ""}.</span></div>`;
+    const cancel = c.can_cancel ? `<div class="action">
+        <label for="cancel-reason"><b>Cancel this case</b></label>
+        <div class="row"><input type="text" id="cancel-reason" maxlength="200" placeholder="Reason, for the log (required)">
+          <button type="button" class="danger" id="cancel-btn">Cancel case</button></div>
+        <span class="note">The reason stays in the log. Reporters and any team involved get a short message that the case is closed.</span>
+      </div>` : "";
+    sections.push(`<div class="card"><h2>Staff actions</h2>${assign}${cancel}<div class="result" id="action-result" role="status"></div></div>`);
+  }
+
+  sections.push(`<div class="card"><h2>History</h2>
+    <ol class="trail">${c.events.map((e) => `<li><time>${goaTime(e.at)}</time><div>${esc(e.label)}
+      ${e.details ? `<br><span class="muted">${esc(e.details)}</span>` : ""}
+      <div class="who">${esc(e.actor)}${e.from_case ? ` · on ${esc(e.from_case)} before it was merged` : ""}</div></div></li>`).join("")}</ol>
+    <p class="note">Every change to a case is recorded here, oldest first. Times are Goa time.</p></div>`);
+
+  $("detail").innerHTML = sections.join("");
+}
+
+function apiError(payload, status) {
+  const detail = payload && payload.detail;
+  if (Array.isArray(detail)) return detail.map((d) => d.msg).join("; ");
+  return detail || `HTTP ${status}`;
+}
+
+async function staffAction(action, body, button, done) {
+  const id = detailId;
+  const result = $("action-result");
+  button.disabled = true;
+  result.className = "result";
+  result.textContent = "Working…";
+  try {
+    const response = await fetch(`/dashboard/cases/${encodeURIComponent(id)}/${action}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(apiError(payload, response.status));
+    if (id === detailId) {
+      drawDetail(payload);
+      $("action-result").className = "result ok";
+      $("action-result").textContent = done;
+    }
+    load(true);
+  } catch (error) {
+    result.className = "result error";
+    result.textContent = error.message;
+    button.disabled = false;
+  }
+}
+
+function assignTeam(button) {
+  const select = $("assign-team");
+  const team = select.options[select.selectedIndex];
+  if (!team) return;
+  return staffAction("assign", { team_id: Number(team.value), note: $("assign-note").value.trim() || null },
+    button, `Alert sent to ${team.textContent.split(" · ")[0]}. The reporter has been told.`);
+}
+
+function cancelCase(button) {
+  const reason = $("cancel-reason").value.trim();
+  if (reason.length < 3) {
+    $("action-result").className = "result error";
+    $("action-result").textContent = "Please give a short reason (at least 3 characters).";
+    $("cancel-reason").focus();
+    return;
+  }
+  if (!confirm(`Cancel ${detailId}? Reporters and any team involved will be told it is closed. This cannot be undone.`)) return;
+  return staffAction("cancel", { reason }, button, "Case cancelled. Reporters and teams have been told.");
+}
+
 // ---------- loading ----------
 let zonesFilled = false;
 async function load(force) {
@@ -381,7 +650,7 @@ async function load(force) {
       zonesFilled = true;
     }
     drawTiles(data); drawMap(data, now); drawSuggestion(data); drawAttention(data, now);
-    drawCamps(data); drawCases(data, now); drawSterilisation(data);
+    drawCamps(data); drawCases(data, now); drawSterilisation(data); drawResponseTimes(data);
     $("updated").textContent = "Updated " + now.toLocaleTimeString("en-IN",
       { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" });
   } catch (error) {
@@ -390,8 +659,20 @@ async function load(force) {
 }
 
 document.addEventListener("click", (event) => {
-  const row = event.target.closest("[data-case]");
-  if (row && !event.target.closest("a")) showCase(row.dataset.case);
+  const target = event.target;
+  const detail = target.closest("[data-detail]");  // "Case details" in a map popup
+  if (detail) { event.preventDefault(); openDetail(detail.dataset.detail); return; }
+  const onMap = target.closest("[data-map]");  // "Show on map" in the detail panel
+  if (onMap) { closeDetail(); showCase(onMap.dataset.map); return; }
+  if (target.id === "assign-btn") { assignTeam(target); return; }
+  if (target.id === "cancel-btn") { cancelCase(target); return; }
+  const row = target.closest("[data-case]");  // a row in the case list, or a flagged case
+  if (row && !target.closest("a")) openDetail(row.dataset.case);
+});
+$("detail-close").addEventListener("click", closeDetail);
+$("detail-back").addEventListener("click", closeDetail);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && detailId) closeDetail();
 });
 ["f-status", "f-urgency", "f-zone"].forEach((id) => $(id).addEventListener("change", () => load(true)));
 load(true);
