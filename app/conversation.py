@@ -23,7 +23,11 @@ from app.routing.flow import RoutingOutcome, route_case
 from app.triage.flow import triage_case
 from app.triage.service import Triager
 
-GREETINGS = {"hi", "hello", "hey", "namaste", "start"}
+GREETINGS = {
+    "hi", "hello", "hey", "namaste", "namaskar", "start",
+    # Konkani, Marathi and Hindi, in Devanagari (lower() leaves these unchanged).
+    "नमस्कार", "नमस्ते", "हॅलो", "हेलो", "हैलो", "हाय",
+}
 
 
 async def handle_inbound(

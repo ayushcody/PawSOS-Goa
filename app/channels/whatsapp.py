@@ -26,12 +26,14 @@ from typing import Annotated, Any
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
+from sqlalchemy.orm import Session
 
 from app import messages
 from app.booking.calendar import CalendarClient, get_calendar
 from app.channels import media, templates
 from app.channels.base import Button, ChannelAdapter, InboundMessage, Outbound
 from app.config import get_settings
+from app.contacts import language_for
 from app.conversation import handle_inbound
 from app.db import new_session
 from app.triage.service import Triager, get_triager
@@ -447,7 +449,7 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         return adapter
 
     async def _to_inbound(
-        item: WhatsAppInbound, listener: speech.SpeechToText | None
+        item: WhatsAppInbound, listener: speech.SpeechToText | None, session: Session
     ) -> InboundMessage | None:
         """Our channel-neutral message, or None if we answered the person ourselves."""
         if item.kind == "image":
@@ -456,7 +458,10 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
                 name = media.save_image(data, mime or item.media_mime or "")
             except (media.MediaError, httpx.HTTPError, KeyError, ValueError):
                 log.warning("Could not fetch a photo from %s.", mask_number(item.from_number))
-                await outbound.send_text(item.from_number, messages.render("photo_rejected"))
+                language = language_for(session, item.from_number)
+                await outbound.send_text(
+                    item.from_number, messages.render("photo_rejected", language)
+                )
                 return None
             return InboundMessage(
                 from_number=item.from_number, kind="image", media_name=name, media_mime=mime
@@ -495,7 +500,7 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         async with locks[item.from_number]:
             session = new_session()
             try:
-                message = await _to_inbound(item, listener)
+                message = await _to_inbound(item, listener, session)
                 if message is not None:
                     await handle_inbound(message, outbound, session, triager, calendar)
                 session.commit()

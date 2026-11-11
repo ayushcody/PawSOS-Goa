@@ -344,10 +344,10 @@ def cancel_booking(
         .with_for_update()
     )
     if booking is None:
-        return [_msg(number, "cancel_not_found", ref=f"BK-{booking_id:04d}")]
+        return [_msg(number, "cancel_not_found", session, ref=f"BK-{booking_id:04d}")]
     slot = session.get(CampSlot, booking.slot_id)
     if booking.status != "booked" or slot.starts_at <= clock.now():
-        return [_msg(number, "booking_cancel_closed", ref=booking.reference)]
+        return [_msg(number, "booking_cancel_closed", session, ref=booking.reference)]
 
     camp = session.get(Camp, booking.camp_id)
     booking.status = "cancelled"
@@ -358,7 +358,7 @@ def cancel_booking(
         actor=number,
         data={"booking": booking.reference, "camp": camp.slug, "calendar_removed": removed},
     )
-    return [_msg(number, "booking_cancelled", **booking_values(booking, slot, camp))]
+    return [_msg(number, "booking_cancelled", session, **booking_values(booking, slot, camp))]
 
 
 def _remove_from_calendar(booking: Booking, camp: Camp, calendar: CalendarClient | None) -> bool:

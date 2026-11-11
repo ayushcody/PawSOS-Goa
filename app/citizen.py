@@ -31,6 +31,7 @@ from app.cases.intake import format_case_id
 from app.cases.models import Case, Report
 from app.cases.models import CaseState as S
 from app.channels.base import Outbound
+from app.contacts import language_for
 from app.routing import dispatch
 from app.routing.flow import reporters_of
 from app.routing.models import Team, Zone
@@ -55,8 +56,9 @@ STATE_KEYS = {
 }
 
 
-def _msg(to: str, key: str, **values: object) -> Outbound:
-    return Outbound(to=to, text=messages.render(key, **values))
+def _msg(session: Session, to: str, key: str, **values: object) -> Outbound:
+    """A message to a citizen, in their own language."""
+    return Outbound(to=to, text=messages.render(key, language_for(session, to), **values))
 
 
 def _normalise(text: str) -> str:
@@ -120,38 +122,41 @@ def _when(case: Case) -> str:
     return f"{booking.format_date(case.created_at)}, {local:%H:%M}"
 
 
-def _state_words(session: Session, case: Case) -> str:
+def _state_words(session: Session, case: Case, language: str) -> str:
     team = session.get(Team, case.assigned_team_id) if case.assigned_team_id else None
     key = STATE_KEYS.get(S(case.state), "status_state_received")
     if team is None and key in ("status_state_accepted", "status_state_on_site"):
         key = "status_state_team_alerted"
-    return messages.render(key, team=team.name if team else "")
+    return messages.render(key, language, team=team.name if team else "")
 
 
-def _case_line(session: Session, case: Case) -> str:
+def _case_line(session: Session, case: Case, language: str) -> str:
     zone = session.get(Zone, case.zone_id) if case.zone_id else None
-    values = {"case_id": case.public_id, "when": _when(case), "state": _state_words(session, case)}
+    state = _state_words(session, case, language)
+    values = {"case_id": case.public_id, "when": _when(case), "state": state}
     if zone is None:
-        return messages.render("status_case_line", **values)
-    return messages.render("status_case_line_zone", zone=zone.short_name, **values)
+        return messages.render("status_case_line", language, **values)
+    return messages.render("status_case_line_zone", language, zone=zone.short_name, **values)
 
 
 def status(session: Session, number: str) -> list[Outbound]:
     cases = open_cases(session, number)
     bookings = booking.upcoming_bookings(session, number)
     if not cases and not bookings:
-        return [_msg(number, "status_nothing")]
+        return [_msg(session, number, "status_nothing")]
 
+    language = language_for(session, number)
     parts = []
     if cases:
-        lines = [_case_line(session, case) for case in cases]
-        parts.append("\n".join([messages.render("status_header_cases"), *lines]))
+        lines = [_case_line(session, case, language) for case in cases]
+        parts.append("\n".join([messages.render("status_header_cases", language), *lines]))
     if bookings:
         lines = [
-            messages.render("status_booking_line", **booking.booking_values(*row)) for row in bookings
+            messages.render("status_booking_line", language, **booking.booking_values(*row))
+            for row in bookings
         ]
-        parts.append("\n".join([messages.render("status_header_bookings"), *lines]))
-    parts.append(messages.render("status_footer"))
+        parts.append("\n".join([messages.render("status_header_bookings", language), *lines]))
+    parts.append(messages.render("status_footer", language))
     return [Outbound(to=number, text="\n\n".join(parts))]
 
 
@@ -163,20 +168,25 @@ def _show_cancel_list(session: Session, number: str) -> list[Outbound]:
     bookings = booking.upcoming_bookings(session, number)
     if not cases and not bookings:
         _drop_cancel_list(session, number)
-        return [_msg(number, "cancel_nothing")]
+        return [_msg(session, number, "cancel_nothing")]
 
+    language = language_for(session, number)
     options: list[str] = []
     lines: list[str] = []
     for case in cases:
         options.append(f"case:{case.id}")
         lines.append(
             messages.render(
-                "cancel_case_line", case_id=case.public_id, state=_state_words(session, case)
+                "cancel_case_line",
+                language,
+                case_id=case.public_id,
+                state=_state_words(session, case, language),
             )
         )
     for row in bookings:
         options.append(f"booking:{row[0].id}")
-        lines.append(messages.render("cancel_booking_line", **booking.booking_values(*row)))
+        values = booking.booking_values(*row)
+        lines.append(messages.render("cancel_booking_line", language, **values))
 
     # Replaces any half-finished BOOK conversation: the newest list is the one they answer.
     draft = session.get(BookingDraft, number) or BookingDraft(owner_number=number)
@@ -185,7 +195,7 @@ def _show_cancel_list(session: Session, number: str) -> list[Outbound]:
     draft.updated_at = clock.now()
     session.add(draft)
     numbered = "\n".join(f"{n}. {line}" for n, line in enumerate(lines, start=1))
-    return [_msg(number, "cancel_choose", options=numbered)]
+    return [_msg(session, number, "cancel_choose", options=numbered)]
 
 
 def _drop_cancel_list(session: Session, number: str) -> None:
@@ -202,7 +212,7 @@ def _choose(
     calendar: CalendarClient | None,
 ) -> list[Outbound]:
     if not 1 <= choice <= len(draft.options):
-        return [_msg(number, "cancel_invalid_choice")]
+        return [_msg(session, number, "cancel_invalid_choice")]
     kind, _, ident = draft.options[choice - 1].partition(":")
     session.delete(draft)
     if kind == "case":
@@ -229,19 +239,20 @@ def _cancel_case(session: Session, number: str, condition, ref: str | None) -> l
     reporters = reporters_of(session, case) if case is not None else []
     if case is None or number not in reporters:
         # Same answer whether the case does not exist or is someone else's.
-        return [_msg(number, "cancel_not_found", ref=ref or (case.public_id if case else ""))]
+        shown = ref or (case.public_id if case else "")
+        return [_msg(session, number, "cancel_not_found", ref=shown)]
     if case.state in CLOSED:
-        return [_msg(number, "case_cancel_closed", case_id=case.public_id)]
+        return [_msg(session, number, "case_cancel_closed", case_id=case.public_id)]
     if any(other != number for other in reporters):
         log_event(
             session, "cancel_refused_shared", case_id=case.id, actor=number,
             data={"reporters": len(reporters)},
         )
-        return [_msg(number, "case_cancel_shared", case_id=case.public_id)]
+        return [_msg(session, number, "case_cancel_shared", case_id=case.public_id)]
 
     team_messages = dispatch.stand_down(session, case)
     state_machine.transition(
         session, case, S.CANCELLED, actor=number, data={"by": "reporter"}
     )
     key = "case_cancelled_team_told" if team_messages else "case_cancelled"
-    return [_msg(number, key, case_id=case.public_id), *team_messages]
+    return [_msg(session, number, key, case_id=case.public_id), *team_messages]
