@@ -196,11 +196,11 @@ Reference {{5}}. Please bring your pet on a leash or in a carrier.
 | `{{4}}` | venue | `Community hall, Panaji` |
 | `{{5}}` | booking reference | `BK-0007` |
 
-No buttons. **Not connected yet:** the reminder is built in `app/booking/flow.py`, which does not attach this template yet, so reminders are still refused outside the window until that one-line change is made.
+No buttons. The reminder in `app/booking/flow.py` attaches this template. The normal reminder is sent in the person's chosen language, but the template is in `WHATSAPP_TEMPLATE_LANGUAGE` (English), so someone outside the window gets the reminder in English.
 
 ## Limits to know about
 
-- **24-hour window.** Outside it, WhatsApp only allows pre-approved template messages. PawSOS falls back to a template for team alerts and "no answer in time" notices when one is configured (previous section); every other message outside the window is still refused. On the simulator everything works.
+- **24-hour window.** Outside it, WhatsApp only allows pre-approved template messages. PawSOS falls back to a template for team alerts, "no answer in time" notices and camp reminders when one is configured (previous section); every other message outside the window is still refused. On the simulator everything works.
 - **The fallback is remembered in memory.** When Meta reports the refusal later (in a status webhook) rather than at once, PawSOS needs to remember the message to retry it. A server restart in between forgets it, and that one message is lost.
 - **Sending photos out over WhatsApp is untested.** It uses a link to your ngrok address, and ngrok's free plan may show a warning page in place of the photo. It does not affect the run above: only teams are sent photos, and the placeholder teams are in the simulator.
 - **Test number only.** Moving to a real number needs Meta business verification, which is outside the hackathon.

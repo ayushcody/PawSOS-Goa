@@ -4,6 +4,8 @@ The demo runs on the simulator (`/sim`) and the dashboard (`/dashboard`), side b
 
 **Status of this script (11 Nov).** Claude ran every step below through the simulator on a clean copy of the project, without talking, in about 36 seconds plus the 20-second escalation wait. Nobody has yet rehearsed it aloud with a stopwatch, and it has not been run with a real Claude API key. The times in the table are estimates until you rehearse.
 
+The optional beats near the end (STATUS, CANCEL, LANGUAGE, the case panel, a staff action, response times) were written on 11 Nov from reading the code. **Nobody has run them yet, not even on the simulator.** Run each one before you plan to show it.
+
 ## What to say only if it is true
 
 - Say "demo data" when the dashboard is on screen. The 40 cases and 23 bite reports on the map are invented and tagged.
@@ -11,6 +13,8 @@ The demo runs on the simulator (`/sim`) and the dashboard (`/dashboard`), side b
 - Say "not a diagnosis". Triage describes what a photo shows and gives safe steps; it never names a condition.
 - The health centre list is unconfirmed. Do not say PawSOS knows which centres stock anti-rabies treatment.
 - Use only the figures in this script. They are the ones in `docs/SPEC.md` section 1.
+- If you show Konkani, Marathi or Hindi, say "machine-drafted, not yet checked by a fluent reader".
+- If you show the response-times panel, say "demo figures". The demo seed spaces each case's steps two minutes apart, so those times are invented.
 
 ## The day before
 
@@ -73,6 +77,35 @@ After a reset, your first case will be `PAW-0041`.
 | The server has crashed | Restart it with the command above. Cases are in the database and survive; the simulator's chat history does not. | "Everything is stored in the database, so a restart loses nothing." |
 | Real WhatsApp does not answer | Switch to the simulator at once. Do not debug on stage. | "The simulator runs exactly the same logic." |
 
+## Optional beats (only if time is left, or when a judge asks)
+
+These sit outside the 3 minutes. Do not add them to the core script; use them if the core run finished early, or in the questions. Each one can be skipped on its own. Times are guesses: nobody has run these yet.
+
+Before the demo, check that the server runs the code with these features (branch `pickup-tasks` or later) and that `.venv/bin/alembic upgrade head` has added migration 0008. The rehearsal reset also clears saved languages, so every persona starts in English.
+
+| Length | Do | Say |
+|------|----|-----|
+| about 25 s, plus the triage wait | Simulator, **Citizen 3**. Press **Photo**, choose a photo. Press **Location**, choose **Margao** (not Panaji, so it does not merge into the first case). Do not answer as the Margao team. | "Another report, somewhere else in Goa." |
+| about 15 s | Still **Citizen 3**. Type `STATUS`. | "Anyone can ask where their reports stand. They see each open case in plain words, and any camp booking." |
+| about 25 s | Dashboard. Tap Citizen 3's new case in the case list (or **Case details** on its map pin). Point at the photo, the triage card, the alert history and the audit trail. | "Officials can open any case: the photo, what triage saw (not a diagnosis), which teams were asked and what they said, and every step with its time. No phone numbers are shown." |
+| about 25 s | In the same panel, under **Send to a team**, choose **Mapusa partner team (placeholder)** and press **Alert this team**. Switch to that team in the simulator and show the alert. | "If no team is answering, staff can send the case to a team they choose. That team still has to accept." |
+| about 20 s | Simulator, **Citizen 3**. Type `CANCEL`, then `1` (the case). Switch to **Mapusa partner team (placeholder)** and show the "cancelled" message. | "If the animal has gone, the reporter can cancel, and every team still involved is stood down, so nobody makes a wasted trip." |
+| about 20 s | Still **Citizen 3**. Type `LANGUAGE`, then `4` (हिंदी). Type `hi`. Then `LANGUAGE` and `1` to switch back. | "People can choose Konkani, Marathi or Hindi. These translations are machine-drafted and not yet checked by a fluent reader." |
+| about 15 s | Dashboard. Point at the **Response times** panel. | "From the audit log, the median and 90th percentile time from report to accepted, and accepted to resolved, by area. These are demo figures." |
+
+If you are short of time, the case panel and STATUS are the two to keep.
+
+### If an optional beat fails
+
+| What happens | What to do | What to say |
+|---|---|---|
+| `STATUS`, `CANCEL` or `LANGUAGE` gets the "how to report" reply | The server is running older code. Skip the remaining beats. | Nothing; go to questions. |
+| Citizen 3's report merged into another case | You chose Panaji, or an earlier rehearsal left a case in Margao. CANCEL will then be refused ("also reported by someone else"); skip the CANCEL beat. | "Merged reports stay open for everyone who reported them." |
+| The case panel says it could not load the case | Close it and carry on with the list and the map. | Nothing. |
+| **Alert this team** shows an error, or the case is not offered a team | The case may already be accepted or closed: staff can only send a case that is still waiting for a team. Skip the beat. | "Once a team has accepted, staff cancel instead of reassigning." |
+| The browser asks for a password on the dashboard | Type `DASHBOARD_PASSWORD` from `.env` (any user name). | Nothing. |
+| The Hindi reply comes back in English | That message has no translation yet; English is the fallback. Switch back with `LANGUAGE`, `1`. | "Anything not yet translated falls back to English." |
+
 ## Optional opening on a real phone
 
 Only if you completed `docs/WHATSAPP_SETUP.md` that morning with a fresh access token. Replace the 0:20 step: send the photo and location from your phone, and show the replies arriving on it. Everything from 1:15 onwards stays in the simulator, because the placeholder teams live there.
@@ -83,4 +116,5 @@ Only if you completed `docs/WHATSAPP_SETUP.md` that morning with a fresh access 
 - **Are these real teams and boundaries?** No. Teams are placeholders and service areas are approximate circles around town centres.
 - **Where do the sterilisation figures come from?** They are the 2025 figures in our brief, for seven municipalities. The others show "No figure".
 - **What happens outside working hours?** A closed team is skipped and the next team is alerted straight away.
-- **Other languages?** Every message is stored under a language-neutral key, so Konkani and Marathi can be added without changing code. Only English is written so far. For voice notes the structure is in place, with a stand-in where the speech service will go; real speech recognition is not built, so do not demo it as working.
+- **Other languages?** Konkani, Marathi and Hindi versions of the citizen messages are written, and each person can choose with `LANGUAGE`. They were drafted by a machine and have not been checked by a fluent reader, so say so. Rescue teams are written to in English. Real speech recognition through Bhashini is written but has never been tried with real keys or a real voice note, so do not demo it as working; the simulator's pretend voice notes still use the stand-in.
+- **Can a citizen cancel?** Yes, with `CANCEL`, unless someone else also reported the same animal; then the case stays open for them. Staff can cancel any open case from the dashboard, with a reason kept in the audit log.
