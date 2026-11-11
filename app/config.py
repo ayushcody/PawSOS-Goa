@@ -39,6 +39,13 @@ class Settings(BaseSettings):
     whatsapp_verify_token: str | None = None  # a string we choose; Meta repeats it back once
     whatsapp_app_secret: str | None = None  # proves a webhook call really came from Meta
     whatsapp_api_version: str = "v27.0"
+    # Approved template names, used only when WhatsApp refuses a message because the
+    # person has not written in 24 hours. Empty means no template: the send fails as before.
+    # See docs/WHATSAPP_SETUP.md, "Templates".
+    whatsapp_template_language: str = "en"
+    whatsapp_template_team_alert: str | None = None
+    whatsapp_template_team_alert_expired: str | None = None
+    whatsapp_template_book_reminder: str | None = None
 
     # Voice notes: "stub" understands only the simulator's pretend voice notes,
     # "bhashini" sends real voice notes to Bhashini (docs/VOICE_SETUP.md),

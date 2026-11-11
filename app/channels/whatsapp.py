@@ -5,7 +5,9 @@ Two directions:
   In:  Meta calls our webhook (POST /webhooks/whatsapp) for every message a
        person sends to our number. We check Meta's signature, answer 200 at
        once, and do the real work afterwards.
-  Out: we call Meta's Graph API to send text, buttons and photos.
+  Out: we call Meta's Graph API to send text, buttons and photos. Outside the
+       24-hour window WhatsApp refuses those (error 131047); a message that
+       has a template configured is then sent once more as that template.
 
 Checked against Meta's documentation on 11 Nov 2026 (Graph API v27.0).
 """
@@ -27,8 +29,8 @@ from fastapi.responses import PlainTextResponse
 
 from app import messages
 from app.booking.calendar import CalendarClient, get_calendar
-from app.channels import media
-from app.channels.base import Button, ChannelAdapter, InboundMessage
+from app.channels import media, templates
+from app.channels.base import Button, ChannelAdapter, InboundMessage, Outbound
 from app.config import get_settings
 from app.conversation import handle_inbound
 from app.db import new_session
@@ -42,11 +44,17 @@ MAX_TEXT = 4096
 MAX_BUTTON_BODY = 1024
 MAX_BUTTON_TITLE = 20
 MAX_BUTTONS = 3
+MAX_TEMPLATE_PARAM = 600  # our own cap, so a filled-in template body stays under 1024
+WINDOW_CLOSED = 131047  # Meta: more than 24 hours since the person last wrote to us
 _MEDIA_ID = re.compile(r"^[A-Za-z0-9_.-]{1,128}$")
 
 
 class WhatsAppError(RuntimeError):
-    """Meta refused something we asked for."""
+    """Meta refused something we asked for. `code` is Meta's error code, if it gave one."""
+
+    def __init__(self, message: str, code: int | None = None) -> None:
+        super().__init__(message)
+        self.code = code
 
 
 def mask_number(number: str) -> str:
@@ -123,6 +131,9 @@ def _parse_message(raw: dict[str, Any]) -> WhatsAppInbound | None:
     elif kind == "interactive" and raw.get("interactive", {}).get("type") == "button_reply":
         item.kind = "button"
         item.button_id = str(raw["interactive"]["button_reply"]["id"])[:64]
+    elif kind == "button":  # a quick-reply button on a template; our id comes back as the payload
+        item.kind = "button"
+        item.button_id = str(raw["button"]["payload"])[:64]
     return item
 
 
@@ -146,6 +157,39 @@ def parse_webhook(payload: Any) -> list[WhatsAppInbound]:
     return found
 
 
+def parse_failed_statuses(payload: Any) -> list[tuple[str, int | None]]:
+    """(message id, error code) for each of our messages Meta reports as failed.
+
+    Meta may accept a message and only report later, in a status webhook,
+    that it could not be delivered (for example error 131047).
+    """
+    if not isinstance(payload, dict) or payload.get("object") != "whatsapp_business_account":
+        return []
+    failed = []
+    for entry in payload.get("entry") or []:
+        for change in entry.get("changes") or []:
+            if change.get("field") != "messages":
+                continue
+            for status in (change.get("value") or {}).get("statuses") or []:
+                if not isinstance(status, dict) or status.get("status") != "failed":
+                    continue
+                if not status.get("id"):
+                    continue
+                errors = status.get("errors") or [{}]
+                code = errors[0].get("code") if isinstance(errors[0], dict) else None
+                failed.append((str(status["id"]), code if isinstance(code, int) else None))
+    return failed
+
+
+def _template_text(value: str) -> str:
+    """A template parameter on one line and trimmed. We keep parameters free of
+    newlines, tabs and runs of spaces, which Meta is reported to refuse."""
+    flat = " ".join(value.split())
+    if len(flat) > MAX_TEMPLATE_PARAM:
+        flat = flat[: MAX_TEMPLATE_PARAM - 1].rstrip() + "…"
+    return flat or "-"
+
+
 # ---------- sending ----------
 
 
@@ -162,6 +206,9 @@ class WhatsAppCloudAdapter(ChannelAdapter):
     ) -> None:
         self.phone_number_id = phone_number_id
         self.public_base_url = public_base_url.rstrip("/")
+        # Messages Meta accepted that have a template to fall back to, by message id,
+        # in case a status webhook later says they failed with 131047. Memory only.
+        self._awaiting_status: OrderedDict[str, Outbound] = OrderedDict()
         self.client = httpx.AsyncClient(
             base_url=f"{GRAPH_URL}/{api_version}",
             headers={"Authorization": f"Bearer {access_token}"},
@@ -169,7 +216,8 @@ class WhatsAppCloudAdapter(ChannelAdapter):
             transport=transport,
         )
 
-    async def _send(self, to_number: str, body: dict[str, Any]) -> None:
+    async def _send(self, to_number: str, body: dict[str, Any]) -> str | None:
+        """Send one message. Returns Meta's message id ("wamid..."), if it gave one."""
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
@@ -179,34 +227,144 @@ class WhatsAppCloudAdapter(ChannelAdapter):
         response = await self.client.post(f"/{self.phone_number_id}/messages", json=payload)
         if response.status_code >= 400:
             try:
-                reason = response.json()["error"]["message"]
-            except (ValueError, KeyError, TypeError):
-                reason = "no reason given"
+                error = response.json()["error"]
+                reason, code = error["message"], error.get("code")
+            except (ValueError, KeyError, TypeError, AttributeError):
+                reason, code = "no reason given", None
             raise WhatsAppError(
                 f"WhatsApp refused a message to {mask_number(to_number)} "
-                f"({response.status_code}): {reason}"
+                f"({response.status_code}): {reason}",
+                code=code if isinstance(code, int) else None,
             )
+        try:
+            return str(response.json()["messages"][0]["id"])
+        except (ValueError, KeyError, IndexError, TypeError):
+            return None
 
-    async def send_text(self, to_number: str, text: str) -> None:
-        await self._send(to_number, {"type": "text", "text": {"body": text[:MAX_TEXT]}})
+    @staticmethod
+    def _text_body(text: str) -> dict[str, Any]:
+        return {"type": "text", "text": {"body": text[:MAX_TEXT]}}
 
-    async def send_buttons(self, to_number: str, text: str, buttons: list[Button]) -> None:
+    @staticmethod
+    def _buttons_body(text: str, buttons: list[Button]) -> dict[str, Any]:
         # WhatsApp's limits: three buttons, 20 characters each.
         replies = [
             {"type": "reply", "reply": {"id": b.id, "title": b.title[:MAX_BUTTON_TITLE]}}
             for b in buttons[:MAX_BUTTONS]
         ]
-        await self._send(
-            to_number,
-            {
-                "type": "interactive",
-                "interactive": {
-                    "type": "button",
-                    "body": {"text": text[:MAX_BUTTON_BODY]},
-                    "action": {"buttons": replies},
-                },
+        return {
+            "type": "interactive",
+            "interactive": {
+                "type": "button",
+                "body": {"text": text[:MAX_BUTTON_BODY]},
+                "action": {"buttons": replies},
             },
+        }
+
+    async def send_text(self, to_number: str, text: str) -> None:
+        await self._send(to_number, self._text_body(text))
+
+    async def send_buttons(self, to_number: str, text: str, buttons: list[Button]) -> None:
+        await self._send(to_number, self._buttons_body(text, buttons))
+
+    async def send_template(
+        self,
+        to_number: str,
+        template_name: str,
+        language_code: str,
+        body_params: tuple[str, ...] | list[str] = (),
+        button_payloads: tuple[str, ...] | list[str] = (),
+    ) -> str | None:
+        """Send an approved template message. Works outside the 24-hour window.
+
+        `body_params` fill the body's {{1}}, {{2}}, ... in order. `button_payloads`
+        go to the template's quick-reply buttons in order; a tap comes back in the
+        webhook as a "button" message carrying that payload.
+        """
+        components: list[dict[str, Any]] = []
+        if body_params:
+            components.append(
+                {
+                    "type": "body",
+                    "parameters": [{"type": "text", "text": _template_text(p)} for p in body_params],
+                }
+            )
+        for index, payload in enumerate(button_payloads):
+            components.append(
+                {
+                    "type": "button",
+                    "sub_type": "quick_reply",
+                    "index": str(index),
+                    "parameters": [{"type": "payload", "payload": payload}],
+                }
+            )
+        template: dict[str, Any] = {"name": template_name, "language": {"code": language_code}}
+        if components:
+            template["components"] = components
+        return await self._send(to_number, {"type": "template", "template": template})
+
+    async def send(self, message: Outbound) -> None:
+        """Photo, then text or buttons. Outside the 24-hour window: its template instead."""
+        try:
+            if message.media_name:
+                await self.send_image(message.to, message.media_name)
+            if message.buttons:
+                body = self._buttons_body(message.text, message.buttons)
+            else:
+                body = self._text_body(message.text)
+            message_id = await self._send(message.to, body)
+        except WhatsAppError as error:
+            if error.code != WINDOW_CLOSED:
+                raise
+            await self._send_template_instead(message, error)
+            return
+        if message.template is not None and message_id:
+            self._awaiting_status[message_id] = message
+            while len(self._awaiting_status) > 1000:
+                self._awaiting_status.popitem(last=False)
+
+    async def _send_template_instead(self, message: Outbound, error: Exception) -> None:
+        """The one retry: the same message as its approved template, if it has one."""
+        fallback = message.template
+        name = templates.template_name(fallback.key) if fallback else None
+        if fallback is None or name is None:
+            log.warning(
+                "WhatsApp's 24-hour window is closed for %s and no template is configured "
+                "for %s, so the message was not sent.",
+                mask_number(message.to),
+                fallback.key if fallback else "this message",
+            )
+            raise error
+        log.info(
+            "24-hour window closed for %s: sending template %s (%s) instead.",
+            mask_number(message.to), name, fallback.key,
         )
+        if message.media_name:
+            log.info("The photo with %s is not sent: the template has no photo.", fallback.key)
+        await self.send_template(
+            message.to,
+            name,
+            get_settings().whatsapp_template_language,
+            fallback.params,
+            fallback.button_payloads,
+        )
+
+    async def on_failed_status(self, message_id: str, code: int | None) -> None:
+        """Meta accepted one of our messages, then reported that it failed."""
+        message = self._awaiting_status.pop(message_id, None)  # popped: retried at most once
+        if code != WINDOW_CLOSED:
+            log.warning("WhatsApp could not deliver a message (error %s).", code)
+            return
+        if message is None:
+            log.warning(
+                "WhatsApp's 24-hour window was closed for a message with no template "
+                "(or one sent before a restart), so it was not delivered."
+            )
+            return
+        try:
+            await self._send_template_instead(message, WhatsAppError("24-hour window closed", code))
+        except Exception:
+            log.exception("Could not send a template to %s", mask_number(message.to))
 
     async def send_image(self, to_number: str, media_name: str) -> None:
         # Meta fetches the photo from us, so PUBLIC_BASE_URL must be reachable from outside.
@@ -383,6 +541,10 @@ def build_router(adapter: WhatsAppCloudAdapter | None, outbound: ChannelAdapter)
         for item in parse_webhook(payload):
             if seen.first_time(item.message_id):
                 background.add_task(_process, item, triager, calendar, listener)
+        # A message Meta accepted may fail later. Outside the 24-hour window we
+        # retry it once as its template (on_failed_status forgets it after that).
+        for message_id, code in parse_failed_statuses(payload):
+            background.add_task(_require_adapter().on_failed_status, message_id, code)
         return {"ok": True}
 
     return router

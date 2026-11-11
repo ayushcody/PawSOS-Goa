@@ -119,6 +119,11 @@ MESSAGES: dict[str, dict[str, str]] = {
     "team_alert_not_triaged": {
         "en": "The photo has not been assessed. Please look at it yourself.",
     },
+    # The reporter's own words, added to the team alert under the line above.
+    "team_alert_reporter_says": {"en": 'Reporter says: "{text}"'},
+    "team_alert_reporter_voice": {
+        "en": 'Reporter says (voice note, may be misheard): "{text}"',
+    },
     "team_accepted_ack": {
         "en": "Thank you. Case {case_id} is yours. Tap On site when you reach the animal.",
     },
