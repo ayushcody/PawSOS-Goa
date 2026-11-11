@@ -118,18 +118,18 @@ async def handle_inbound(
             bites.start(session, number)
             session.commit()
             await reply("bite_first_aid")
-        elif message.kind == "voice" and text.lower().strip(" .!") not in GREETINGS:
+        elif message.kind == "voice" and text.lower().strip(" .!।") not in GREETINGS:
             # A spoken description of the animal: keep it with the report.
             result = intake.add_note(session, number, text, message.language)
         elif (
             message.kind == "text"
-            and text.lower().strip(" .!") not in GREETINGS
+            and text.lower().strip(" .!।") not in GREETINGS
             and intake.has_open_draft(session, number)
         ):
             # Typed words between the photo and the location describe the animal.
             result = intake.add_note(session, number, text, None, spoken=False)
         elif is_words and text:
-            await reply("welcome" if text.lower().strip(" .!") in GREETINGS else "how_to_report")
+            await reply("welcome" if text.lower().strip(" .!।") in GREETINGS else "how_to_report")
         else:
             await reply("unsupported")
         if result is None:
