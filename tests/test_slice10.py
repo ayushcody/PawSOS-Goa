@@ -69,8 +69,8 @@ def test_the_stand_in_refuses_real_audio():
         asyncio.run(StubSpeechToText().transcribe(b"OggS....", "audio/ogg"))
 
 
-def test_bhashini_is_not_built_and_says_so():
-    with pytest.raises(SpeechUnavailable, match="not been built"):
+def test_bhashini_without_keys_says_so():
+    with pytest.raises(SpeechUnavailable, match="not set up"):
         asyncio.run(BhashiniSpeechToText().transcribe(b"OggS....", "audio/ogg", "kok"))
 
 

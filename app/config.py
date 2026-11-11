@@ -41,10 +41,20 @@ class Settings(BaseSettings):
     whatsapp_api_version: str = "v27.0"
 
     # Voice notes: "stub" understands only the simulator's pretend voice notes,
-    # "bhashini" is not built yet, "off" declines every voice note.
+    # "bhashini" sends real voice notes to Bhashini (docs/VOICE_SETUP.md),
+    # "off" declines every voice note.
     speech_to_text: Literal["off", "stub", "bhashini"] = "stub"
+    # Bhashini's user id and ULCA API key; without both, real voice notes are declined.
     bhashini_user_id: str | None = None
     bhashini_api_key: str | None = None
+    # Which Bhashini pipeline to use. This default is the "Initial Pipeline Models"
+    # id from Bhashini's documentation, which offers speech recognition.
+    bhashini_pipeline_id: str = "64392f96daac500b55c543cd"
+    # The language assumed when a voice note comes without one (WhatsApp never says).
+    bhashini_default_language: Literal["kok", "mr", "hi", "en"] = "kok"
+    bhashini_timeout_seconds: float = 20.0
+    # Voice notes arrive as OGG/Opus and are turned into WAV by ffmpeg before Bhashini.
+    ffmpeg_path: str = "ffmpeg"
 
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5-5"
