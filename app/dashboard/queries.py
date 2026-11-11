@@ -403,7 +403,8 @@ STATE_WORDS = {
 EVENT_WORDS = {
     "photo_received": "Photo received",
     "location_received": "Location received",
-    "voice_note_received": "Description received (typed or voice note)",
+    "voice_note_received": "Description received (voice note)",
+    "description_typed": "Description received (typed)",
     "case_created": "Case opened",
     "zone_assigned": "Placed in an area",
     "urgency_raised": "Urgency raised by a second report",
@@ -416,7 +417,9 @@ EVENT_WORDS = {
     "team_assigned_by_staff": "Staff sent the case to a team",
 }
 # Events written before the case existed carry the report's id instead of the case's.
-INTAKE_EVENTS = ("photo_received", "location_received", "voice_note_received")
+INTAKE_EVENTS = (
+    "photo_received", "location_received", "voice_note_received", "description_typed"
+)
 ACTOR_WORDS = {
     "routing": "PawSOS (routing)",
     "triage": "PawSOS (photo check)",
