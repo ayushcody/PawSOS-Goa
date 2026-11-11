@@ -18,8 +18,8 @@ from app.cases import bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.channels.base import ChannelAdapter, InboundMessage, deliver
-from app.routing import dispatch
-from app.routing.flow import route_case
+from app.routing import dedup, dispatch
+from app.routing.flow import RoutingOutcome, route_case
 from app.triage.flow import triage_case
 from app.triage.service import Triager
 
@@ -141,36 +141,68 @@ async def handle_inbound(
         # Save the case and tell the citizen straight away. Triage takes a few
         # seconds and must never be able to undo the case.
         session.commit()
-        await reply("case_created", case_id=result.case_id)
-        await _triage_and_tell(session, result.case, triager, channel, number)
+        if dedup.might_be_duplicate(session, result.case):
+            # Someone may have reported this animal already. Thank them without a
+            # case ID, so they never see one that vanishes in a merge a moment later;
+            # the ID they should use comes once routing has decided (D-020).
+            await reply("case_checking_duplicate")
+            await _triage_and_tell(session, result.case, triager, channel, number, id_sent=False)
+        else:
+            await reply("case_created", case_id=result.case_id)
+            await _triage_and_tell(session, result.case, triager, channel, number)
 
 
 async def _triage_and_tell(
-    session: Session, case: Case, triager: Triager | None, channel: ChannelAdapter, number: str
+    session: Session,
+    case: Case,
+    triager: Triager | None,
+    channel: ChannelAdapter,
+    number: str,
+    *,
+    id_sent: bool = True,
 ) -> None:
-    triage = await triage_case(session, case, triager)
-    session.commit()
+    """Triage, route, and tell the reporter. id_sent=False: they have no case ID yet.
+
+    Then the triage reply waits until routing has decided, so the only case ID
+    the person ever sees is the one that stays open: the earlier case after a
+    merge (its message explains why), or this case, announced with "case_created".
+    """
     language = contacts.language_for(session, number)
-    if triage is None:
-        text = messages.render("triage_needs_review", language, case_id=case.public_id)
-    else:
-        text = messages.triage_message(
-            case_id=case.public_id,
+    triage = await triage_case(session, case, triager, language)
+    session.commit()
+
+    def triage_text(case_id: str) -> str:
+        if triage is None:
+            return messages.render("triage_needs_review", language, case_id=case_id)
+        return messages.triage_message(
+            case_id=case_id,
             urgency=triage.urgency,
             first_aid=triage.first_aid,
             aggressive=triage.aggression_risk == "high",
             language=language,
         )
-    await channel.send_text(number, text)
-    await _route_and_tell(session, case, channel, number)
 
-
-async def _route_and_tell(
-    session: Session, case: Case, channel: ChannelAdapter, number: str
-) -> None:
+    if id_sent:
+        await channel.send_text(number, triage_text(case.public_id))
     outcome = route_case(session, case)
     session.commit()
+    if not id_sent:
+        if outcome.merged_into is None:
+            await channel.send_text(
+                number, messages.render("case_created", language, case_id=case.public_id)
+            )
+        # After a merge the first-aid steps still come from this person's own photo.
+        await channel.send_text(number, triage_text((outcome.merged_into or case).public_id))
+    await _tell_routing_outcome(session, case, outcome, channel, number)
 
+
+async def _tell_routing_outcome(
+    session: Session,
+    case: Case,
+    outcome: RoutingOutcome,
+    channel: ChannelAdapter,
+    number: str,
+) -> None:
     async def tell(to: str, key: str, **values: object) -> None:
         await channel.send_text(
             to, messages.render(key, contacts.language_for(session, to), **values)

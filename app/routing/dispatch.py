@@ -230,9 +230,19 @@ def start_dispatch(session: Session, case: Case) -> list[Outbound]:
 
 
 def _alert_next(
-    session: Session, case: Case, *, after_position: int, tell_reporters: bool
+    session: Session,
+    case: Case,
+    *,
+    after_position: int,
+    tell_reporters: bool,
+    staff_team: Team | None = None,
 ) -> list[Outbound]:
-    """Alert the next open team after `after_position` in the chain."""
+    """Alert the next open team after `after_position` in the chain.
+
+    `staff_team` is the team staff chose on the dashboard, when it is that
+    team's alert that ended: the chain is already behind it, so reporters hear
+    that the case went back to staff rather than "we have not reached a team".
+    """
     chain = escalation_chain(session, session.get(Zone, case.zone_id))
     now = clock.now()
 
@@ -277,7 +287,18 @@ def _alert_next(
             session, case, S.ESCALATED, actor="routing", data={"reason": "chain_exhausted"}
         )
     log_event(session, "chain_exhausted", case_id=case.id, actor="routing")
+    if staff_team is not None:
+        return _tell_reporters(session, case, "citizen_staff_team_unavailable", team=staff_team.name)
     return _tell_reporters(session, case, "citizen_no_team_yet")
+
+
+def _chosen_by_staff(session: Session, case: Case, dispatch: Dispatch) -> bool:
+    """True for an alert staff sent from the dashboard (assign_team).
+
+    assign_team places it after the end of the automatic chain, so no team
+    follows it: when it ends, the case goes back to staff, not to a next team.
+    """
+    return dispatch.position >= len(escalation_chain(session, session.get(Zone, case.zone_id)))
 
 
 def process_timeouts(session: Session) -> list[Outbound]:
@@ -299,9 +320,13 @@ def process_timeouts(session: Session) -> list[Outbound]:
             session, "alert_timed_out", case_id=case.id, actor="timer", data={"team": team.name}
         )
         if case.state in WAITING_FOR_A_TEAM:
-            outbox.append(_msg(team.phone, "team_alert_expired", case_id=case.public_id))
+            by_staff = _chosen_by_staff(session, case, dispatch)
+            # The staff variant has no template: the approved one says "passed to the next team".
+            expired = "team_alert_expired_staff" if by_staff else "team_alert_expired"
+            outbox.append(_msg(team.phone, expired, case_id=case.public_id))
             outbox += _alert_next(
-                session, case, after_position=dispatch.position, tell_reporters=True
+                session, case, after_position=dispatch.position, tell_reporters=True,
+                staff_team=team if by_staff else None,
             )
     return outbox
 
@@ -390,7 +415,12 @@ def _accept(session: Session, case: Case, team: Team) -> list[Outbound]:
 
 def _decline(session: Session, case: Case, team: Team) -> list[Outbound]:
     dispatch = _latest_dispatch(session, case, team)
-    ack = _msg(team.phone, "team_declined_ack", case_id=case.public_id)
+    by_staff = dispatch is not None and _chosen_by_staff(session, case, dispatch)
+    ack = _msg(
+        team.phone,
+        "team_declined_ack_staff" if by_staff else "team_declined_ack",
+        case_id=case.public_id,
+    )
     if dispatch is not None and dispatch.status == "declined":
         return [ack]  # tapped Decline again
     if dispatch is None or dispatch.status != "sent" or case.state not in WAITING_FOR_A_TEAM:
@@ -400,7 +430,8 @@ def _decline(session: Session, case: Case, team: Team) -> list[Outbound]:
     dispatch.responded_at = clock.now()
     log_event(session, "team_declined", case_id=case.id, actor=team.phone, data={"team": team.name})
     return [ack] + _alert_next(
-        session, case, after_position=dispatch.position, tell_reporters=True
+        session, case, after_position=dispatch.position, tell_reporters=True,
+        staff_team=team if by_staff else None,
     )
 
 

@@ -64,6 +64,15 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Please keep a safe distance from the animal."
         ),
     },
+    # Sent instead of "case_created" when an open case is close by: the person may be
+    # merged into it, so they get no case ID until routing has decided.
+    "case_checking_duplicate": {
+        "en": (
+            "Thank you, your report is in. We are checking whether someone has already "
+            "reported this animal, and will send you the case ID in a moment. "
+            "Please keep a safe distance from the animal."
+        ),
+    },
     "triage_result": {
         "en": "Case {case_id}: {urgency_line}\n\nWhile you wait:\n{steps}\n\n{disclaimer}",
     },
@@ -133,6 +142,12 @@ MESSAGES: dict[str, dict[str, str]] = {
             "We will message you here when they answer."
         ),
     },
+    "citizen_staff_team_unavailable": {
+        "en": (
+            "Update on case {case_id}: {team} could not take it. "
+            "Our staff are finding another team and will message you here."
+        ),
+    },
     "citizen_cancelled": {
         "en": (
             "Case {case_id} has been closed by PawSOS staff. "
@@ -174,6 +189,16 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "team_alert_expired": {
         "en": "No answer was received in time, so case {case_id} has been passed to the next team.",
+    },
+    # A team staff chose on the dashboard: no automatic team follows it.
+    "team_declined_ack_staff": {
+        "en": "Understood. Case {case_id} has gone back to PawSOS staff, who will find another team.",
+    },
+    "team_alert_expired_staff": {
+        "en": (
+            "No answer was received in time, so case {case_id} has gone back to PawSOS staff. "
+            "No action needed."
+        ),
     },
     "team_case_taken": {
         "en": "Case {case_id} has been taken by another team. No action needed.",
@@ -539,6 +564,17 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
         "माफ करात, तो फोटो उगडूंक जमलो ना. उपकार करून 10 MB परस ल्हान JPEG वा PNG फोटो धाडात."
     ),
     "unsupported": "माफ करात, असलो मेसेज अजून वाचूंक जमना. उपकार करून फोटो आनी लोकेशन धाडात.",
+    # added for staff-assigned expiry
+    "citizen_staff_team_unavailable": (
+        "केस {case_id} चो अपडेट: {team} हांकां ही केस घेवंक जमलें ना. "
+        "आमचे स्टाफ दुसरी टीम सोदतात आनी हांगाच तुमकां मेसेज करतले."
+    ),
+    # added for the duplicate check
+    "case_checking_duplicate": (
+        "देव बरें करूं, तुमची खबर मेळ्ळी. ह्या जनावराची खबर आदींच कोणें दिल्या काय तें आमी "
+        "तपासतात, आनी थोड्या वेळान तुमकां केस नंबर धाडटले. "
+        "उपकार करून जनावरापसून सुरक्षीत अंतर दवरात."
+    ),
 }
 
 MR: dict[str, str] = {  # Marathi
@@ -681,6 +717,17 @@ MR: dict[str, str] = {  # Marathi
         "माफ करा, तो फोटो उघडता आला नाही. कृपया 10 MB पेक्षा लहान JPEG किंवा PNG फोटो पाठवा."
     ),
     "unsupported": "माफ करा, असा मेसेज अजून वाचता येत नाही. कृपया फोटो आणि लोकेशन पाठवा.",
+    # added for staff-assigned expiry
+    "citizen_staff_team_unavailable": (
+        "केस {case_id} बद्दल अपडेट: {team} ही केस घेऊ शकले नाहीत. "
+        "आमचे कर्मचारी दुसरी टीम शोधत आहेत आणि इथेच तुम्हाला मेसेज करतील."
+    ),
+    # added for the duplicate check
+    "case_checking_duplicate": (
+        "धन्यवाद, तुमचा रिपोर्ट मिळाला. या प्राण्याची माहिती आधीच कोणी दिली आहे का "
+        "हे आम्ही तपासत आहोत, आणि थोड्याच वेळात तुम्हाला केस नंबर पाठवू. "
+        "कृपया प्राण्यापासून सुरक्षित अंतर ठेवा."
+    ),
 }
 
 HI: dict[str, str] = {  # Hindi
@@ -824,6 +871,17 @@ HI: dict[str, str] = {  # Hindi
     ),
     "unsupported": (
         "माफ़ कीजिए, इस तरह का मैसेज अभी पढ़ा नहीं जा सकता। कृपया फ़ोटो और लोकेशन भेजें।"
+    ),
+    # added for staff-assigned expiry
+    "citizen_staff_team_unavailable": (
+        "केस {case_id} का अपडेट: {team} यह केस नहीं ले सके। "
+        "हमारा स्टाफ़ दूसरी टीम ढूँढ रहा है और यहीं आपको मैसेज करेगा।"
+    ),
+    # added for the duplicate check
+    "case_checking_duplicate": (
+        "धन्यवाद, आपकी रिपोर्ट मिल गई है। हम देख रहे हैं कि इस जानवर की रिपोर्ट पहले किसी ने "
+        "की है या नहीं, और थोड़ी देर में आपको केस नंबर भेजेंगे। "
+        "कृपया जानवर से सुरक्षित दूरी बनाए रखें।"
     ),
 }
 

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from app.cases import state_machine
 from app.cases.models import Case, CaseState, Photo, Report
 from app.channels import media
+from app.messages import DEFAULT_LANGUAGE
 from app.triage.schema import TriageResult
 from app.triage.service import Triager, TriageUnavailable
 
@@ -22,8 +23,13 @@ log = logging.getLogger(__name__)
 FALLBACK_URGENCY = "high"
 
 
-async def triage_case(session: Session, case: Case, triager: Triager | None) -> TriageResult | None:
-    """Returns the result when triage worked, or None when a person must review."""
+async def triage_case(
+    session: Session, case: Case, triager: Triager | None, language: str = DEFAULT_LANGUAGE
+) -> TriageResult | None:
+    """Returns the result when triage worked, or None when a person must review.
+
+    `language` is the reporter's: the first-aid steps come back written in it.
+    """
     result: TriageResult | None = None
     reason = "no_triager"
 
@@ -33,7 +39,11 @@ async def triage_case(session: Session, case: Case, triager: Triager | None) -> 
             reason = "photo_missing"
         else:
             try:
-                result = await triager.triage(image)
+                if language == DEFAULT_LANGUAGE:
+                    # The one-argument call, so stand-ins written before languages still work.
+                    result = await triager.triage(image)
+                else:
+                    result = await triager.triage(image, language=language)
                 reason = "ok" if result.animal_visible else "no_animal_visible"
             except TriageUnavailable as error:
                 reason = f"unavailable: {error}"
