@@ -69,13 +69,32 @@ def add_location(session: Session, number: str, latitude: float, longitude: floa
     return _open_case_if_complete(session, draft)
 
 
-def add_note(session: Session, number: str, text: str, language: str | None) -> IntakeResult:
-    """Keep what the person said (a voice note's words) with their report."""
+def has_open_draft(session: Session, number: str) -> bool:
+    """True while the person has sent a photo or a location but not yet both."""
+    cutoff = datetime.now(UTC) - DRAFT_WINDOW
+    return (
+        session.scalar(
+            select(Report.id)
+            .where(
+                Report.reporter_number == number,
+                Report.case_id.is_(None),
+                Report.created_at >= cutoff,
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
+def add_note(
+    session: Session, number: str, text: str, language: str | None, *, spoken: bool = True
+) -> IntakeResult:
+    """Keep what the person said or typed about the animal with their report."""
     draft = _draft_for(session, number)
-    draft.text = text
+    draft.text = f"{draft.text} {text}" if draft.text else text
     log_event(
         session,
-        "voice_note_received",
+        "voice_note_received" if spoken else "description_typed",
         actor=number,
         data={"report_id": draft.id, "language": language, "characters": len(text)},
     )

@@ -24,6 +24,7 @@ from app.cases.models import CaseState as S
 from app.channels import templates
 from app.channels.base import Button, Outbound
 from app.config import get_settings
+from app.contacts import language_for
 from app.routing.flow import reporters_of
 from app.routing.models import Dispatch, Team, Zone
 from app.routing.teams import escalation_chain, team_is_open
@@ -49,10 +50,16 @@ def humanize_seconds(seconds: int) -> str:
 # ---------- small helpers ----------
 
 
-def _msg(to: str, key: str, buttons: list[Button] | None = None, **values: object) -> Outbound:
+def _msg(
+    to: str,
+    key: str,
+    buttons: list[Button] | None = None,
+    language: str = messages.DEFAULT_LANGUAGE,  # teams are written to in English
+    **values: object,
+) -> Outbound:
     return Outbound(
         to=to,
-        text=messages.render(key, **values),
+        text=messages.render(key, language, **values),
         buttons=buttons or [],
         template=templates.fallback_for(key, values),  # None for most keys
     )
@@ -60,7 +67,7 @@ def _msg(to: str, key: str, buttons: list[Button] | None = None, **values: objec
 
 def _tell_reporters(session: Session, case: Case, key: str, **values: object) -> list[Outbound]:
     return [
-        _msg(number, key, case_id=case.public_id, **values)
+        _msg(number, key, language=language_for(session, number), case_id=case.public_id, **values)
         for number in reporters_of(session, case)
     ]
 

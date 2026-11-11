@@ -116,7 +116,8 @@ def test_a_spoken_bite_report_starts_the_bite_flow(client, seeded):
 
 def test_a_bite_spoken_in_hindi_is_understood(client, seeded):
     speak(client, "मुझे कुत्ते ने काटा", language="hi")
-    assert replies(client)[-1] == messages.render("bite_first_aid")
+    # Spoken in Hindi by someone with no saved language, so the answer is in Hindi.
+    assert replies(client)[-1] == messages.render("bite_first_aid", "hi")
 
 
 def test_a_spoken_description_is_kept_with_the_report(client, seeded):
