@@ -8,13 +8,14 @@
     POST /dashboard/cases/{id}/cancel    staff close the case            {"reason": "..."}
 
 All of them sit behind the staff password when one is set (see app/auth.py).
-The two POSTs take JSON only, so a plain form on another site cannot fire them.
+The two POSTs also refuse requests sent from another website (see same_site_only):
+the browser would otherwise add the staff password to them by itself.
 """
 
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, StringConstraints
 from sqlalchemy.orm import Session
@@ -31,6 +32,16 @@ from app.routing.models import Team
 
 PAGE = Path(__file__).with_name("page.html")
 STAFF = "staff"  # the actor recorded in the audit log; there is one shared staff password
+
+
+def same_site_only(request: Request) -> None:
+    """Refuse a staff action that another website made the browser send."""
+    fetch_site = request.headers.get("sec-fetch-site")
+    if fetch_site is not None and fetch_site not in ("same-origin", "none"):
+        raise HTTPException(403, "Staff actions must come from the dashboard itself.")
+    origin = request.headers.get("origin")
+    if origin is not None and origin.split("://", 1)[-1] != request.headers.get("host"):
+        raise HTTPException(403, "Staff actions must come from the dashboard itself.")
 
 
 class AssignBody(BaseModel):
@@ -82,7 +93,7 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
             raise HTTPException(status_code=404, detail="Not found")
         return FileResponse(path, media_type=stored.mime)
 
-    @router.post("/cases/{case_id}/assign")
+    @router.post("/cases/{case_id}/assign", dependencies=[Depends(same_site_only)])
     async def assign(case_id: str, body: AssignBody, session: SessionDep) -> dict[str, Any]:
         case = case_or_404(session, case_id, lock=True)
         team = session.get(Team, body.team_id)
@@ -102,7 +113,7 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
         await deliver(channel, outbox)
         return queries.case_detail(session, case)
 
-    @router.post("/cases/{case_id}/cancel")
+    @router.post("/cases/{case_id}/cancel", dependencies=[Depends(same_site_only)])
     async def cancel(case_id: str, body: CancelBody, session: SessionDep) -> dict[str, Any]:
         case = case_or_404(session, case_id, lock=True)
         try:

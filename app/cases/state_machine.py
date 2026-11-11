@@ -7,6 +7,7 @@ the audit log.
 
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.cases.audit import log_event
@@ -49,6 +50,14 @@ def transition(
 ) -> None:
     """Move a case to `to_state`, or raise InvalidTransition."""
     from_state = case.state
+    if case.id is not None:
+        # Another request may have moved this case since we loaded it (a reporter
+        # cancelling while the photo was being triaged). Lock the row and trust the
+        # database, so a stale copy can never bring a closed case back.
+        session.flush()
+        current = session.scalar(select(Case.state).where(Case.id == case.id).with_for_update())
+        if current is not None and current != from_state:
+            raise InvalidTransition(current, to_state)
     if not can_transition(from_state, to_state):
         raise InvalidTransition(from_state, to_state)
     case.state = to_state
