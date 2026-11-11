@@ -69,8 +69,8 @@ def test_the_stand_in_refuses_real_audio():
         asyncio.run(StubSpeechToText().transcribe(b"OggS....", "audio/ogg"))
 
 
-def test_bhashini_is_not_built_and_says_so():
-    with pytest.raises(SpeechUnavailable, match="not been built"):
+def test_bhashini_without_keys_says_so():
+    with pytest.raises(SpeechUnavailable, match="not set up"):
         asyncio.run(BhashiniSpeechToText().transcribe(b"OggS....", "audio/ogg", "kok"))
 
 
@@ -116,7 +116,8 @@ def test_a_spoken_bite_report_starts_the_bite_flow(client, seeded):
 
 def test_a_bite_spoken_in_hindi_is_understood(client, seeded):
     speak(client, "मुझे कुत्ते ने काटा", language="hi")
-    assert replies(client)[-1] == messages.render("bite_first_aid")
+    # Spoken in Hindi by someone with no saved language, so the answer is in Hindi.
+    assert replies(client)[-1] == messages.render("bite_first_aid", "hi")
 
 
 def test_a_spoken_description_is_kept_with_the_report(client, seeded):

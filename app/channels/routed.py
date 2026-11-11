@@ -10,7 +10,7 @@ placeholder team accepts in the simulator, and the status update goes back
 to the real phone.
 """
 
-from app.channels.base import Button, ChannelAdapter
+from app.channels.base import Button, ChannelAdapter, Outbound
 
 SIMULATED_PREFIX = "+91000000"
 
@@ -39,3 +39,7 @@ class RoutedChannel(ChannelAdapter):
 
     async def send_image(self, to_number: str, media_name: str) -> None:
         await self.channel_for(to_number).send_image(to_number, media_name)
+
+    async def send(self, message: Outbound) -> None:
+        # Whole messages go to one channel, so WhatsApp can fall back to a template.
+        await self.channel_for(message.to).send(message)

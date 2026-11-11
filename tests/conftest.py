@@ -59,7 +59,7 @@ def db(_migrated_db) -> Session:
     engine = get_engine()
     with engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE sterilisation_counts, bookings, booking_drafts, camp_slots, camps, bite_reports, health_centres, dispatches, events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
+            text("TRUNCATE contacts, sterilisation_counts,bookings, booking_drafts, camp_slots, camps, bite_reports, health_centres, dispatches, events, photos, reports, cases, teams, zones RESTART IDENTITY CASCADE")
         )
     with Session(engine) as session:
         yield session
@@ -115,5 +115,6 @@ def app():
 
 
 @pytest.fixture
-def client(app) -> TestClient:
+def client(app, db) -> TestClient:
+    # Depends on db so every test starts empty (a saved language must not carry over).
     return TestClient(app)

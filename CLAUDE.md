@@ -26,7 +26,8 @@ app/messages.py   every outbound message
 seed/             zones, teams, health centres, camps, demo cases
 migrations/       Alembic
 tests/            pytest, external APIs mocked
-docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP
+docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOICE_SETUP,
+                  TRANSLATIONS, CHECKLIST
 ```
 
 ## Hard rules

@@ -214,5 +214,89 @@ A case still needs a photo and a location: triage reads the photo, and routing n
 ## D-062 Audio is never stored (11 Nov)
 A voice note is fetched, passed to the speech service once, and dropped. Only the words are kept, on the report. The audit event records the language and length, not the words.
 
+## D-063 The reporter's own words go into the team alert, cleaned first (11 Nov)
+Words typed between the photo and the location, and the words of a voice note, are kept on the person's report. The team alert shows them under the photo line as `Reporter says: "…"`, labelled when they came from a voice note. At most three reports' words, 200 characters each, and the whole alert stays within WhatsApp's 1024-character limit for a message with buttons. Reporter text is untrusted: invisible characters and quote marks are removed, links become "[link removed]" and phone numbers "[number removed]", so a team cannot mistake a reporter's words for our own lines.
+Gave up: a link or a phone number a reporter meant to share never reaches the team. Typed words count only while a report is waiting for its photo or its location; words typed after the case opens are not added. If one report has both typed and spoken words, they are joined, and the whole note is labelled as a voice note.
+
+## D-064 The CANCEL list lives in the BOOK conversation's row (11 Nov)
+CANCEL shows a numbered list of the person's open cases and upcoming bookings. The list is stored in their `booking_drafts` row, with options written as `case:12` or `booking:5`, so no migration was needed. One row per person means a number they type has one meaning at a time: the newest list (camps, slots, or things to cancel) is the one they are answering, and a half-finished BOOK is dropped when CANCEL is sent.
+Gave up: a table of its own, which would be cleaner. A person cannot have a BOOK conversation and a CANCEL list open together.
+
+## D-065 Picking a number cancels at once; there is no "are you sure?" (11 Nov)
+Replying `2` to the CANCEL list, or sending `CANCEL PAW-0042` or `CANCEL BK-0005`, cancels straight away. A worried person should not have to answer twice, and a wrongly cancelled report can be sent again with a new photo and location.
+Gave up: protection against a mistyped number. A cancelled booking's place may be taken by someone else before the person books again.
+
+## D-066 One reporter cannot cancel a case that others also reported (11 Nov)
+If another person's report was merged into the case, CANCEL from one of them is refused: the case stays open for the others, the person is told so, and `cancel_refused_shared` is logged. Only a person with a report on the case can cancel it, and the "not found" answer is the same whether the case does not exist or belongs to someone else.
+Gave up: a reporter who knows the animal is fine cannot close a shared case. Staff can, from the dashboard (D-072).
+
+## D-067 A reporter can cancel in any open state, and the teams involved are told (11 Nov)
+That includes On site: the reporter may know before we do that the animal has gone. Every alert still waiting for an answer is marked "cancelled", so the escalation job stops, and those teams and the team that accepted get a message (`team_stood_down` in the audit log). The cancel goes through the state machine like every other change.
+Gave up: teams whose alert had already timed out are not told. A late Accept from them is refused, because the case is closed (D-026 applies only to open cases).
+
+## D-068 A cancelled booking keeps its row, marked "cancelled" (11 Nov)
+Its `status` becomes `cancelled` and the place is free again: places left, reminders and the dashboard count only `booked`. No migration was needed. We also try to delete the Google Calendar entry (`delete_event`); if that fails it is logged and the booking is still cancelled, as when creating it (D-036). Replaces "no cancel-a-booking yet" in D-040.
+Not yet run against Google: the delete call is written from Google's documentation only.
+
+## D-069 A state change trusts the database, not the copy in memory (11 Nov)
+`transition()` now locks the case row and refuses if the state in the database is not the one the caller loaded. So a stale copy cannot bring a closed case back: for example, triage finishing after the reporter cancelled. A merge also locks the case it would merge into; if that case has just closed, the new report becomes a case of its own.
+Gave up: one extra locked read per state change. The request that loses the race gets an error instead of carrying on.
+
+## D-070 The case detail panel shows everything except phone numbers (11 Nov)
+Tapping a case on the dashboard opens a panel with its photos, the triage result (marked "not a diagnosis"), how many reports and people, the reporters' words, the history of alerts, and the full audit trail in plain words. Reporters appear as "Reporter 1", "Reporter 2". Photos are served by id at `/dashboard/photos/{id}`, behind the staff password, instead of as `/media/` links.
+Gave up: staff cannot see who to call back. `/media/` itself stays open, because WhatsApp fetches photos from it (D-048, D-053).
+
+## D-071 Staff assign a team by sending it the normal alert (11 Nov)
+"Assign" on the dashboard sends the chosen team the usual alert with Accept and Decline; the team must still accept. Only a case waiting for a team (New, Team alerted, Escalated) can be assigned, and any other team still being asked is stood down. The staff alert is placed after the end of the automatic chain, so if this team declines or does not answer, the case comes back to staff flagged "no team" instead of going round the chain again. An accepted case cannot be reassigned; staff cancel it instead.
+Gave up: staff cannot force a team to take a case, or move a case away from a team that has accepted.
+
+## D-072 Staff cancel with a reason that stays in the audit log (11 Nov)
+Cancelling from the dashboard needs a short reason. It is kept in the audit log, for staff only. Reporters get a calm, general message (closed by PawSOS staff; send a new photo and location if the animal still needs help), because a note written for colleagues may not suit them. Teams that were alerted or had accepted are told.
+Gave up: with one shared staff password, the audit log says "Staff", not which person.
+
+## D-073 Staff actions refuse requests from other websites (11 Nov)
+The browser re-sends the dashboard password by itself, so another website could make a staff member's browser assign or cancel a case. The two staff actions refuse a request whose `Sec-Fetch-Site` or `Origin` header shows it came from somewhere other than the dashboard.
+Gave up: this is a header check, not a full anti-forgery token. A tool that sends neither header (such as `curl` with the password) is let through, which suits scripts.
+
+## D-074 Response times come from the audit log: median and 90th percentile (11 Nov)
+The dashboard shows report to accepted, and accepted to resolved, overall and per zone. "Report" is the `case_created` event (or the case's creation time); "accepted" and "resolved" are the first moves to those states. It covers the same cases as the case list: the last 30 days, merged duplicates left out. The 90th percentile uses linear interpolation. Only cases that reached a step count for it.
+Gave up: cases still waiting are left out, so while many cases are open the figures look better than the truth; the page says they are left out. Demo cases are included, and the demo seed spaces each step two minutes apart, so with demo data loaded the figures are invented.
+
+## D-075 WhatsApp templates are a one-time fallback, for three messages (11 Nov)
+Every message is sent free-form first. If Meta refuses it with error 131047 (the 24-hour window is closed), it is sent once more as its approved template, if one is configured: team alerts, "no answer in time" notices, and camp reminders. Meta can also report the refusal later, in a status webhook; for that we remember up to 1000 recent messages, in memory. A template alert carries no photo, and the photo line and the reporter's words go on one line of at most 600 characters. Template names come from the `WHATSAPP_TEMPLATE_*` settings, in one language (`WHATSAPP_TEMPLATE_LANGUAGE`). Replaces "we use no templates" in D-055.
+Gave up: a message refused later is lost if the server restarted in between. Every other message outside the window is still refused. Not yet tried against Meta: no template has been created, approved or sent.
+
+## D-076 Each number's language is remembered, and changed with LANGUAGE (11 Nov)
+A new `contacts` table (migration 0008) holds one language per phone number. `LANGUAGE` or `भाषा` opens a menu (1 English, 2 कोंकणी, 3 मराठी, 4 हिंदी) that stays open for 15 minutes. As soon as BOOK, STATUS or CANCEL answers a message, the menu closes, so a number means one thing. A voice note heard as Konkani, Marathi or Hindi sets the language only if the person never chose one, and never switches anyone to English. Rescue teams are always written to in English. The rehearsal reset clears this table.
+Gave up: typed text is not checked for its language, so a person writing in Hindi gets English until they send LANGUAGE.
+
+## D-077 Konkani, Marathi and Hindi copy is machine-drafted and says "we" (11 Nov)
+Every translation in the `KOK`, `MR` and `HI` tables of `app/messages.py` was drafted by Claude. The bot says "we" where "I" would need a gendered verb. A missing translation falls back to English. Each text must be checked by a fluent reader before real use; `docs/TRANSLATIONS.md` is the checklist.
+Gave up: nothing has been checked by a person yet. Until then the translations are demo copy.
+
+## D-078 Real voice notes go to Bhashini through ffmpeg, Konkani by default (11 Nov)
+`BhashiniSpeechToText` makes Bhashini's two calls: a config call (which speech model serves each language, kept for 6 hours) and a compute call (the config is fetched once more if Bhashini refuses the key with 401 or 403). The first speech model listed for a language is used. WhatsApp sends OGG/Opus, which Bhashini does not list, so `ffmpeg` (a system program, not a Python package) turns it into 16 kHz mono WAV in memory. ffmpeg may read only audio container formats, and only from the pipe, so a crafted file cannot make it open other files or fetch addresses. WhatsApp gives no hint of the language, so `BHASHINI_DEFAULT_LANGUAGE` (default `kok`) is assumed; the read-back (D-061) lets people correct a wrong transcript. Clips are cut at 120 seconds, and ones over 30 seconds ask Bhashini to split on silence. The default pipeline id is in the code. The simulator's pretend voice notes still use the stand-in. Replaces the placeholder in D-060.
+Gave up: a Marathi or Hindi voice note is first heard as Konkani unless the default is changed. Not yet tried with real Bhashini keys or a real voice note.
+
+## D-079 No temporary case ID when an open case is nearby (11 Nov)
+Before telling a new reporter their case ID, a cheap check looks for any case within the dedup radius and time window, by place only (open cases, and ones still being triaged). If there is one, the person gets "your report is in, we are checking whether someone has already reported this animal" with no ID; triage and routing run first, and they then get either the earlier case's ID (merged) or their own (`case_created`). With nothing nearby, nothing changes. Fixes the rough edge noted in D-020.
+Gave up: a different animal nearby also triggers the check, so that person gets their ID a few seconds later. A case created just after the check can still cause the old behaviour; closing that needs a lock. After a merge the first-aid reply carries the earlier case's ID but this person's own urgency reading. If something fails between the acknowledgement and routing, the person never gets an ID (the case is still saved and on the dashboard).
+
+## D-080 A team chosen by staff that declines or times out hands the case back to staff (11 Nov)
+An alert at or past the end of the automatic chain was sent by staff (D-071). When that team declines or does not answer, the team is told the case has gone back to PawSOS staff, and the reporter is told that team could not take it and staff are finding another. The case state and the "no team" flag are unchanged.
+Gave up: the staff variant has no WhatsApp template, so outside the 24-hour window the team does not get the expiry notice. The last automatic team in a chain still hears "passed to the next team" although nobody follows; left alone so slice 5 is unchanged.
+
+## D-081 First-aid steps are written in the reporter's language (11 Nov)
+Triage passes the reporter's saved language to the model, which is asked to write `first_aid` in it. Species, urgency, aggression risk and `injury_type` stay in English, because the schema checks them and teams read `injury_type`. The no-diagnosis rule applies in every language. English keeps the old call, so the test stand-ins still work.
+Gave up: `case.first_aid` is stored in that language, so the dashboard shows it in Konkani, Marathi or Hindi. Not tried against the real model; Devanagari steps may run past the 200-character limit per step, which leads to the retry and then human review.
+
+## D-082 A WhatsApp voice note is heard in the person's saved language, and never changes it (11 Nov)
+WhatsApp does not say which language a voice note is in. Bhashini is asked to listen in the person's saved language if they have one, otherwise in `BHASHINI_DEFAULT_LANGUAGE`. That language is an assumption, not a detection, so it is never saved for the person. Without this, any first voice note would have switched the sender to Konkani for good. Amends D-076: on WhatsApp, a language is now saved only through LANGUAGE.
+Gave up: a person who has never chosen a language is still heard as Konkani first.
+
+## D-083 When a case moves on mid-flow, the newer change wins quietly; locks go case first (11 Nov)
+If a reporter or staff cancel or assign a case while its photo is still being triaged or routed, the state machine refuses the stale step (D-069). The report flow now catches that, rolls back its unfinished part and stops, instead of failing the request. The escalation timer now locks the case before the alert, like button taps, cancels and staff actions, so two of them can never wait on each other forever; a case someone is handling is left for the timer's next tick.
+Gave up: a reporter whose case is cancelled during the duplicate check never gets a case ID, which is fine because the case is closed.
+
 ## Open
 - Nothing right now.

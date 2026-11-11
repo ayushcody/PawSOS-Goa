@@ -21,6 +21,7 @@ from app.auth import require_password
 from app.booking.calendar import CalendarClient, get_calendar
 from app.channels import media
 from app.channels.base import Button, ChannelAdapter, InboundMessage
+from app.contacts import language_for
 from app.conversation import handle_inbound
 from app.db import get_session
 from app.routing.models import Team
@@ -165,7 +166,8 @@ def build_router(channel: SimulatorAdapter, outbound: ChannelAdapter | None = No
             name = media.save_image(data, mime)
         except media.MediaError:
             channel.record_inbound(from_number, "[a file that could not be read]")
-            await channel.send_text(from_number, messages.render("photo_rejected"))
+            language = language_for(session, from_number)
+            await channel.send_text(from_number, messages.render("photo_rejected", language))
             return {"ok": False}
 
         channel.record_inbound(from_number, "Photo", media_url=f"/media/{name}")

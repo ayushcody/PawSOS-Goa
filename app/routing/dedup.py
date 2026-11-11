@@ -37,14 +37,14 @@ def similar_animal(species_a: str | None, species_b: str | None) -> bool:
     return species_a == species_b
 
 
-def find_duplicate(session: Session, case: Case) -> Case | None:
-    """The oldest open case this one duplicates, or None."""
+def _nearby(case: Case, states: list[CaseState]):
+    """Other cases in `states` within the dedup radius and time window, oldest first."""
     here = select(Case.location).where(Case.id == case.id).scalar_subquery()
-    nearby = session.scalars(
+    return (
         select(Case)
         .where(
             Case.id != case.id,
-            Case.state.in_(OPEN_STATES),
+            Case.state.in_(states),
             Case.is_demo.is_(False),  # a real report never merges into an invented case
             Case.created_at >= datetime.now(UTC) - DEDUP_WINDOW,
             # ST_DWithin on geography measures in metres and uses the GiST index.
@@ -52,7 +52,22 @@ def find_duplicate(session: Session, case: Case) -> Case | None:
         )
         .order_by(Case.created_at, Case.id)
     )
-    for candidate in nearby:
+
+
+def find_duplicate(session: Session, case: Case) -> Case | None:
+    """The oldest open case this one duplicates, or None."""
+    for candidate in session.scalars(_nearby(case, OPEN_STATES)):
         if similar_animal(candidate.species, case.species):
             return candidate
     return None
+
+
+def might_be_duplicate(session: Session, case: Case) -> bool:
+    """Could this new, untriaged case turn out to be a duplicate? Place and time only.
+
+    Asked before triage, so the species is not known yet: a nearby open case
+    is enough. Cases still being triaged count too, because one of them may be
+    open by the time this case is routed.
+    """
+    query = _nearby(case, [CaseState.REPORTED, CaseState.TRIAGED, *OPEN_STATES]).limit(1)
+    return session.scalar(query) is not None

@@ -9,6 +9,7 @@ The caller commits first, then delivers them.
 """
 
 import re
+import unicodedata
 from datetime import timedelta
 
 from geoalchemy2 import Geometry
@@ -18,10 +19,12 @@ from sqlalchemy.orm import Session
 from app import clock, messages
 from app.cases import state_machine
 from app.cases.audit import log_event
-from app.cases.models import Case, Photo, Report
+from app.cases.models import Case, Event, Photo, Report
 from app.cases.models import CaseState as S
+from app.channels import templates
 from app.channels.base import Button, Outbound
 from app.config import get_settings
+from app.contacts import language_for
 from app.routing.flow import reporters_of
 from app.routing.models import Dispatch, Team, Zone
 from app.routing.teams import escalation_chain, team_is_open
@@ -47,19 +50,127 @@ def humanize_seconds(seconds: int) -> str:
 # ---------- small helpers ----------
 
 
-def _msg(to: str, key: str, buttons: list[Button] | None = None, **values: object) -> Outbound:
-    return Outbound(to=to, text=messages.render(key, **values), buttons=buttons or [])
+def _msg(
+    to: str,
+    key: str,
+    buttons: list[Button] | None = None,
+    language: str = messages.DEFAULT_LANGUAGE,  # teams are written to in English
+    **values: object,
+) -> Outbound:
+    return Outbound(
+        to=to,
+        text=messages.render(key, language, **values),
+        buttons=buttons or [],
+        template=templates.fallback_for(key, values),  # None for most keys
+    )
 
 
 def _tell_reporters(session: Session, case: Case, key: str, **values: object) -> list[Outbound]:
     return [
-        _msg(number, key, case_id=case.public_id, **values)
+        _msg(number, key, language=language_for(session, number), case_id=case.public_id, **values)
         for number in reporters_of(session, case)
     ]
 
 
 def _is_open(team: Team) -> bool:
     return get_settings().ignore_opening_hours or team_is_open(team, clock.now())
+
+
+# WhatsApp's limit for the body of a message with buttons (MAX_BUTTON_BODY in whatsapp.py).
+MAX_ALERT_CHARS = 1024
+MAX_NOTES_IN_ALERT = 3  # a merged case can have many reports; the team sees the first few
+MAX_NOTE_CHARS = 200
+
+
+def _shorten(text: str, limit: int) -> str:
+    """One line of at most `limit` characters, cut at a word where possible."""
+    flat = " ".join(text.split())
+    if len(flat) <= limit:
+        return flat
+    cut = flat[: limit - 1]
+    if " " in cut[limit // 2 :]:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" ,.;:-") + "…"
+
+
+# Common web endings, lowercase only: a sentence typed without a space after the full
+# stop ("market.It is bleeding") must not look like a link. Endings that are also
+# everyday words ("it", "in", "to", "is", "me", "at", "be") are left out on purpose.
+_TLDS = (
+    "com|net|org|co|io|ly|link|xyz|app|info|site|online|top|tk|ml|ga|cf|gq|gl|cc|biz|"
+    "ru|cn|tv|ws|club|shop|live|click|page|dev|me\\.uk|co\\.in|org\\.in|net\\.in|gov\\.in"
+)
+_LINK = re.compile(
+    r"(?i:\b(?:https?://|www\.)\S+)"
+    rf"|\b[\w-]+(?:\.[\w-]+)*\.(?:{_TLDS})\b(?:/\S*)?"
+    r"|\b[\w-]+(?:\.[\w-]+)+/\S+"
+)
+# A run of digits with spaces, dots, dashes or brackets: a phone number only when it has
+# at least 10 digits, so dates (10.11.2026) and house numbers stay.
+_DIGIT_RUN = re.compile(r"\+?\(?\d[\d\s().-]{6,}\d")
+_QUOTES = re.compile(r"[\"“”'‘’`]")
+_DOTS = str.maketrans({"\u3002": ".", "\uff0e": ".", "\uff61": "."})
+
+
+def _defang(words: str) -> str:
+    """Reporter words are untrusted: a team must not mistake them for our own lines.
+
+    Hidden characters and quote marks go first, so they cannot split a link to
+    slip past the checks. Then links and phone numbers are replaced (the real
+    map link is added by us).
+    """
+    words = unicodedata.normalize("NFKC", words)
+    words = "".join(c for c in words if unicodedata.category(c) != "Cf").translate(_DOTS)
+    words = _QUOTES.sub("", words)
+    words = _LINK.sub("[link removed]", words)
+    return _DIGIT_RUN.sub(
+        lambda m: "[number removed]" if sum(c.isdigit() for c in m.group()) >= 10 else m.group(),
+        words,
+    )
+
+
+def _reporter_notes(session: Session, case: Case) -> list[tuple[str, bool]]:
+    """What reporters said about the animal: (words, came from a voice note), oldest first.
+
+    Merged reports have already moved to this case, so all of them are here.
+    The same words from two reports are shown once.
+    """
+    rows = session.execute(
+        select(Report.id, Report.text)
+        .where(Report.case_id == case.id, Report.text.is_not(None))
+        .order_by(Report.id)
+    ).all()
+    if not rows:
+        return []
+    report_id = Event.data["report_id"].as_integer()
+    spoken = set(
+        session.scalars(
+            select(report_id).where(
+                Event.type == "voice_note_received", report_id.in_([r.id for r in rows])
+            )
+        )
+    )
+    notes: dict[str, tuple[str, bool]] = {}
+    for row in rows:
+        words = _defang(" ".join(row.text.split()))
+        if words:
+            notes.setdefault(words.casefold(), (words, row.id in spoken))
+    return list(notes.values())
+
+
+def _reporter_lines(notes: list[tuple[str, bool]], room: int) -> list[str]:
+    """The reporters' words as alert lines, using at most `room` characters in all."""
+    lines: list[str] = []
+    for words, spoken in notes[:MAX_NOTES_IN_ALERT]:
+        key = "team_alert_reporter_voice" if spoken else "team_alert_reporter_says"
+        overhead = len(messages.render(key, text="")) + 1  # + the newline before it
+        fit = min(MAX_NOTE_CHARS, room - overhead)
+        if fit < 20:
+            break  # not enough room left to say anything useful
+        line = messages.render(key, text=_shorten(words, fit))
+        lines.append(line)
+        room -= len(line) + 1
+    return lines
 
 
 def _alert_message(session: Session, case: Case, team: Team) -> Outbound:
@@ -86,24 +197,32 @@ def _alert_message(session: Session, case: Case, team: Team) -> Outbound:
         )
     else:
         seen = messages.render("team_alert_not_triaged")
-    text = messages.render(
-        "team_alert",
-        case_id=case.public_id,
-        zone=zone.short_name,
-        urgency=(case.urgency or "unknown").upper(),
-        seen=seen,
-        map_link=f"https://maps.google.com/?q={latitude:.5f},{longitude:.5f}",
-        reports=report_count,
-        window=humanize_seconds(get_settings().escalation_timeout_seconds),
-    )
+    values: dict[str, object] = {
+        "case_id": case.public_id,
+        "zone": zone.short_name,
+        "urgency": (case.urgency or "unknown").upper(),
+        "seen": seen,
+        "map_link": f"https://maps.google.com/?q={latitude:.5f},{longitude:.5f}",
+        "reports": report_count,
+        "window": humanize_seconds(get_settings().escalation_timeout_seconds),
+    }
+    text = messages.render("team_alert", **values)
+    # What the reporters said goes under the photo line, kept inside WhatsApp's limit.
+    notes = _reporter_notes(session, case)
+    lines = _reporter_lines(notes, MAX_ALERT_CHARS - len(text)) if notes else []
+    if lines:
+        values["seen"] = "\n".join([seen, *lines])
+        text = messages.render("team_alert", **values)
+    buttons = [
+        Button(f"accept:{case.public_id}", messages.render("button_accept")),
+        Button(f"decline:{case.public_id}", messages.render("button_decline")),
+    ]
     return Outbound(
         to=team.phone,
         text=text,
         media_name=photo,
-        buttons=[
-            Button(f"accept:{case.public_id}", messages.render("button_accept")),
-            Button(f"decline:{case.public_id}", messages.render("button_decline")),
-        ],
+        buttons=buttons,
+        template=templates.fallback_for("team_alert", values, tuple(b.id for b in buttons)),
     )
 
 
@@ -127,9 +246,19 @@ def start_dispatch(session: Session, case: Case) -> list[Outbound]:
 
 
 def _alert_next(
-    session: Session, case: Case, *, after_position: int, tell_reporters: bool
+    session: Session,
+    case: Case,
+    *,
+    after_position: int,
+    tell_reporters: bool,
+    staff_team: Team | None = None,
 ) -> list[Outbound]:
-    """Alert the next open team after `after_position` in the chain."""
+    """Alert the next open team after `after_position` in the chain.
+
+    `staff_team` is the team staff chose on the dashboard, when it is that
+    team's alert that ended: the chain is already behind it, so reporters hear
+    that the case went back to staff rather than "we have not reached a team".
+    """
     chain = escalation_chain(session, session.get(Zone, case.zone_id))
     now = clock.now()
 
@@ -174,21 +303,49 @@ def _alert_next(
             session, case, S.ESCALATED, actor="routing", data={"reason": "chain_exhausted"}
         )
     log_event(session, "chain_exhausted", case_id=case.id, actor="routing")
+    if staff_team is not None:
+        return _tell_reporters(session, case, "citizen_staff_team_unavailable", team=staff_team.name)
     return _tell_reporters(session, case, "citizen_no_team_yet")
+
+
+def _chosen_by_staff(session: Session, case: Case, dispatch: Dispatch) -> bool:
+    """True for an alert staff sent from the dashboard (assign_team).
+
+    assign_team places it after the end of the automatic chain, so no team
+    follows it: when it ends, the case goes back to staff, not to a next team.
+    """
+    return dispatch.position >= len(escalation_chain(session, session.get(Zone, case.zone_id)))
 
 
 def process_timeouts(session: Session) -> list[Outbound]:
     """Move on from every alert that has gone unanswered past its deadline."""
-    due = session.scalars(
-        select(Dispatch)
+    due = session.execute(
+        select(Dispatch.id, Dispatch.case_id)
         .where(Dispatch.status == "sent", Dispatch.expires_at <= clock.now())
         .order_by(Dispatch.id)
-        .with_for_update(skip_locked=True)  # a button tap on the same alert waits its turn
     ).all()
 
     outbox: list[Outbound] = []
-    for dispatch in due:
-        case = session.get(Case, dispatch.case_id)
+    for dispatch_id, case_id in due:
+        # Lock the case first, then the alert: the same order as a button tap, a
+        # cancel or a staff action, so the timer and they can never deadlock.
+        # A case someone else is handling right now is left for the next tick.
+        case = session.scalar(
+            select(Case)
+            .where(Case.id == case_id)
+            .with_for_update(skip_locked=True)
+            .execution_options(populate_existing=True)
+        )
+        if case is None:
+            continue
+        dispatch = session.scalar(
+            select(Dispatch)
+            .where(Dispatch.id == dispatch_id, Dispatch.status == "sent")
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if dispatch is None:
+            continue  # answered, cancelled or reassigned since we looked
         team = session.get(Team, dispatch.team_id)
         dispatch.status = "timed_out"
         dispatch.responded_at = clock.now()
@@ -196,9 +353,13 @@ def process_timeouts(session: Session) -> list[Outbound]:
             session, "alert_timed_out", case_id=case.id, actor="timer", data={"team": team.name}
         )
         if case.state in WAITING_FOR_A_TEAM:
-            outbox.append(_msg(team.phone, "team_alert_expired", case_id=case.public_id))
+            by_staff = _chosen_by_staff(session, case, dispatch)
+            # The staff variant has no template: the approved one says "passed to the next team".
+            expired = "team_alert_expired_staff" if by_staff else "team_alert_expired"
+            outbox.append(_msg(team.phone, expired, case_id=case.public_id))
             outbox += _alert_next(
-                session, case, after_position=dispatch.position, tell_reporters=True
+                session, case, after_position=dispatch.position, tell_reporters=True,
+                staff_team=team if by_staff else None,
             )
     return outbox
 
@@ -287,7 +448,12 @@ def _accept(session: Session, case: Case, team: Team) -> list[Outbound]:
 
 def _decline(session: Session, case: Case, team: Team) -> list[Outbound]:
     dispatch = _latest_dispatch(session, case, team)
-    ack = _msg(team.phone, "team_declined_ack", case_id=case.public_id)
+    by_staff = dispatch is not None and _chosen_by_staff(session, case, dispatch)
+    ack = _msg(
+        team.phone,
+        "team_declined_ack_staff" if by_staff else "team_declined_ack",
+        case_id=case.public_id,
+    )
     if dispatch is not None and dispatch.status == "declined":
         return [ack]  # tapped Decline again
     if dispatch is None or dispatch.status != "sent" or case.state not in WAITING_FOR_A_TEAM:
@@ -297,7 +463,8 @@ def _decline(session: Session, case: Case, team: Team) -> list[Outbound]:
     dispatch.responded_at = clock.now()
     log_event(session, "team_declined", case_id=case.id, actor=team.phone, data={"team": team.name})
     return [ack] + _alert_next(
-        session, case, after_position=dispatch.position, tell_reporters=True
+        session, case, after_position=dispatch.position, tell_reporters=True,
+        staff_team=team if by_staff else None,
     )
 
 
@@ -326,3 +493,85 @@ def _resolved(session: Session, case: Case, team: Team) -> list[Outbound]:
 
     state_machine.transition(session, case, S.RESOLVED, actor=team.phone)
     return [ack] + _tell_reporters(session, case, "citizen_resolved")
+
+
+# ---------- the reporter cancelled ----------
+
+
+def stand_down(session: Session, case: Case) -> list[Outbound]:
+    """Stop every pending alert for a case its reporter has cancelled, and tell the teams.
+
+    Pending alerts become "cancelled", so process_timeouts (which only looks
+    at "sent") never escalates them. Teams still waiting to answer, and the
+    team that accepted, are told. Call this before moving the case to CANCELLED.
+    """
+    now = clock.now()
+    teams: dict[int, Team] = {}
+    pending = session.scalars(
+        select(Dispatch)
+        .where(Dispatch.case_id == case.id, Dispatch.status == "sent")
+        .with_for_update()  # waits for a timer that is moving this alert along
+    )
+    for dispatch in pending:
+        dispatch.status = "cancelled"
+        dispatch.responded_at = now
+        teams[dispatch.team_id] = session.get(Team, dispatch.team_id)
+    if case.assigned_team_id is not None:
+        teams[case.assigned_team_id] = session.get(Team, case.assigned_team_id)
+    for team in teams.values():
+        log_event(
+            session, "team_stood_down", case_id=case.id, actor="routing", data={"team": team.name}
+        )
+    return [_msg(team.phone, "team_case_cancelled_by_reporter", case_id=case.public_id) for team in teams.values()]
+
+
+# ---------- staff actions (from the dashboard) ----------
+
+STAFF_CAN_ASSIGN = (S.NEW, S.ROUTED, S.ESCALATED)
+
+
+def assign_team(
+    session: Session, case: Case, team: Team, actor: str = "staff", note: str | None = None
+) -> list[Outbound]:
+    """Staff send a case to a team they chose on the dashboard.
+
+    The team gets the usual alert with Accept and Decline, and anyone else
+    still being asked is stood down. The alert is placed after the end of the
+    automatic chain, so if this team declines or does not answer in time the
+    case comes back to staff flagged "no team", instead of going round the
+    chain again. Only a case still waiting for a team can be assigned: raises
+    InvalidTransition otherwise, and ValueError if the case has no area.
+    """
+    if case.state not in STAFF_CAN_ASSIGN:
+        raise state_machine.InvalidTransition(case.state, S.ROUTED)
+    if case.zone_id is None:
+        raise ValueError("This case has no area, so it cannot be sent to a team.")
+
+    now = clock.now()
+    outbox: list[Outbound] = []
+    waiting = session.scalars(
+        select(Dispatch).where(Dispatch.case_id == case.id, Dispatch.status == "sent")
+    ).all()
+    for other in waiting:
+        other.status = "cancelled"
+        other.responded_at = now
+        if other.team_id != team.id:
+            other_team = session.get(Team, other.team_id)
+            outbox.append(_msg(other_team.phone, "team_case_reassigned", case_id=case.public_id))
+
+    data = {"team": team.name, "reason": note or "assigned by staff"}
+    if case.state != S.ROUTED:
+        state_machine.transition(session, case, S.ROUTED, actor=actor, data=data)
+
+    chain = escalation_chain(session, session.get(Zone, case.zone_id))
+    timeout = timedelta(seconds=get_settings().escalation_timeout_seconds)
+    session.add(
+        Dispatch(
+            case_id=case.id, team_id=team.id, position=len(chain),
+            status="sent", expires_at=now + timeout,
+        )
+    )
+    log_event(session, "team_assigned_by_staff", case_id=case.id, actor=actor, data=data)
+    outbox.append(_alert_message(session, case, team))
+    outbox += _tell_reporters(session, case, "citizen_staff_assigned", team=team.name)
+    return outbox

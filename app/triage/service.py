@@ -13,8 +13,9 @@ import anthropic
 from pydantic import ValidationError
 
 from app.config import get_settings
+from app.messages import DEFAULT_LANGUAGE
 from app.triage.images import UnreadableImage, prepare_for_vision
-from app.triage.prompt import SYSTEM_PROMPT, USER_PROMPT
+from app.triage.prompt import SYSTEM_PROMPT, user_prompt
 from app.triage.schema import TriageResult
 
 log = logging.getLogger(__name__)
@@ -27,7 +28,9 @@ class TriageUnavailable(Exception):
 
 
 class Triager(Protocol):
-    async def triage(self, image: bytes) -> TriageResult: ...
+    async def triage(self, image: bytes, language: str = DEFAULT_LANGUAGE) -> TriageResult:
+        """Assess one photo. The first-aid steps come back in `language` (a messages.LANGUAGES code)."""
+        ...
 
 
 class ClaudeTriager:
@@ -35,7 +38,7 @@ class ClaudeTriager:
         self._client = client
         self._model = model
 
-    async def triage(self, image: bytes) -> TriageResult:
+    async def triage(self, image: bytes, language: str = DEFAULT_LANGUAGE) -> TriageResult:
         try:
             jpeg, media_type = prepare_for_vision(image)
         except UnreadableImage as error:
@@ -60,7 +63,7 @@ class ClaudeTriager:
                                         "data": encoded,
                                     },
                                 },
-                                {"type": "text", "text": USER_PROMPT},
+                                {"type": "text", "text": user_prompt(language)},
                             ],
                         }
                     ],

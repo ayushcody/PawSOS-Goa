@@ -13,6 +13,7 @@ from app.routing.models import Zone
 from app.routing.zones import find_zone
 
 URGENCY_ORDER = {None: 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+CLOSED = {CaseState.MERGED, CaseState.RESOLVED, CaseState.CANCELLED}
 
 
 @dataclass
@@ -33,7 +34,11 @@ def reporters_of(session: Session, case: Case) -> list[str]:
 def route_case(session: Session, case: Case) -> RoutingOutcome:
     primary = dedup.find_duplicate(session, case)
     if primary is not None:
-        return _merge(session, case, primary)
+        # Lock it, so a reporter cancelling it right now and this merge happen one after
+        # the other. If it closed meanwhile, this report becomes a case of its own.
+        session.refresh(primary, with_for_update=True)
+        if primary.state not in CLOSED:
+            return _merge(session, case, primary)
 
     match = find_zone(session, case)
     if match is not None:
