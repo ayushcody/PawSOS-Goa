@@ -27,6 +27,7 @@ from app import clock, messages
 from app.booking.calendar import CalendarClient, calendar_id_for
 from app.booking.models import Booking, BookingDraft, Camp, CampSlot
 from app.cases.audit import log_event
+from app.channels import templates
 from app.channels.base import Outbound
 from app.config import get_settings
 
@@ -67,7 +68,11 @@ def format_time_range(start: datetime, end: datetime) -> str:
 
 
 def _msg(to: str, key: str, **values: object) -> Outbound:
-    return Outbound(to=to, text=messages.render(key, **values))
+    return Outbound(
+        to=to,
+        text=messages.render(key, **values),
+        template=templates.fallback_for(key, values),  # None for most keys
+    )
 
 
 def _numbered(lines: list[str]) -> str:

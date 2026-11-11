@@ -85,6 +85,22 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rstrip(" ,.;:-") + "…"
 
 
+_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+\.(?:com|in|org|net|ly|me|io|link)(?:/\S*)?\b")
+_LONG_NUMBER = re.compile(r"\+?\d[\d\s-]{7,}\d")
+_QUOTES = re.compile(r"[\"“”'‘’`]")
+
+
+def _defang(words: str) -> str:
+    """Reporter words are untrusted: a team must not mistake them for our own lines.
+
+    Links and phone numbers are replaced (the real map link is added by us), and
+    quote marks are removed so the text cannot appear to end the quoted part.
+    """
+    words = _LINK.sub("[link removed]", words)
+    words = _LONG_NUMBER.sub("[number removed]", words)
+    return _QUOTES.sub("", words)
+
+
 def _reporter_notes(session: Session, case: Case) -> list[tuple[str, bool]]:
     """What reporters said about the animal: (words, came from a voice note), oldest first.
 
@@ -108,7 +124,7 @@ def _reporter_notes(session: Session, case: Case) -> list[tuple[str, bool]]:
     )
     notes: dict[str, tuple[str, bool]] = {}
     for row in rows:
-        words = " ".join(row.text.split())
+        words = _defang(" ".join(row.text.split()))
         if words:
             notes.setdefault(words.casefold(), (words, row.id in spoken))
     return list(notes.values())
