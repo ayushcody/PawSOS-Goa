@@ -93,10 +93,10 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rstrip(" ,.;:-") + "…"
 
 
-_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}\b(?:/\S*)?")
+_LINK = re.compile(r"(?i)\b(?:https?://|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.[^\W\d_]{2,}\b(?:/\S*)?")
 _LONG_NUMBER = re.compile(r"\+?\(?\d[\d\s().-]{7,}\d")
 _QUOTES = re.compile(r"[\"“”'‘’`]")
-_INVISIBLE = re.compile("[\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]")
+_DOTS = str.maketrans({"\u3002": ".", "\uff0e": ".", "\uff61": "."})
 
 
 def _defang(words: str) -> str:
@@ -107,7 +107,8 @@ def _defang(words: str) -> str:
     map link is added by us).
     """
     words = unicodedata.normalize("NFKC", words)
-    words = _QUOTES.sub("", _INVISIBLE.sub("", words))
+    words = "".join(c for c in words if unicodedata.category(c) != "Cf").translate(_DOTS)
+    words = _QUOTES.sub("", words)
     words = _LINK.sub("[link removed]", words)
     return _LONG_NUMBER.sub("[number removed]", words)
 
