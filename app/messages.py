@@ -26,6 +26,7 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Hello, this is PawSOS Goa. "
             "To report an animal that needs help, send a photo and your location. "
             "To book a sterilisation or vaccination camp slot for your pet, reply BOOK. "
+            "Reply STATUS to see your reports, CANCEL to cancel one. "
             "To change the language, reply LANGUAGE."
         ),
     },
@@ -397,7 +398,7 @@ def triage_message(
 # top of this file and the checklist in docs/TRANSLATIONS.md.
 #
 # Rules followed: everyday words, not formal ones; every {placeholder} kept
-# exactly; words the person must type (BOOK, CANCEL, LANGUAGE), case IDs and
+# exactly; words the person must type (BOOK, STATUS, CANCEL, LANGUAGE), case IDs and
 # WhatsApp's own "Location" label stay in Latin script. The bot says "we"
 # where "I" would need a gendered verb. Keys left out here (team messages, and
 # book_camp_line, which has no words) fall back to English.
@@ -407,6 +408,7 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
         "नमस्कार, हें PawSOS Goa. "
         "मदत जाय आशिल्ल्या जनावराची खबर दिवपाक, ताचो फोटो आनी तुमचें लोकेशन धाडात. "
         "तुमच्या पाळीव जनावराखातीर नसबंदी वा लसीकरण शिबिरांत वेळ बुक करपाक, BOOK अशें बरोवन धाडात. "
+        "तुमच्यो खबरी पळोवंक STATUS, एक रद्द करपाक CANCEL बरोवन धाडात. "
         "भास बदलूंक, LANGUAGE वा भाषा अशें बरोवन धाडात."
     ),
     "language_menu": (
@@ -539,6 +541,66 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
         "माफ करात, तो फोटो उगडूंक जमलो ना. उपकार करून 10 MB परस ल्हान JPEG वा PNG फोटो धाडात."
     ),
     "unsupported": "माफ करात, असलो मेसेज अजून वाचूंक जमना. उपकार करून फोटो आनी लोकेशन धाडात.",
+    # --- staff actions, STATUS and CANCEL ---
+    "citizen_staff_assigned": (
+        "केस {case_id} चो अपडेट: आमच्या कर्मचाऱ्यांनी {team} हांकां मदत करपाक सांगलां. "
+        "तांची जाप आयली काय आमी हांगाच तुमकां मेसेज करतले."
+    ),
+    "citizen_cancelled": (
+        "PawSOS च्या कर्मचाऱ्यांनी केस {case_id} बंद केल्या. "
+        "जनावराक अजून मदत जाय जाल्यार, उपकार करून नवो फोटो आनी लोकेशन धाडात."
+    ),
+    "status_header_cases": "तुमच्यो चालू खबरी:",
+    "status_case_line": "{case_id}, {when} खबर दिल्ली: {state}.",
+    "status_case_line_zone": "{case_id}, {when} खबर दिल्ली, {zone} वाठार: {state}.",
+    "status_state_received": "खबर मेळ्ळी, आमी फोटो पळयतात",
+    "status_state_finding_team": "आमी बचाव टीम सोदतात",
+    "status_state_team_alerted": "बचाव टीमेक कळयलां",
+    "status_state_still_looking": "आमी अजून एका टीमेक संपर्क करपाचो यत्न करीत आसात",
+    "status_state_accepted": "{team} हांणी केस घेतल्या आनी ते वाटेर आसात",
+    "status_state_on_site": "{team} जनावरा कडेन पावल्या",
+    "status_header_bookings": "शिबिरांतलीं तुमचीं बुकिंगां:",
+    "status_booking_line": "{ref}: {camp}, {date}, {time}.",
+    "status_footer": "हातूंतलें एक रद्द करपाक, CANCEL बरोवन धाडात.",
+    "status_nothing": (
+        "आमचे कडेन तुमची खंयचीच चालू खबर वा शिबीर बुकिंग ना. "
+        "मदत जाय आशिल्ल्या जनावराची खबर दिवपाक, ताचो फोटो आनी तुमचें लोकेशन धाडात. "
+        "तुमच्या पाळीव जनावराखातीर शिबिरांत वेळ बुक करपाक, BOOK अशें बरोवन धाडात."
+    ),
+    "cancel_choose": (
+        "तुमकां कितें रद्द करपाचें आसा?\n{options}\n\n"
+        "नंबर बरोवन धाडात. कांयच रद्द करपाचें ना जाल्यार, हो मेसेज सोडून दियात."
+    ),
+    "cancel_case_line": "खबर {case_id} ({state})",
+    "cancel_booking_line": "बुकिंग {ref}: {camp}, {date}, {time}",
+    "cancel_invalid_choice": "उपकार करून दाखयल्ल्या नंबरां मदलो एक नंबर बरोवन धाडात.",
+    "cancel_nothing": (
+        "रद्द करपाक तुमचें कांयच चालू ना. "
+        "तुमच्यो खबरी आनी बुकिंगां पळोवंक, केन्नाय STATUS बरोवन धाडात."
+    ),
+    "cancel_not_found": (
+        "ह्या नंबरावयल्यान दिल्ली {ref} ही चालू खबर वा बुकिंग आमकां मेळूंक ना. "
+        "तुमच्यो खबरी आनी बुकिंगां पळोवंक STATUS बरोवन धाडात."
+    ),
+    "case_cancel_closed": "केस {case_id} आदींच बंद जाल्या, देखून रद्द करपाक कांयच ना.",
+    "case_cancel_shared": (
+        "केस {case_id} ची खबर आनीक कोणेंय दिल्या, देखून ती तांचे खातीर चालू उरतली. "
+        "आमकां कळयल्ल्या खातीर देव बरें करूं."
+    ),
+    "case_cancelled": (
+        "केस {case_id} रद्द जाल्या. आमकां कळयल्ल्या खातीर देव बरें करूं. "
+        "जनावराक परत मदत जाय जाल्यार, नवो फोटो आनी लोकेशन धाडात."
+    ),
+    "case_cancelled_team_told": (
+        "केस {case_id} रद्द जाल्या आनी आमी बचाव टीमेक कळयलां. "
+        "आमकां कळयल्ल्या खातीर देव बरें करूं. "
+        "जनावराक परत मदत जाय जाल्यार, नवो फोटो आनी लोकेशन धाडात."
+    ),
+    "booking_cancelled": (
+        "बुकिंग {ref} ({camp}, {date}, {time}) रद्द जालें, आनी ती जागा आतां हेरांक मेकळी जाली. "
+        "परत बुक करपाक, केन्नाय BOOK बरोवन धाडात."
+    ),
+    "booking_cancel_closed": "बुकिंग {ref} आतां चालू ना, देखून रद्द करपाक कांयच ना.",
 }
 
 MR: dict[str, str] = {  # Marathi
@@ -547,6 +609,7 @@ MR: dict[str, str] = {  # Marathi
         "मदतीची गरज असलेल्या प्राण्याची माहिती देण्यासाठी, त्याचा फोटो आणि तुमचे लोकेशन पाठवा. "
         "तुमच्या पाळीव प्राण्यासाठी नसबंदी किंवा लसीकरण शिबिरात वेळ बुक करण्यासाठी, "
         "BOOK असे लिहून पाठवा. "
+        "तुमचे रिपोर्ट पाहण्यासाठी STATUS, एखादा रद्द करण्यासाठी CANCEL असे लिहून पाठवा. "
         "भाषा बदलण्यासाठी, LANGUAGE किंवा भाषा असे लिहून पाठवा."
     ),
     "language_menu": (
@@ -681,6 +744,66 @@ MR: dict[str, str] = {  # Marathi
         "माफ करा, तो फोटो उघडता आला नाही. कृपया 10 MB पेक्षा लहान JPEG किंवा PNG फोटो पाठवा."
     ),
     "unsupported": "माफ करा, असा मेसेज अजून वाचता येत नाही. कृपया फोटो आणि लोकेशन पाठवा.",
+    # --- staff actions, STATUS and CANCEL ---
+    "citizen_staff_assigned": (
+        "केस {case_id} बद्दल अपडेट: आमच्या कर्मचाऱ्यांनी {team} ला मदत करण्यास सांगितले आहे. "
+        "त्यांचे उत्तर आले की आम्ही इथेच तुम्हाला मेसेज करू."
+    ),
+    "citizen_cancelled": (
+        "PawSOS च्या कर्मचाऱ्यांनी केस {case_id} बंद केली आहे. "
+        "प्राण्याला अजूनही मदतीची गरज असल्यास, कृपया नवीन फोटो आणि लोकेशन पाठवा."
+    ),
+    "status_header_cases": "तुमचे चालू रिपोर्ट:",
+    "status_case_line": "{case_id}, {when} रोजी नोंदवला: {state}.",
+    "status_case_line_zone": "{case_id}, {when} रोजी नोंदवला, {zone} भाग: {state}.",
+    "status_state_received": "रिपोर्ट मिळाला, आम्ही फोटो पाहत आहोत",
+    "status_state_finding_team": "आम्ही बचाव टीम शोधत आहोत",
+    "status_state_team_alerted": "बचाव टीमला कळवले आहे",
+    "status_state_still_looking": "आम्ही अजूनही टीमशी संपर्क करण्याचा प्रयत्न करत आहोत",
+    "status_state_accepted": "{team} ने केस स्वीकारली आहे आणि ते निघाले आहेत",
+    "status_state_on_site": "{team} प्राण्याजवळ पोहोचली आहे",
+    "status_header_bookings": "शिबिरातील तुमचे बुकिंग:",
+    "status_booking_line": "{ref}: {camp}, {date}, {time}.",
+    "status_footer": "यापैकी एखादे रद्द करण्यासाठी, CANCEL असे लिहून पाठवा.",
+    "status_nothing": (
+        "आमच्याकडे तुमचा कोणताही चालू रिपोर्ट किंवा शिबिर बुकिंग नाही. "
+        "मदतीची गरज असलेल्या प्राण्याची माहिती देण्यासाठी, त्याचा फोटो आणि तुमचे लोकेशन पाठवा. "
+        "तुमच्या पाळीव प्राण्यासाठी शिबिरात वेळ बुक करण्यासाठी, BOOK असे लिहून पाठवा."
+    ),
+    "cancel_choose": (
+        "तुम्हाला काय रद्द करायचे आहे?\n{options}\n\n"
+        "नंबर लिहून पाठवा. काहीही रद्द करायचे नसल्यास, या मेसेजकडे दुर्लक्ष करा."
+    ),
+    "cancel_case_line": "रिपोर्ट {case_id} ({state})",
+    "cancel_booking_line": "बुकिंग {ref}: {camp}, {date}, {time}",
+    "cancel_invalid_choice": "कृपया दाखवलेल्या नंबरांपैकी एक नंबर लिहून पाठवा.",
+    "cancel_nothing": (
+        "रद्द करण्यासारखे तुमचे काहीही चालू नाही. "
+        "तुमचे रिपोर्ट आणि बुकिंग पाहण्यासाठी, कधीही STATUS असे लिहून पाठवा."
+    ),
+    "cancel_not_found": (
+        "या नंबरवरून {ref} हा चालू रिपोर्ट किंवा बुकिंग आम्हाला सापडले नाही. "
+        "तुमचे रिपोर्ट आणि बुकिंग पाहण्यासाठी STATUS असे लिहून पाठवा."
+    ),
+    "case_cancel_closed": "केस {case_id} आधीच बंद झाली आहे, म्हणून रद्द करण्यासारखे काहीही नाही.",
+    "case_cancel_shared": (
+        "केस {case_id} बद्दल आणखी कोणीतरी माहिती दिली आहे, म्हणून ती त्यांच्यासाठी चालू राहील. "
+        "आम्हाला कळवल्याबद्दल धन्यवाद."
+    ),
+    "case_cancelled": (
+        "केस {case_id} रद्द झाली आहे. आम्हाला कळवल्याबद्दल धन्यवाद. "
+        "प्राण्याला पुन्हा मदत लागल्यास, नवीन फोटो आणि लोकेशन पाठवा."
+    ),
+    "case_cancelled_team_told": (
+        "केस {case_id} रद्द झाली आहे आणि आम्ही बचाव टीमला कळवले आहे. "
+        "आम्हाला कळवल्याबद्दल धन्यवाद. "
+        "प्राण्याला पुन्हा मदत लागल्यास, नवीन फोटो आणि लोकेशन पाठवा."
+    ),
+    "booking_cancelled": (
+        "बुकिंग {ref} ({camp}, {date}, {time}) रद्द झाले आहे, आणि ती जागा आता दुसऱ्या कोणासाठी "
+        "मोकळी आहे. पुन्हा बुक करण्यासाठी, कधीही BOOK असे लिहून पाठवा."
+    ),
+    "booking_cancel_closed": "बुकिंग {ref} आता चालू नाही, म्हणून रद्द करण्यासारखे काहीही नाही.",
 }
 
 HI: dict[str, str] = {  # Hindi
@@ -688,6 +811,7 @@ HI: dict[str, str] = {  # Hindi
         "नमस्ते, यह PawSOS Goa है। "
         "किसी जानवर को मदद चाहिए, तो उसकी फ़ोटो और अपनी लोकेशन भेजें। "
         "अपने पालतू जानवर के लिए नसबंदी या टीकाकरण कैंप में समय बुक करने के लिए BOOK लिखकर भेजें। "
+        "अपनी रिपोर्ट देखने के लिए STATUS, कोई रद्द करने के लिए CANCEL लिखकर भेजें। "
         "भाषा बदलने के लिए LANGUAGE या भाषा लिखकर भेजें।"
     ),
     "language_menu": (
@@ -825,6 +949,66 @@ HI: dict[str, str] = {  # Hindi
     "unsupported": (
         "माफ़ कीजिए, इस तरह का मैसेज अभी पढ़ा नहीं जा सकता। कृपया फ़ोटो और लोकेशन भेजें।"
     ),
+    # --- staff actions, STATUS and CANCEL ---
+    "citizen_staff_assigned": (
+        "केस {case_id} का अपडेट: हमारे स्टाफ़ ने {team} से मदद के लिए कहा है। "
+        "उनका जवाब आते ही हम यहीं आपको मैसेज करेंगे।"
+    ),
+    "citizen_cancelled": (
+        "PawSOS के स्टाफ़ ने केस {case_id} बंद कर दिया है। "
+        "अगर जानवर को अब भी मदद चाहिए, तो कृपया नई फ़ोटो और लोकेशन भेजें।"
+    ),
+    "status_header_cases": "आपकी चालू रिपोर्ट:",
+    "status_case_line": "{case_id}, {when} को रिपोर्ट की गई: {state}।",
+    "status_case_line_zone": "{case_id}, {when} को रिपोर्ट की गई, {zone} इलाका: {state}।",
+    "status_state_received": "रिपोर्ट मिल गई, हम फ़ोटो देख रहे हैं",
+    "status_state_finding_team": "हम रेस्क्यू टीम ढूँढ रहे हैं",
+    "status_state_team_alerted": "रेस्क्यू टीम को बता दिया गया है",
+    "status_state_still_looking": "हम अभी भी किसी टीम से संपर्क करने की कोशिश कर रहे हैं",
+    "status_state_accepted": "{team} ने केस ले लिया है और वे रास्ते में हैं",
+    "status_state_on_site": "{team} जानवर तक पहुँच गई है",
+    "status_header_bookings": "आपकी कैंप बुकिंग:",
+    "status_booking_line": "{ref}: {camp}, {date}, {time}।",
+    "status_footer": "इनमें से कोई रद्द करने के लिए CANCEL लिखकर भेजें।",
+    "status_nothing": (
+        "हमारे पास आपकी कोई चालू रिपोर्ट या कैंप बुकिंग नहीं है। "
+        "किसी जानवर को मदद चाहिए, तो उसकी फ़ोटो और अपनी लोकेशन भेजें। "
+        "अपने पालतू जानवर के लिए कैंप में समय बुक करने के लिए BOOK लिखकर भेजें।"
+    ),
+    "cancel_choose": (
+        "आपको क्या रद्द करना है?\n{options}\n\n"
+        "नंबर लिखकर भेजें। कुछ भी रद्द नहीं करना हो, तो इस मैसेज को छोड़ दें।"
+    ),
+    "cancel_case_line": "रिपोर्ट {case_id} ({state})",
+    "cancel_booking_line": "बुकिंग {ref}: {camp}, {date}, {time}",
+    "cancel_invalid_choice": "कृपया दिखाए गए नंबरों में से एक लिखकर भेजें।",
+    "cancel_nothing": (
+        "रद्द करने के लिए आपका कुछ भी चालू नहीं है। "
+        "अपनी रिपोर्ट और बुकिंग देखने के लिए कभी भी STATUS लिखकर भेजें।"
+    ),
+    "cancel_not_found": (
+        "इस नंबर से {ref} की कोई चालू रिपोर्ट या बुकिंग हमें नहीं मिली। "
+        "अपनी रिपोर्ट और बुकिंग देखने के लिए STATUS लिखकर भेजें।"
+    ),
+    "case_cancel_closed": "केस {case_id} पहले ही बंद हो चुका है, इसलिए रद्द करने को कुछ नहीं है।",
+    "case_cancel_shared": (
+        "केस {case_id} की रिपोर्ट किसी और ने भी की है, इसलिए यह उनके लिए खुला रहेगा। "
+        "हमें बताने के लिए धन्यवाद।"
+    ),
+    "case_cancelled": (
+        "केस {case_id} रद्द कर दिया गया है। हमें बताने के लिए धन्यवाद। "
+        "अगर जानवर को फिर से मदद चाहिए, तो नई फ़ोटो और लोकेशन भेजें।"
+    ),
+    "case_cancelled_team_told": (
+        "केस {case_id} रद्द कर दिया गया है और हमने रेस्क्यू टीम को बता दिया है। "
+        "हमें बताने के लिए धन्यवाद। "
+        "अगर जानवर को फिर से मदद चाहिए, तो नई फ़ोटो और लोकेशन भेजें।"
+    ),
+    "booking_cancelled": (
+        "बुकिंग {ref} ({camp}, {date}, {time}) रद्द हो गई है, और वह जगह अब किसी और के लिए "
+        "खाली है। फिर से बुक करने के लिए कभी भी BOOK लिखकर भेजें।"
+    ),
+    "booking_cancel_closed": "बुकिंग {ref} अब चालू नहीं है, इसलिए रद्द करने को कुछ नहीं है।",
 }
 
 

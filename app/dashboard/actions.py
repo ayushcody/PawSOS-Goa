@@ -13,6 +13,7 @@ from app.cases import state_machine
 from app.cases.models import Case
 from app.cases.models import CaseState as S
 from app.channels.base import Outbound
+from app.contacts import language_for
 from app.routing.flow import reporters_of
 from app.routing.models import Dispatch, Team
 
@@ -40,9 +41,12 @@ def cancel_case(session: Session, case: Case, reason: str, actor: str = "staff")
         team = session.get(Team, team_id)
         outbox.append(_msg(team.phone, "team_case_cancelled_by_staff", case))
 
-    outbox += [_msg(number, "citizen_cancelled", case) for number in reporters_of(session, case)]
+    outbox += [
+        _msg(number, "citizen_cancelled", case, language_for(session, number))
+        for number in reporters_of(session, case)
+    ]
     return outbox
 
 
-def _msg(to: str, key: str, case: Case) -> Outbound:
-    return Outbound(to=to, text=messages.render(key, case_id=case.public_id))
+def _msg(to: str, key: str, case: Case, language: str | None = None) -> Outbound:
+    return Outbound(to=to, text=messages.render(key, language, case_id=case.public_id))
