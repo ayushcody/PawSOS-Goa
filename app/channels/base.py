@@ -43,6 +43,19 @@ class Button:
     title: str
 
 
+@dataclass(frozen=True)
+class TemplateFallback:
+    """What to send instead if WhatsApp refuses the free-form message (24-hour window).
+
+    `key` is the message key (e.g. "team_alert"); app/channels/templates.py maps
+    it to an approved template name. Only the WhatsApp adapter uses this.
+    """
+
+    key: str
+    params: tuple[str, ...] = ()  # the template's {{1}}, {{2}}, ... in order
+    button_payloads: tuple[str, ...] = ()  # one per quick-reply button, in order
+
+
 @dataclass
 class Outbound:
     """A message waiting to be sent.
@@ -56,6 +69,7 @@ class Outbound:
     text: str
     buttons: list[Button] = field(default_factory=list)
     media_name: str | None = None  # a photo to send just before the text
+    template: TemplateFallback | None = None  # WhatsApp only, see TemplateFallback
 
 
 class ChannelAdapter(ABC):
@@ -75,16 +89,24 @@ class ChannelAdapter(ABC):
     async def send_image(self, to_number: str, media_name: str) -> None:
         """Send a stored photo."""
 
+    async def send(self, message: Outbound) -> None:
+        """Send one Outbound: its photo first, then its text or buttons.
+
+        Channels without templates (the simulator) ignore `message.template`.
+        WhatsApp overrides this to fall back to a template outside the 24-hour window.
+        """
+        if message.media_name:
+            await self.send_image(message.to, message.media_name)
+        if message.buttons:
+            await self.send_buttons(message.to, message.text, message.buttons)
+        else:
+            await self.send_text(message.to, message.text)
+
 
 async def deliver(channel: ChannelAdapter, outbox: list[Outbound]) -> None:
     """Send every message. One failed send must not stop the rest."""
     for message in outbox:
         try:
-            if message.media_name:
-                await channel.send_image(message.to, message.media_name)
-            if message.buttons:
-                await channel.send_buttons(message.to, message.text, message.buttons)
-            else:
-                await channel.send_text(message.to, message.text)
+            await channel.send(message)
         except Exception:
             log.exception("Could not send a message on channel %s", channel.name)
