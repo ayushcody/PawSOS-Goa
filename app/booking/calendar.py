@@ -26,6 +26,10 @@ class CalendarClient(Protocol):
         """Create an event and return its id."""
         ...
 
+    def delete_event(self, calendar_id: str, event_id: str) -> None:
+        """Remove an event, e.g. when its booking is cancelled."""
+        ...
+
 
 class GoogleCalendar:
     def __init__(self, service_account_file: str) -> None:
@@ -53,6 +57,11 @@ class GoogleCalendar:
         }
         event = self._service.events().insert(calendarId=calendar_id, body=body).execute()
         return event["id"]
+
+    def delete_event(self, calendar_id: str, event_id: str) -> None:
+        # Not yet run against Google. events.delete is the documented call;
+        # a missing event raises, and the caller logs it and carries on.
+        self._service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
 
 
 def calendar_id_for(camp_slug: str) -> str | None:

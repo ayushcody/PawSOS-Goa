@@ -214,6 +214,75 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Reference {ref}."
         ),
     },
+    # --- STATUS and CANCEL ---
+    "status_header_cases": {"en": "Your open reports:"},
+    "status_case_line": {"en": "{case_id}, reported {when}: {state}."},
+    "status_case_line_zone": {"en": "{case_id}, reported {when}, {zone} area: {state}."},
+    "status_state_received": {"en": "received, we are looking at the photo"},
+    "status_state_finding_team": {"en": "we are finding a rescue team"},
+    "status_state_team_alerted": {"en": "a rescue team has been alerted"},
+    "status_state_still_looking": {"en": "we are still trying to reach a team"},
+    "status_state_accepted": {"en": "{team} has accepted it and is on the way"},
+    "status_state_on_site": {"en": "{team} has reached the animal"},
+    "status_header_bookings": {"en": "Your camp bookings:"},
+    "status_booking_line": {"en": "{ref}: {camp}, {date}, {time}."},
+    "status_footer": {"en": "To cancel one of these, reply CANCEL."},
+    "status_nothing": {
+        "en": (
+            "You have no open reports or camp bookings with us. "
+            "To report an animal that needs help, send a photo and your location. "
+            "To book a camp slot for your pet, reply BOOK."
+        ),
+    },
+    "cancel_choose": {
+        "en": (
+            "What would you like to cancel?\n{options}\n\n"
+            "Reply with the number. To keep everything, just ignore this message."
+        ),
+    },
+    "cancel_case_line": {"en": "Report {case_id} ({state})"},
+    "cancel_booking_line": {"en": "Booking {ref}: {camp}, {date}, {time}"},
+    "cancel_invalid_choice": {"en": "Please reply with one of the numbers shown."},
+    "cancel_nothing": {
+        "en": "You have nothing open to cancel. Reply STATUS any time to see your reports and bookings.",
+    },
+    "cancel_not_found": {
+        "en": "I could not find an open report or booking {ref} from this number. Reply STATUS to see yours.",
+    },
+    "case_cancel_closed": {
+        "en": "Case {case_id} is already closed, so there is nothing to cancel.",
+    },
+    "case_cancel_shared": {
+        "en": (
+            "Case {case_id} was also reported by someone else, so it stays open for them. "
+            "Thank you for letting us know."
+        ),
+    },
+    "case_cancelled": {
+        "en": (
+            "Case {case_id} is cancelled. Thank you for letting us know. "
+            "If the animal needs help again, send a new photo and location."
+        ),
+    },
+    "case_cancelled_team_told": {
+        "en": (
+            "Case {case_id} is cancelled and we have told the rescue team. "
+            "Thank you for letting us know. "
+            "If the animal needs help again, send a new photo and location."
+        ),
+    },
+    "team_case_cancelled": {
+        "en": "Case {case_id} has been cancelled by the person who reported it. No action needed.",
+    },
+    "booking_cancelled": {
+        "en": (
+            "Booking {ref} ({camp}, {date}, {time}) is cancelled, and the place is free for someone else. "
+            "Reply BOOK any time to book again."
+        ),
+    },
+    "booking_cancel_closed": {
+        "en": "Booking {ref} is no longer active, so there is nothing to cancel.",
+    },
     # --- voice notes ---
     "voice_heard": {"en": "I heard: \"{text}\""},
     "voice_noted": {

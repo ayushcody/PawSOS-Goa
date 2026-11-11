@@ -3,11 +3,15 @@
 A photo and a location open a case. The photo is triaged, the case is merged
 into an existing one or placed in a zone, and a rescue team is alerted. Team
 button taps come in here too.
+
+Words are tried in this order: the BOOK conversation (it owns a number typed
+mid-booking, and CANCEL there only leaves it), then STATUS and CANCEL
+(app/citizen.py), then bite words, then everything else.
 """
 
 from sqlalchemy.orm import Session
 
-from app import messages
+from app import citizen, messages
 from app.booking import flow as booking
 from app.booking.calendar import CalendarClient
 from app.cases import bites, intake
@@ -88,6 +92,9 @@ async def handle_inbound(
         # Speech services add full stops: a spoken "Book." must still mean BOOK.
         command = text.strip(" .!?") if message.kind == "voice" else text
         outbox = booking.handle_text(session, number, command, calendar) if command else None
+        if is_words and command and outbox is None:
+            # STATUS, CANCEL, or a number answering the CANCEL list.
+            outbox = citizen.handle_text(session, number, command, calendar)
         if is_words and outbox is not None:
             session.commit()
             await deliver(channel, outbox)

@@ -7,6 +7,13 @@
 
 A row in booking_drafts remembers where each person is, and which ids the
 numbers we showed them stand for.
+
+The same row also holds the CANCEL list (app/citizen.py): its options are
+strings such as "case:12" or "booking:5" instead of ids. One row per person
+means a number they type has exactly one meaning at a time.
+
+Cancelling a booking (cancel_booking) marks it "cancelled", which frees the
+place: places_left, reminders and the dashboard count only "booked".
 """
 
 import logging
@@ -103,7 +110,7 @@ def free_slots(session: Session, camp: Camp) -> list[tuple[CampSlot, int]]:
     return [(slot, left) for slot, left in with_places if left > 0]
 
 
-def _active_draft(session: Session, number: str) -> BookingDraft | None:
+def active_draft(session: Session, number: str) -> BookingDraft | None:
     draft = session.get(BookingDraft, number)
     if draft is not None and draft.updated_at < clock.now() - DRAFT_WINDOW:
         session.delete(draft)
@@ -124,9 +131,9 @@ def handle_text(
     if word in START_WORDS:
         return _show_camps(session, number)
 
-    draft = _active_draft(session, number)
-    if draft is None:
-        return None
+    draft = active_draft(session, number)
+    if draft is None or is_cancel_list(draft):
+        return None  # the CANCEL list is answered in app/citizen.py
     if word in CANCEL_WORDS:
         session.delete(draft)
         return [_msg(number, "book_cancelled")]
@@ -141,6 +148,11 @@ def handle_text(
     if draft.camp_id is None:
         return _show_slots(session, number, draft, session.get(Camp, chosen_id))
     return _book(session, number, draft, chosen_id, calendar)
+
+
+def is_cancel_list(draft: BookingDraft) -> bool:
+    """True when this row holds the CANCEL list rather than a BOOK conversation."""
+    return bool(draft.options) and isinstance(draft.options[0], str)
 
 
 def _show_camps(session: Session, number: str) -> list[Outbound]:
@@ -275,6 +287,76 @@ def _sync_to_calendar(
         return True
     except Exception:
         log.exception("Calendar sync failed for %s", booking.reference)
+        return False
+
+
+# ---------- a person's own bookings, and cancelling one ----------
+
+
+def upcoming_bookings(session: Session, number: str) -> list[tuple[Booking, CampSlot, Camp]]:
+    """This person's bookings whose slot is still ahead, soonest first."""
+    rows = session.execute(
+        select(Booking, CampSlot, Camp)
+        .join(CampSlot, Booking.slot_id == CampSlot.id)
+        .join(Camp, Booking.camp_id == Camp.id)
+        .where(
+            Booking.owner_number == number,
+            Booking.status == "booked",
+            CampSlot.starts_at > clock.now(),
+        )
+        .order_by(CampSlot.starts_at)
+    ).all()
+    return [(booking, slot, camp) for booking, slot, camp in rows]
+
+
+def booking_values(booking: Booking, slot: CampSlot, camp: Camp) -> dict[str, str]:
+    """What a message needs to name one booking."""
+    return {
+        "ref": booking.reference,
+        "camp": camp.name,
+        "date": format_date(slot.starts_at),
+        "time": format_time_range(slot.starts_at, slot.ends_at),
+    }
+
+
+def cancel_booking(
+    session: Session, number: str, booking_id: int, calendar: CalendarClient | None
+) -> list[Outbound]:
+    """Cancel one of this person's future bookings, freeing its place."""
+    # Locked, so a reminder or a second CANCEL waits its turn.
+    booking = session.scalar(
+        select(Booking)
+        .where(Booking.id == booking_id, Booking.owner_number == number)
+        .with_for_update()
+    )
+    if booking is None:
+        return [_msg(number, "cancel_not_found", ref=f"BK-{booking_id:04d}")]
+    slot = session.get(CampSlot, booking.slot_id)
+    if booking.status != "booked" or slot.starts_at <= clock.now():
+        return [_msg(number, "booking_cancel_closed", ref=booking.reference)]
+
+    camp = session.get(Camp, booking.camp_id)
+    booking.status = "cancelled"
+    removed = _remove_from_calendar(booking, camp, calendar)
+    log_event(
+        session,
+        "booking_cancelled",
+        actor=number,
+        data={"booking": booking.reference, "camp": camp.slug, "calendar_removed": removed},
+    )
+    return [_msg(number, "booking_cancelled", **booking_values(booking, slot, camp))]
+
+
+def _remove_from_calendar(booking: Booking, camp: Camp, calendar: CalendarClient | None) -> bool:
+    """Take the booking off the camp's calendar. A failure here never undoes the cancel."""
+    calendar_id = calendar_id_for(camp.slug)
+    if calendar is None or calendar_id is None or not booking.calendar_event_id:
+        return False
+    try:
+        calendar.delete_event(calendar_id=calendar_id, event_id=booking.calendar_event_id)
+        return True
+    except Exception:
+        log.exception("Calendar removal failed for %s", booking.reference)
         return False
 
 

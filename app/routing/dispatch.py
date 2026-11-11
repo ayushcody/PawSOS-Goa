@@ -326,3 +326,33 @@ def _resolved(session: Session, case: Case, team: Team) -> list[Outbound]:
 
     state_machine.transition(session, case, S.RESOLVED, actor=team.phone)
     return [ack] + _tell_reporters(session, case, "citizen_resolved")
+
+
+# ---------- the reporter cancelled ----------
+
+
+def stand_down(session: Session, case: Case) -> list[Outbound]:
+    """Stop every pending alert for a case its reporter has cancelled, and tell the teams.
+
+    Pending alerts become "cancelled", so process_timeouts (which only looks
+    at "sent") never escalates them. Teams still waiting to answer, and the
+    team that accepted, are told. Call this before moving the case to CANCELLED.
+    """
+    now = clock.now()
+    teams: dict[int, Team] = {}
+    pending = session.scalars(
+        select(Dispatch)
+        .where(Dispatch.case_id == case.id, Dispatch.status == "sent")
+        .with_for_update()  # waits for a timer that is moving this alert along
+    )
+    for dispatch in pending:
+        dispatch.status = "cancelled"
+        dispatch.responded_at = now
+        teams[dispatch.team_id] = session.get(Team, dispatch.team_id)
+    if case.assigned_team_id is not None:
+        teams[case.assigned_team_id] = session.get(Team, case.assigned_team_id)
+    for team in teams.values():
+        log_event(
+            session, "team_stood_down", case_id=case.id, actor="routing", data={"team": team.name}
+        )
+    return [_msg(team.phone, "team_case_cancelled", case_id=case.public_id) for team in teams.values()]
