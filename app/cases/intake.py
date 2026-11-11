@@ -86,6 +86,25 @@ def has_open_draft(session: Session, number: str) -> bool:
     )
 
 
+def has_photo_waiting(session: Session, number: str) -> bool:
+    """True while the person's open draft has a photo and still needs a location."""
+    cutoff = datetime.now(UTC) - DRAFT_WINDOW
+    return (
+        session.scalar(
+            select(Photo.id)
+            .join(Report, Photo.report_id == Report.id)
+            .where(
+                Report.reporter_number == number,
+                Report.case_id.is_(None),
+                Report.location.is_(None),
+                Report.created_at >= cutoff,
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
 def add_note(
     session: Session, number: str, text: str, language: str | None, *, spoken: bool = True
 ) -> IntakeResult:

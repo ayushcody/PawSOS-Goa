@@ -227,6 +227,7 @@ Replying `2` to the CANCEL list, or sending `CANCEL PAW-0042` or `CANCEL BK-0005
 Gave up: protection against a mistyped number. A cancelled booking's place may be taken by someone else before the person books again.
 
 ## D-066 One reporter cannot cancel a case that others also reported (11 Nov)
+**Replaced by D-084.**
 If another person's report was merged into the case, CANCEL from one of them is refused: the case stays open for the others, the person is told so, and `cancel_refused_shared` is logged. Only a person with a report on the case can cancel it, and the "not found" answer is the same whether the case does not exist or belongs to someone else.
 Gave up: a reporter who knows the animal is fine cannot close a shared case. Staff can, from the dashboard (D-072).
 
@@ -297,6 +298,26 @@ Gave up: a person who has never chosen a language is still heard as Konkani firs
 ## D-083 When a case moves on mid-flow, the newer change wins quietly; locks go case first (11 Nov)
 If a reporter or staff cancel or assign a case while its photo is still being triaged or routed, the state machine refuses the stale step (D-069). The report flow now catches that, rolls back its unfinished part and stops, instead of failing the request. The escalation timer now locks the case before the alert, like button taps, cancels and staff actions, so two of them can never wait on each other forever; a case someone is handling is left for the timer's next tick.
 Gave up: a reporter whose case is cancelled during the duplicate check never gets a case ID, which is fine because the case is closed.
+
+## D-084 CANCEL on a shared case withdraws that reporter; the last one to cancel closes it (11 Nov)
+Replaces D-066. The first run showed that when every reporter of a merged case sent CANCEL, each was told it "stays open for them", the team stayed alerted and everyone kept getting updates. Now CANCEL on a shared case marks that person's reports as withdrawn (`reports.withdrawn_at`, migration 0009) and logs `report_withdrawn`: they get no more updates and the case leaves their STATUS. `reporters_of` leaves withdrawn reports out, so when the last remaining reporter cancels, the case is cancelled as usual. A person who withdrew and reports the animal again has a new report and is back on the list.
+Gave up: a new column and migration. The dashboard's report count still includes withdrawn reports.
+
+## D-085 Bare links in reporter words: remove the known endings in any case, and split the rest (11 Nov)
+`EVIL.COM` got through because the list of web endings was matched in lower case only; it is now matched in any case. Endings that are also everyday words (`pay.in`, `bad.me`) cannot be removed without eating sentences typed with no space after a full stop ("market.It is bleeding"). So any full stop left with a letter on both sides gets a space after it: the words stay, and no phone turns them into a link.
+Gave up: "pay. in" looks slightly odd. A capitalised word after a missing space that happens to be a web ending ("shop.Live wire") is now removed as a link.
+
+## D-086 A typed or spoken description gets its own thank-you (11 Nov)
+After a photo, a typed description was answered with "photo received, now share the location" a second time, as if the words had been ignored. New keys `note_ask_location` and `note_ask_photo` thank the person for the description and ask for what is still missing.
+Gave up: two more keys to translate.
+
+## D-087 Dates and area names follow the reader's language (11 Nov)
+Translated replies carried "Wed 11 Nov" and "Mapusa" in English. `app/messages.py` now has weekday, month and place-name tables per language, used by `format_date` and wherever an area is named to a citizen. Team alerts stay in English. All of it is machine-drafted and listed in `docs/TRANSLATIONS.md`.
+Gave up: camp names, venues and services are seed data and stay in English; the time range stays as it is because `format_time_range` is Ayush's `TODO(me)`.
+
+## D-088 One location answers a bite report and a waiting photo (11 Nov)
+A person who had said they were bitten, then sent a photo of the animal and a location, got only the nearest health centre: the photo stayed waiting. Now, when a photo is waiting, the same location also completes the animal's report. With no photo waiting, the behaviour is unchanged (the location is the person's, and no case is opened).
+Gave up: the animal's case uses the person's location, which may be some way from the animal if they have already moved.
 
 ## Open
 - Nothing right now.

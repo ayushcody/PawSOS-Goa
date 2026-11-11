@@ -20,8 +20,8 @@ The texts are in `app/messages.py`, in three tables at the bottom of the file: `
 
 ## Also still in English inside translated messages
 
-- Camp names, venues and services, and zone names, come from the seed data in English.
-- Dates in booking, STATUS and CANCEL messages ("Sat 28 Nov") come from `format_date` in `app/booking/flow.py`.
+- Camp names, venues and services come from the seed data in English.
+- Times ("09:00 to 10:00") are the same in every language.
 - First-aid steps after a photo come from the triage model, which writes them in English.
 - Case states in the STATUS list ("a rescue team has been alerted") are translated, but the team name inside them comes from the seed data in English.
 
@@ -150,6 +150,14 @@ These are in `app/contacts.py` and `app/conversation.py`, not `app/messages.py`.
 | Open the language menu | `LANGUAGE`, `lang`, `bhasha`, `भाषा`, `भास` | [ ] |
 | Greetings that get the welcome message (`GREETINGS` in `app/conversation.py`) | `hi`, `hello`, `hey`, `namaste`, `namaskar`, `start`, `नमस्कार`, `नमस्ते`, `हॅलो`, `हेलो`, `हैलो`, `हाय` | [ ] |
 | Pick a language while the menu is open | `1` to `4` (Devanagari digits `१` to `४` work too), or `english`, `konkani`, `कोंकणी`, `कोकणी`, `marathi`, `मराठी`, `hindi`, `हिंदी`, `हिन्दी` | [ ] |
+
+## Dates and place names (added 11 Nov, machine-drafted)
+
+These are in `app/messages.py` under "dates and place names". Please check each one.
+
+- [ ] `WEEKDAYS` and `MONTHS` for Konkani, Marathi and Hindi (for example "शेनवार 28 नोव्हेंबर", "शनिवार 28 नवंबर").
+- [ ] `PLACE_NAMES`: the 14 areas as a Devanagari reader in Goa would write them. Check the Konkani forms especially (म्हापशें, पेडणें, दिवचल, सांखळी, वाळपय, फोंडें, मुरगांव, मडगांव, केपें, कुडचडें-काकोडें, सांगें), and whether Hindi readers expect the same names as Marathi.
+- [ ] `note_ask_location`, `note_ask_photo` and the reworded `case_cancel_shared`, in all three languages.
 
 ## Keys added later
 

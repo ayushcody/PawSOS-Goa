@@ -10,10 +10,11 @@ The numbered list lives in the person's booking_drafts row (see
 app/booking/flow.py), so a number they type means one thing at a time: a camp,
 a slot, or something to cancel. Every choice is checked again when it is made.
 
-Only a person who reported a case may cancel it, and only when nobody else
-reported the same animal: a merged case stays open for the other reporters.
-Cancelling goes through the state machine, stops pending alerts, and tells
-any team that was alerted or had accepted.
+Only a person who reported a case may cancel it. When other people reported
+the same animal, CANCEL withdraws this person only: they get no more updates
+and the case stays open for the others. When the last reporter cancels, the
+case is cancelled. Cancelling goes through the state machine, stops pending
+alerts, and tells any team that was alerted or had accepted.
 """
 
 import re
@@ -104,9 +105,14 @@ def handle_text(
 
 
 def open_cases(session: Session, number: str) -> list[Case]:
-    """Open cases this number has a report on, oldest first. Merged reports count."""
+    """Open cases this number has a report on, oldest first. Merged reports count.
+
+    A case the person has withdrawn from is no longer theirs.
+    """
     reported = select(Report.case_id).where(
-        Report.reporter_number == number, Report.case_id.is_not(None)
+        Report.reporter_number == number,
+        Report.case_id.is_not(None),
+        Report.withdrawn_at.is_(None),
     )
     return list(
         session.scalars(
@@ -117,9 +123,9 @@ def open_cases(session: Session, number: str) -> list[Case]:
     )
 
 
-def _when(case: Case) -> str:
+def _when(case: Case, language: str) -> str:
     local = case.created_at.astimezone(booking.GOA_TIME)
-    return f"{booking.format_date(case.created_at)}, {local:%H:%M}"
+    return f"{booking.format_date(case.created_at, language)}, {local:%H:%M}"
 
 
 def _state_words(session: Session, case: Case, language: str) -> str:
@@ -133,10 +139,10 @@ def _state_words(session: Session, case: Case, language: str) -> str:
 def _case_line(session: Session, case: Case, language: str) -> str:
     zone = session.get(Zone, case.zone_id) if case.zone_id else None
     state = _state_words(session, case, language)
-    values = {"case_id": case.public_id, "when": _when(case), "state": state}
+    values = {"case_id": case.public_id, "when": _when(case, language), "state": state}
     if zone is None:
         return messages.render("status_case_line", language, **values)
-    return messages.render("status_case_line_zone", language, zone=zone.short_name, **values)
+    return messages.render("status_case_line_zone", language, zone=messages.place_name(zone.short_name, language), **values)
 
 
 def status(session: Session, number: str) -> list[Outbound]:
@@ -152,7 +158,9 @@ def status(session: Session, number: str) -> list[Outbound]:
         parts.append("\n".join([messages.render("status_header_cases", language), *lines]))
     if bookings:
         lines = [
-            messages.render("status_booking_line", language, **booking.booking_values(*row))
+            messages.render(
+                "status_booking_line", language, **booking.booking_values(*row, language)
+            )
             for row in bookings
         ]
         parts.append("\n".join([messages.render("status_header_bookings", language), *lines]))
@@ -185,7 +193,7 @@ def _show_cancel_list(session: Session, number: str) -> list[Outbound]:
         )
     for row in bookings:
         options.append(f"booking:{row[0].id}")
-        values = booking.booking_values(*row)
+        values = booking.booking_values(*row, language)
         lines.append(messages.render("cancel_booking_line", language, **values))
 
     # Replaces any half-finished BOOK conversation: the newest list is the one they answer.
@@ -244,9 +252,18 @@ def _cancel_case(session: Session, number: str, condition, ref: str | None) -> l
     if case.state in CLOSED:
         return [_msg(session, number, "case_cancel_closed", case_id=case.public_id)]
     if any(other != number for other in reporters):
+        # Other people are still waiting on this animal: only this person steps back.
+        for report in session.scalars(
+            select(Report).where(
+                Report.case_id == case.id,
+                Report.reporter_number == number,
+                Report.withdrawn_at.is_(None),
+            )
+        ):
+            report.withdrawn_at = clock.now()
         log_event(
-            session, "cancel_refused_shared", case_id=case.id, actor=number,
-            data={"reporters": len(reporters)},
+            session, "report_withdrawn", case_id=case.id, actor=number,
+            data={"reporters_left": len(reporters) - 1},
         )
         return [_msg(session, number, "case_cancel_shared", case_id=case.public_id)]
 

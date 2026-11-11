@@ -29,7 +29,7 @@ docker compose up -d
 .venv/bin/uvicorn app.main:app --reload --port 8040
 ```
 
-- On `main` the tests ended with **192 passed, 11 skipped**. The 11 skipped tests are Ayush's learning tasks (see "Leave these alone"). On branch `pickup-tasks` the suite has not been re-run yet, so the count there is unknown.
+- The tests should end with **278 passed, 11 skipped**. The 11 skipped tests are Ayush's learning tasks (see "Leave these alone").
 - `alembic upgrade head` applies every migration, including 0008 (each person's language). Run it again if your database is older.
 - For real voice notes you also need `ffmpeg` installed (see `docs/VOICE_SETUP.md`). Nothing else needs it.
 - Simulator (a fake WhatsApp in the browser): `http://localhost:8040/sim`
@@ -72,8 +72,8 @@ docs/            SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOIC
 
 ## Where things stand
 
-- Every planned slice (1 to 11) is built and committed. On `main`, 192 automated tests pass.
-- After the handoff, the pick-up tasks were written on branch `pickup-tasks` (rows 10, 11 and 15 to 18 below). **That code has not been run at all**: not against a database, not on the simulator, not against any real service. No tests were written for it, and the existing suite has not been re-run on that branch. The person who built it chose speed over tests and will run it on another machine. `docs/PLAN.md`, "What is new since the handoff", lists it; `docs/DECISIONS.md` D-063 to D-078 give the reasons.
+- Every planned slice (1 to 11) is built and committed. On `main`, 278 automated tests pass.
+- After the handoff, the pick-up tasks were written on branch `pickup-tasks` (rows 10, 11 and 15 to 18 below). It was written without being run, then merged into `main` on 11 Nov. Claude then ran it on the simulator and dashboard, fixed five problems and added `tests/test_pickup.py` (`docs/PLAN.md`, "First run, fixes and tests"). **Still true: no person has checked it by hand, and nothing has been tried against Meta, Bhashini or the real model.** `docs/PLAN.md`, "What is new since the handoff", lists it; `docs/DECISIONS.md` D-063 to D-078 give the reasons.
 - **Nothing has been verified by a person or against a real external service.** No photo has been triaged by the real model, no booking has reached Google Calendar, no real WhatsApp message has been sent or received, and no voice note has reached Bhashini. Claude ran the slice 1 to 11 flows on the simulator; Ayush has not yet rehearsed them.
 
 ### Part by part
@@ -101,22 +101,22 @@ Each part is scored out of 100: code written 50, tests pass 20, run live on the 
 | 17 | Dashboard case detail, staff actions, response times | 50% | Case panel with photos, triage, notes, alert history, audit trail; staff assign a team or cancel with a reason; median and 90th percentile response times. Written, not run | Run it in a browser; tests. Accurate wording when a staff-chosen team declines is written, not run (D-080) |
 | 18 | WhatsApp templates for the 24-hour window | 50% | Fallback to an approved template for team alerts, "no answer in time" and camp reminders; the three templates are described in `docs/WHATSAPP_SETUP.md`. Written, not run | **Never tried against Meta.** Needs the Meta app and three approved templates |
 
-Overall: nearly all of the code in the specification is now written, but the newest part has never been run. About 80% is demo-ready on the simulator (unchanged, because the new work has not been run), and about 15% is verified for real (also unchanged).
+Overall: nearly all of the code in the specification is now written, tested against stand-ins and run on the simulator by Claude. About 15% is verified for real (unchanged: no real service has run and no person has checked it by hand). Some rows in the table above still say "not run"; the status in `docs/PLAN.md` is the current one.
 
 ## What you can pick up
 
-The eight coding tasks first listed here have all been written, on branch `pickup-tasks` (pull request into `main`), but none has been run or tested. The same branch also has the follow-ups in `docs/PLAN.md` ("What is new since the handoff") and decisions D-063 to D-083. Work stopped on 11 Nov before anything was run; `docs/CHECKLIST.md` is the first-run list.
+The eight coding tasks first listed here have all been written, on branch `pickup-tasks` (pull request into `main`), and are now merged, run on the simulator and tested. The same branch also has the follow-ups in `docs/PLAN.md` ("What is new since the handoff") and decisions D-063 to D-083. `docs/CHECKLIST.md` is the list that was used for the first run.
 
 | Task | Where | State |
 |---|---|---|
-| Show the reporter's typed or spoken description to the team in the alert | `app/routing/dispatch.py`, `app/messages.py` | Built, not run, no tests |
-| A `STATUS` command and `CANCEL` for a report or booking | `app/citizen.py`, `app/booking/flow.py`, `app/routing/dispatch.py` | Built, not run, no tests |
-| Case detail on the dashboard: photo, triage, audit trail | `app/dashboard/` | Built, not run, no tests |
-| Staff actions (assign a team, cancel), behind the password | `app/dashboard/routes.py`, `actions.py`, `app/routing/dispatch.py` | Built, not run, no tests |
-| Konkani, Marathi and Hindi messages, and each person's language | `app/messages.py`, `app/contacts.py`, migration 0008 | Built, not run, no tests; translations not checked |
-| Real speech recognition | `app/voice/speech.py` (`BhashiniSpeechToText`) | Built, not run, no tests of its own; never tried with real keys |
-| Response-time figures on the dashboard | `app/dashboard/queries.py` | Built, not run, no tests |
-| WhatsApp templates for the 24-hour window | `app/channels/templates.py`, `whatsapp.py` | Built, not run, no tests; never tried against Meta |
+| Show the reporter's typed or spoken description to the team in the alert | `app/routing/dispatch.py`, `app/messages.py` | Built, tested, run on the simulator |
+| A `STATUS` command and `CANCEL` for a report or booking | `app/citizen.py`, `app/booking/flow.py`, `app/routing/dispatch.py` | Built, tested, run on the simulator |
+| Case detail on the dashboard: photo, triage, audit trail | `app/dashboard/` | Built, tested, run on the simulator |
+| Staff actions (assign a team, cancel), behind the password | `app/dashboard/routes.py`, `actions.py`, `app/routing/dispatch.py` | Built, tested, run on the simulator |
+| Konkani, Marathi and Hindi messages, and each person's language | `app/messages.py`, `app/contacts.py`, migration 0008 | Built, tested, run on the simulator; translations not checked |
+| Real speech recognition | `app/voice/speech.py` (`BhashiniSpeechToText`) | Built, tested against a stand-in; never tried with real keys |
+| Response-time figures on the dashboard | `app/dashboard/queries.py` | Built, tested, run on the simulator |
+| WhatsApp templates for the 24-hour window | `app/channels/templates.py`, `whatsapp.py` | Built, tested against a stand-in; never tried against Meta |
 
 What is open now. These do not depend on Ayush; tell him which one you take so two people do not do the same thing.
 

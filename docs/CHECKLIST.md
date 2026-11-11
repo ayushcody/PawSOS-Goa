@@ -1,4 +1,6 @@
-# Checklist: run branch `pickup-tasks` for the first time
+# Checklist: run the pick-up work
+
+**Update, later on 11 Nov:** the branch is merged into `main`. Claude ran sections 2 and 3 on a machine with Docker; the results, five fixes and the new tests are in `docs/PLAN.md` ("First run, fixes and tests"). The expected test result is now **278 passed, 11 skipped**, and migrations end at `0009`. The text below is the original first-run list, kept for a hand check by a person.
 
 Everything on `pickup-tasks` was written on 11 Nov on a machine without Docker. **None of it has been run against a database, on the simulator, or against a real service, and the new features have no tests of their own.** This page is the first run. Tick each line, and write down anything that differs from "Expect".
 
@@ -36,7 +38,7 @@ Use **Citizen 1** unless a line says otherwise. Run `.venv/bin/python -m seed.re
 **STATUS and CANCEL**
 - [ ] Citizen 1 sends `STATUS`. Expect: the open case in plain words, with its area.
 - [ ] Send `CANCEL`. Expect: a numbered list. Reply `1`.
-  Expect, if the case is shared with Citizen 2: "stays open for them". Otherwise: "cancelled, and we have told the rescue team"; the team gets "cancelled by the person who reported it".
+  Expect, if the case is shared with Citizen 2: "You will get no more updates … stays open for them", and the case leaves Citizen 1's STATUS. When Citizen 2 then cancels too, the case is cancelled. Otherwise: "cancelled, and we have told the rescue team"; the team gets "cancelled by the person who reported it".
 - [ ] Send `BOOK`, book a slot, then `STATUS` (the booking shows), then `CANCEL BK-…`. Expect: the place is free again (book it again to check).
 - [ ] Mid-BOOK, type a number: it must still go to the booking, not to CANCEL or LANGUAGE.
 
@@ -68,8 +70,8 @@ Use **Citizen 1** unless a line says otherwise. Run `.venv/bin/python -m seed.re
 
 ## Known gaps on this branch
 
-- Link cleaning in team alerts misses bare domains in capitals or with endings outside a short list (`EVIL.COM`, `pay.in`, `bad.me`); links with `http`, `www.` or a `/path` are still caught. Open task in `docs/HANDOFF.md`.
+- (Fixed, D-085) Link cleaning in team alerts missed bare domains in capitals or with everyday-word endings.
 - STATUS or CANCEL sent during the few seconds of the duplicate check shows the case ID that is about to be merged away.
 - STATUS, CANCEL and LANGUAGE are recognised only as English words (LANGUAGE also as भाषा).
-- The new features have no automated tests; a green `pytest` only shows the old behaviour still works.
+- (Fixed) The new features now have tests in `tests/test_pickup.py`.
 - Ayush's skipped exercise in `tests/test_slice1.py` (the fallback test) hints at rendering `welcome` in Konkani and expecting English. Konkani now exists, so that hint needs another language (say `"fr"`) before he does the exercise. Left for Ayush, as `TODO(me)` items are his.

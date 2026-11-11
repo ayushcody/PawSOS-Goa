@@ -79,6 +79,8 @@ class Report(Base):
     location: Mapped[Any | None] = mapped_column(_point())
     text: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Set when the reporter cancels their part of a case other people also reported.
+    withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     case: Mapped[Case | None] = relationship(back_populates="reports")
     photos: Mapped[list["Photo"]] = relationship(back_populates="report")

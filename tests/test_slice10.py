@@ -140,7 +140,7 @@ def test_a_spoken_description_is_kept_with_the_report(client, seeded):
 def test_a_voice_note_after_a_photo_asks_only_for_what_is_missing(client, seeded):
     client.post("/sim/inbound/photo", data={"from_number": CITIZEN}, files={"file": ("a.jpg", JPEG, "image/jpeg")})
     speak(client, "the cow has a rope around its leg")
-    assert replies(client)[-1] == messages.render("ask_location")
+    assert replies(client)[-1] == messages.render("note_ask_location")
 
 
 def test_a_spoken_book_starts_a_booking(client, seeded):

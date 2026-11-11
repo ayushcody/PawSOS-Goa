@@ -23,7 +23,7 @@ In development. See [docs/PLAN.md](docs/PLAN.md) for progress (as of 11 Nov 2026
 | Photo triage by Claude | Tests pass against a stand-in. **The live call has not been run** |
 | Real WhatsApp through Meta's Cloud API | Tests pass against a stand-in. **Not yet run with a real phone**; see [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md) |
 | Voice-note structure: an interface, a stand-in, and a simulated voice note in the simulator | Tests pass; run on the simulator by Claude |
-| Reporter's words in the team alert; STATUS and CANCEL; dashboard case detail, staff assign and cancel, response times; WhatsApp templates for the 24-hour window; Konkani, Marathi and Hindi replies with a LANGUAGE menu; Bhashini speech recognition | **Code written 11 Nov, not yet run.** Not run against a database or on the simulator, no tests of their own, never tried against Meta or Bhashini. The translations are machine-drafted and not yet checked by a fluent reader ([docs/TRANSLATIONS.md](docs/TRANSLATIONS.md)) |
+| Reporter's words in the team alert; STATUS and CANCEL; dashboard case detail, staff assign and cancel, response times; WhatsApp templates for the 24-hour window; Konkani, Marathi and Hindi replies with a LANGUAGE menu; Bhashini speech recognition | Tests pass against stand-ins; run on the simulator by Claude. **Never tried against Meta or Bhashini**, and not yet checked by a person. The translations are machine-drafted and not yet checked by a fluent reader ([docs/TRANSLATIONS.md](docs/TRANSLATIONS.md)) |
 
 Nothing has yet been checked by hand by a person.
 

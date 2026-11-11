@@ -25,8 +25,15 @@ class RoutingOutcome:
 
 
 def reporters_of(session: Session, case: Case) -> list[str]:
+    """The people to keep informed about a case: everyone who reported it and has not withdrawn.
+
+    A person who withdrew and then reported the animal again has a new report,
+    so they are back on the list.
+    """
     numbers = session.scalars(
-        select(Report.reporter_number).where(Report.case_id == case.id).order_by(Report.id)
+        select(Report.reporter_number)
+        .where(Report.case_id == case.id, Report.withdrawn_at.is_(None))
+        .order_by(Report.id)
     )
     return list(dict.fromkeys(numbers))  # unique, in order
 

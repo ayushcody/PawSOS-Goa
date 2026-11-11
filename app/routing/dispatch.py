@@ -93,21 +93,25 @@ def _shorten(text: str, limit: int) -> str:
     return cut.rstrip(" ,.;:-") + "…"
 
 
-# Common web endings, lowercase only: a sentence typed without a space after the full
-# stop ("market.It is bleeding") must not look like a link. Endings that are also
-# everyday words ("it", "in", "to", "is", "me", "at", "be") are left out on purpose.
+# Common web endings, in capitals or not ("EVIL.COM"). Endings that are also everyday
+# words ("it", "in", "to", "is", "me", "at", "be") are left out: they are handled by
+# _GLUED_DOT below, which keeps the words and only stops them reading as a link.
 _TLDS = (
     "com|net|org|co|io|ly|link|xyz|app|info|site|online|top|tk|ml|ga|cf|gq|gl|cc|biz|"
     "ru|cn|tv|ws|club|shop|live|click|page|dev|me\\.uk|co\\.in|org\\.in|net\\.in|gov\\.in"
 )
 _LINK = re.compile(
     r"(?i:\b(?:https?://|www\.)\S+)"
-    rf"|\b[\w-]+(?:\.[\w-]+)*\.(?:{_TLDS})\b(?:/\S*)?"
+    rf"|(?i:\b[\w-]+(?:\.[\w-]+)*\.(?:{_TLDS})\b(?:/\S*)?)"
     r"|\b[\w-]+(?:\.[\w-]+)+/\S+"
 )
 # A run of digits with spaces, dots, dashes or brackets: a phone number only when it has
 # at least 10 digits, so dates (10.11.2026) and house numbers stay.
 _DIGIT_RUN = re.compile(r"\+?\(?\d[\d\s().-]{6,}\d")
+# A full stop with a letter on both sides ("pay.in", "market.It"): whatever is left of
+# this shape after the link check gets a space after the stop, so no phone turns it
+# into a link and no word is lost. Digits are untouched, so "10.11.2026" stays.
+_GLUED_DOT = re.compile(r"(?<=[^\W\d_])\.(?=[^\W\d_])")
 _QUOTES = re.compile(r"[\"“”'‘’`]")
 _DOTS = str.maketrans({"\u3002": ".", "\uff0e": ".", "\uff61": "."})
 
@@ -123,6 +127,7 @@ def _defang(words: str) -> str:
     words = "".join(c for c in words if unicodedata.category(c) != "Cf").translate(_DOTS)
     words = _QUOTES.sub("", words)
     words = _LINK.sub("[link removed]", words)
+    words = _GLUED_DOT.sub(". ", words)
     return _DIGIT_RUN.sub(
         lambda m: "[number removed]" if sum(c.isdigit() for c in m.group()) >= 10 else m.group(),
         words,

@@ -16,6 +16,8 @@ purpose: teams are organisations, their alerts carry case IDs and links, and
 WhatsApp button titles are limited to 20 characters.
 """
 
+from datetime import date
+
 DEFAULT_LANGUAGE = "en"
 # Every language a person can choose, in the order of the LANGUAGE menu.
 LANGUAGES = ("en", "kok", "mr", "hi")
@@ -55,6 +57,19 @@ MESSAGES: dict[str, dict[str, str]] = {
     "ask_photo": {
         "en": (
             "Thank you, location received. Now please send a photo of the animal, "
+            "if you can take one from a safe distance."
+        ),
+    },
+    # After a typed or spoken description, when one thing is still missing.
+    "note_ask_location": {
+        "en": (
+            "Thank you, noted. Now please share where the animal is: "
+            "tap attach, then Location."
+        ),
+    },
+    "note_ask_photo": {
+        "en": (
+            "Thank you, noted. Now please send a photo of the animal, "
             "if you can take one from a safe distance."
         ),
     },
@@ -327,8 +342,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "case_cancel_shared": {
         "en": (
-            "Case {case_id} was also reported by someone else, so it stays open for them. "
-            "Thank you for letting us know."
+            "You will get no more updates on case {case_id}. Someone else also reported "
+            "this animal, so the case stays open for them. Thank you for letting us know."
         ),
     },
     "case_cancelled": {
@@ -454,6 +469,14 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
     ),
     "ask_photo": (
         "देव बरें करूं, लोकेशन मेळ्ळें. आतां सुरक्षीत अंतरावयल्यान फोटो काडूंक जमत जाल्यार, "
+        "जनावराचो फोटो धाडात."
+    ),
+    "note_ask_location": (
+        "देव बरें करूं, तें बरोवन घेतलां. आतां जनावर खंय आसा तें लोकेशन धाडात: "
+        "📎 अटॅच दामात, मागीर Location."
+    ),
+    "note_ask_photo": (
+        "देव बरें करूं, तें बरोवन घेतलां. आतां सुरक्षीत अंतरावयल्यान फोटो काडूंक जमत जाल्यार, "
         "जनावराचो फोटो धाडात."
     ),
     "case_created": (
@@ -620,8 +643,8 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
     ),
     "case_cancel_closed": "केस {case_id} आदींच बंद जाल्या, देखून रद्द करपाक कांयच ना.",
     "case_cancel_shared": (
-        "केस {case_id} ची खबर आनीक कोणेंय दिल्या, देखून ती तांचे खातीर चालू उरतली. "
-        "आमकां कळयल्ल्या खातीर देव बरें करूं."
+        "केस {case_id} विशीं तुमकां आतां मेसेज येवचे नात. ह्या जनावराची खबर आनीक कोणेंय "
+        "दिल्या, देखून केस तांचे खातीर चालू उरतली. आमकां कळयल्ल्या खातीर देव बरें करूं."
     ),
     "case_cancelled": (
         "केस {case_id} रद्द जाल्या. आमकां कळयल्ल्या खातीर देव बरें करूं. "
@@ -666,6 +689,14 @@ MR: dict[str, str] = {  # Marathi
     ),
     "ask_photo": (
         "धन्यवाद, लोकेशन मिळाले. आता सुरक्षित अंतरावरून फोटो काढता येत असेल, "
+        "तर प्राण्याचा फोटो पाठवा."
+    ),
+    "note_ask_location": (
+        "धन्यवाद, ते नोंदवून घेतले आहे. आता प्राणी कुठे आहे ते लोकेशन पाठवा: "
+        "📎 अटॅच वर टॅप करा, मग Location."
+    ),
+    "note_ask_photo": (
+        "धन्यवाद, ते नोंदवून घेतले आहे. आता सुरक्षित अंतरावरून फोटो काढता येत असेल, "
         "तर प्राण्याचा फोटो पाठवा."
     ),
     "case_created": (
@@ -834,8 +865,8 @@ MR: dict[str, str] = {  # Marathi
     ),
     "case_cancel_closed": "केस {case_id} आधीच बंद झाली आहे, म्हणून रद्द करण्यासारखे काहीही नाही.",
     "case_cancel_shared": (
-        "केस {case_id} बद्दल आणखी कोणीतरी माहिती दिली आहे, म्हणून ती त्यांच्यासाठी चालू राहील. "
-        "आम्हाला कळवल्याबद्दल धन्यवाद."
+        "केस {case_id} बद्दल तुम्हाला यापुढे मेसेज येणार नाहीत. या प्राण्याची माहिती आणखी "
+        "कोणीतरी दिली आहे, म्हणून केस त्यांच्यासाठी चालू राहील. आम्हाला कळवल्याबद्दल धन्यवाद."
     ),
     "case_cancelled": (
         "केस {case_id} रद्द झाली आहे. आम्हाला कळवल्याबद्दल धन्यवाद. "
@@ -878,6 +909,14 @@ HI: dict[str, str] = {  # Hindi
     ),
     "ask_photo": (
         "धन्यवाद, लोकेशन मिल गई। अब अगर सुरक्षित दूरी से फ़ोटो ले सकें, "
+        "तो जानवर की फ़ोटो भेजें।"
+    ),
+    "note_ask_location": (
+        "धन्यवाद, यह नोट कर लिया है। अब जानवर जहाँ है, उसकी लोकेशन भेजें: "
+        "📎 अटैच पर टैप करें, फिर Location।"
+    ),
+    "note_ask_photo": (
+        "धन्यवाद, यह नोट कर लिया है। अब अगर सुरक्षित दूरी से फ़ोटो ले सकें, "
         "तो जानवर की फ़ोटो भेजें।"
     ),
     "case_created": (
@@ -1050,8 +1089,8 @@ HI: dict[str, str] = {  # Hindi
     ),
     "case_cancel_closed": "केस {case_id} पहले ही बंद हो चुका है, इसलिए रद्द करने को कुछ नहीं है।",
     "case_cancel_shared": (
-        "केस {case_id} की रिपोर्ट किसी और ने भी की है, इसलिए यह उनके लिए खुला रहेगा। "
-        "हमें बताने के लिए धन्यवाद।"
+        "केस {case_id} के बारे में अब आपको मैसेज नहीं आएँगे। इस जानवर की रिपोर्ट किसी और ने "
+        "भी की है, इसलिए केस उनके लिए खुला रहेगा। हमें बताने के लिए धन्यवाद।"
     ),
     "case_cancelled": (
         "केस {case_id} रद्द कर दिया गया है। हमें बताने के लिए धन्यवाद। "
@@ -1068,6 +1107,65 @@ HI: dict[str, str] = {  # Hindi
     ),
     "booking_cancel_closed": "बुकिंग {ref} अब चालू नहीं है, इसलिए रद्द करने को कुछ नहीं है।",
 }
+
+
+# ---------- dates and place names ----------
+#
+# MACHINE-DRAFTED like the tables above; listed in docs/TRANSLATIONS.md for a
+# fluent reader. English uses short forms ("Sat 28 Nov"); the other languages
+# use full words, which read more naturally in Devanagari.
+
+WEEKDAYS: dict[str, tuple[str, ...]] = {  # Monday first, as datetime.weekday() counts
+    "en": ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
+    "kok": ("सोमार", "मंगळार", "बुधवार", "बिरेस्तार", "शुक्रार", "शेनवार", "आयतार"),
+    "mr": ("सोमवार", "मंगळवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"),
+    "hi": ("सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"),
+}
+MONTHS: dict[str, tuple[str, ...]] = {
+    "en": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+    "kok": (
+        "जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून",
+        "जुलय", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर",
+    ),
+    "mr": (
+        "जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून",
+        "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर",
+    ),
+    "hi": (
+        "जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून",
+        "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर",
+    ),
+}
+
+# The 14 municipal areas, as a Devanagari reader in Goa would write them.
+# A name that is not here (a new zone, a camp's place) is shown as it is stored.
+PLACE_NAMES: dict[str, dict[str, str]] = {
+    "Panaji": {"kok": "पणजी", "mr": "पणजी", "hi": "पणजी"},
+    "Mapusa": {"kok": "म्हापशें", "mr": "म्हापसा", "hi": "म्हापसा"},
+    "Pernem": {"kok": "पेडणें", "mr": "पेडणे", "hi": "पेडणे"},
+    "Bicholim": {"kok": "दिवचल", "mr": "डिचोली", "hi": "डिचोली"},
+    "Sankhalim": {"kok": "सांखळी", "mr": "साखळी", "hi": "साखळी"},
+    "Valpoi": {"kok": "वाळपय", "mr": "वाळपई", "hi": "वाळपई"},
+    "Ponda": {"kok": "फोंडें", "mr": "फोंडा", "hi": "फोंडा"},
+    "Mormugao": {"kok": "मुरगांव", "mr": "मुरगाव", "hi": "मुरगांव"},
+    "Margao": {"kok": "मडगांव", "mr": "मडगाव", "hi": "मडगांव"},
+    "Cuncolim": {"kok": "कुंकळ्ळी", "mr": "कुंकळ्ळी", "hi": "कुंकळ्ळी"},
+    "Quepem": {"kok": "केपें", "mr": "केपे", "hi": "केपे"},
+    "Curchorem-Cacora": {"kok": "कुडचडें-काकोडें", "mr": "कुडचडे-काकोडा", "hi": "कुडचडे-काकोडा"},
+    "Sanguem": {"kok": "सांगें", "mr": "सांगे", "hi": "सांगे"},
+    "Canacona": {"kok": "काणकोण", "mr": "काणकोण", "hi": "काणकोण"},
+}
+
+
+def date_words(day: date, language: str | None = DEFAULT_LANGUAGE) -> str:
+    """ "Sat 28 Nov" in English; "शनिवार 28 नवंबर" in Hindi. `day` is already in Goa time."""
+    language = language if language in WEEKDAYS else DEFAULT_LANGUAGE
+    return f"{WEEKDAYS[language][day.weekday()]} {day.day} {MONTHS[language][day.month - 1]}"
+
+
+def place_name(name: str, language: str | None = DEFAULT_LANGUAGE) -> str:
+    """An area's name in the reader's script, or as stored when we have no version of it."""
+    return PLACE_NAMES.get(name, {}).get(language or DEFAULT_LANGUAGE, name)
 
 
 def _add_translations() -> None:

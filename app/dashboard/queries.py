@@ -415,6 +415,7 @@ EVENT_WORDS = {
     "alert_timed_out": "Team did not answer in time",
     "chain_exhausted": "Every team in the chain was asked; none has taken it",
     "team_assigned_by_staff": "Staff sent the case to a team",
+    "report_withdrawn": "A reporter withdrew; the case stays open for the others",
 }
 # Events written before the case existed carry the report's id instead of the case's.
 INTAKE_EVENTS = (

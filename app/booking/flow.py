@@ -43,10 +43,9 @@ CANCEL_WORDS = {"cancel", "stop", "exit"}
 # ---------- wording helpers ----------
 
 
-def format_date(moment: datetime) -> str:
-    """ "Sat 28 Nov" """
-    local = moment.astimezone(GOA_TIME)
-    return f"{local:%a} {local.day} {local:%b}"
+def format_date(moment: datetime, language: str | None = None) -> str:
+    """ "Sat 28 Nov", or the same day in the reader's language."""
+    return messages.date_words(moment.astimezone(GOA_TIME), language)
 
 
 def format_time_range(start: datetime, end: datetime) -> str:
@@ -174,12 +173,13 @@ def _show_camps(session: Session, number: str) -> list[Outbound]:
     draft.updated_at = clock.now()
     session.add(draft)
 
+    language = language_for(session, number)
     lines = [
         messages.render(
             "book_camp_line",
-            place=camp.short_name,
+            place=messages.place_name(camp.short_name, language),
             services=camp.services,
-            date=format_date(camp.slots[0].starts_at),
+            date=format_date(camp.slots[0].starts_at, language),
             venue=camp.venue,
         )
         for camp in camps
@@ -206,7 +206,7 @@ def _show_slots(session: Session, number: str, draft: BookingDraft, camp: Camp) 
                 session,
                 ref=existing.reference,
                 camp=camp.name,
-                date=format_date(existing.slot.starts_at),
+                date=format_date(existing.slot.starts_at, language_for(session, number)),
                 time=format_time_range(existing.slot.starts_at, existing.slot.ends_at),
             )
         ]
@@ -234,7 +234,7 @@ def _show_slots(session: Session, number: str, draft: BookingDraft, camp: Camp) 
             "book_choose_slot",
             session,
             camp=camp.name,
-            date=format_date(slots[0][0].starts_at),
+            date=format_date(slots[0][0].starts_at, language_for(session, number)),
             options=_numbered(lines),
         )
     ]
@@ -272,7 +272,7 @@ def _book(
             session,
             ref=booking.reference,
             camp=camp.name,
-            date=format_date(slot.starts_at),
+            date=format_date(slot.starts_at, language_for(session, number)),
             time=format_time_range(slot.starts_at, slot.ends_at),
             venue=camp.venue,
         )
@@ -323,12 +323,14 @@ def upcoming_bookings(session: Session, number: str) -> list[tuple[Booking, Camp
     return [(booking, slot, camp) for booking, slot, camp in rows]
 
 
-def booking_values(booking: Booking, slot: CampSlot, camp: Camp) -> dict[str, str]:
+def booking_values(
+    booking: Booking, slot: CampSlot, camp: Camp, language: str | None = None
+) -> dict[str, str]:
     """What a message needs to name one booking."""
     return {
         "ref": booking.reference,
         "camp": camp.name,
-        "date": format_date(slot.starts_at),
+        "date": format_date(slot.starts_at, language),
         "time": format_time_range(slot.starts_at, slot.ends_at),
     }
 
@@ -358,7 +360,8 @@ def cancel_booking(
         actor=number,
         data={"booking": booking.reference, "camp": camp.slug, "calendar_removed": removed},
     )
-    return [_msg(number, "booking_cancelled", session, **booking_values(booking, slot, camp))]
+    values = booking_values(booking, slot, camp, language_for(session, number))
+    return [_msg(number, "booking_cancelled", session, **values)]
 
 
 def _remove_from_calendar(booking: Booking, camp: Camp, calendar: CalendarClient | None) -> bool:
@@ -405,7 +408,7 @@ def due_reminders(session: Session) -> list[Outbound]:
                 session,
                 ref=booking.reference,
                 camp=camp.name,
-                date=format_date(slot.starts_at),
+                date=format_date(slot.starts_at, language_for(session, booking.owner_number)),
                 time=format_time_range(slot.starts_at, slot.ends_at),
                 venue=camp.venue,
             )

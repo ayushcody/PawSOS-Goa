@@ -43,9 +43,9 @@ any open state -> CANCELLED
 
 A change of state locks the case row and checks the database first, so a stale copy (say, triage finishing after the reporter cancelled) cannot reopen a closed case.
 
-## Modules added on 11 Nov (written, not yet run)
+## Modules added on 11 Nov
 
-These were written after the handoff on branch `pickup-tasks`. **None has been run against a database or on the simulator, and none has tests of its own.**
+These were written after the handoff on branch `pickup-tasks`. They have since been merged, run on the simulator and covered by `tests/test_pickup.py`. None has been tried against a real outside service.
 
 | Module | What it does |
 |---|---|
@@ -93,7 +93,7 @@ Python 3.12, FastAPI, SQLAlchemy and Alembic migrations, Postgres with PostGIS, 
 | Real WhatsApp | Written and tested against a stand-in. **Not yet run with a real phone.** |
 | Google Calendar sync | Written. **Not yet run against Google.** |
 | Voice notes in Konkani, Marathi, Hindi | Interface and a stand-in for the simulator, tested. Bhashini speech recognition written on 11 Nov. **Not run, and never tried with real keys.** |
-| STATUS and CANCEL, reporter's words in the alert, case detail, staff actions, response times | Written on 11 Nov. **Not run against a database or on the simulator; no tests of their own.** |
+| STATUS and CANCEL, reporter's words in the alert, case detail, staff actions, response times | Working on the simulator and covered by tests. **Not yet checked by a person.** |
 | Konkani, Marathi and Hindi replies | Written on 11 Nov, machine-drafted. **Not run, and not checked by a fluent reader.** |
 | WhatsApp templates for the 24-hour window | Written on 11 Nov. **Not run, and never tried against Meta.** |
 | Zones | Approximate circles around 14 town centres, not official boundaries |

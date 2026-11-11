@@ -21,12 +21,12 @@ Slices 1 to 5 are the must-have demo. They are scheduled first and finish by Mon
 | 9 | Real WhatsApp hookup with an ngrok guide | Sat 21 Nov | Committed 11 Nov (ten days early). Checked by tests against a stand-in for Meta, and a local dry run of the webhook by Claude. **No real WhatsApp message has been sent or received**: needs Ayush's Meta app and ngrok (`docs/WHATSAPP_SETUP.md`). `TODO(me)` open: `mask_number()` in `app/channels/whatsapp.py` |
 | 11 | Demo script and seed polish | Sun 22 Nov | Committed 11 Nov (eleven days early). Claude ran the README setup and every demo step on a clean copy with a scratch database. **The script has not been rehearsed aloud or timed by a person, and not run with a real API key.** `TODO(me)` open: your own closing sentence in `docs/DEMO.md` |
 | 10 | Voice notes (stretch) | Only if ahead | Skeleton built and committed 11 Nov: the interface, a stand-in, a simulated voice note in the simulator, and the reply flow. Checked by tests and one browser run by Claude. Real Bhashini speech recognition then written on 11 Nov (branch `pickup-tasks`, see below): **not run, no tests of its own, never tried with real keys.** `TODO(me)` open: `clean_transcript()` in `app/voice/speech.py` |
-| – | Pick-up tasks from `docs/HANDOFF.md` | After the handoff | Code written and committed 11 Nov on branch `pickup-tasks` (see "What is new since the handoff"). **None of it has been run against a database, the simulator or any real service, and no new tests were written.** The existing test suite has not been re-run on this branch. |
+| – | Pick-up tasks from `docs/HANDOFF.md` | After the handoff | Written 11 Nov by Arnav on branch `pickup-tasks`, merged into `main` the same day. Run on the simulator and dashboard by Claude, five problems fixed, and tests added (see "First run, fixes and tests"). Fixes and tests committed 11 Nov. Not checked by a person; never tried against Meta, Bhashini or the real model. |
 | – | **Freeze, final run-through, submit** | Mon 23 Nov, by noon | – |
 
 ## What is new since the handoff
 
-Written on 11 Nov on branch `pickup-tasks`, after `docs/HANDOFF.md`. **Code only: not run against a database, not run on the simulator, not tried against any real service, and no new tests.** The person who built it chose speed over tests and will run it on another machine. Reasons are in `docs/DECISIONS.md`, D-063 to D-078.
+Written on 11 Nov on branch `pickup-tasks`, after `docs/HANDOFF.md`, without being run. It has since been merged, run and tested: see "First run, fixes and tests" below. Reasons are in `docs/DECISIONS.md`, D-063 to D-078.
 
 - **Reporter's words in the team alert.** Words typed between the photo and the location, and voice-note words, appear in the alert as `Reporter says: "…"`, cleaned of links, phone numbers and hidden characters (D-063).
 - **STATUS and CANCEL** (`app/citizen.py`). STATUS lists open cases and upcoming bookings. CANCEL lists them numbered; reply a number, or send `CANCEL PAW-0042` or `CANCEL BK-0005` (D-064 to D-068).
@@ -36,7 +36,7 @@ Written on 11 Nov on branch `pickup-tasks`, after `docs/HANDOFF.md`. **Code only
 - **Bhashini speech recognition** for real voice notes, through ffmpeg (D-078, `docs/VOICE_SETUP.md`).
 - **Safer state changes.** A state change checks the database first, so a stale copy cannot reopen a closed case (D-069).
 
-Also on this branch, written the same day (same status: not run, no tests):
+Also on this branch, written the same day:
 
 - The new citizen messages (STATUS, CANCEL, staff notices) translated into Konkani, Marathi and Hindi and sent in the person's language; the welcome message mentions STATUS and CANCEL; greetings in Devanagari recognised.
 - The second reporter no longer sees a temporary case ID before a merge, when an open case is nearby (D-079).
@@ -46,11 +46,25 @@ Also on this branch, written the same day (same status: not run, no tests):
 
 `docs/CHECKLIST.md` lists what to run, and what to expect, on the machine with Docker.
 
+## First run, fixes and tests (11 Nov)
+
+After the merge, Claude ran `docs/CHECKLIST.md` sections 2 and 3 on a scratch database through the simulator and the dashboard. Nearly everything behaved as written, with no server errors. Five problems were found and fixed (D-084 to D-088):
+
+- **A shared case could never be cancelled by its reporters.** CANCEL on a shared case now withdraws that person: no more updates, and it leaves their STATUS. When the last reporter cancels, the case is cancelled and the team is told. Migration **0009** adds `reports.withdrawn_at`.
+- **Bare links got through team alerts.** `EVIL.COM` is now removed; `pay.in` becomes `pay. in`, which keeps the words and stops a phone making it a link.
+- **A typed description was answered with "photo received".** It is now answered with "Thank you, noted".
+- **Dates and area names stayed in English inside translated replies.** Weekdays, months and the 14 area names now follow the reader's language (machine-drafted, listed in `docs/TRANSLATIONS.md`).
+- **A location sent after a bite report and a photo went only to the bite report.** One location now answers both: the nearest health centre, and the animal's case.
+
+`tests/test_pickup.py` adds 86 tests for the pick-up work and these fixes. The suite is now **278 passed, 11 skipped**.
+
+What that run did not cover: the staff cancel button's confirmation box and the phone-width layout (the test browser could not show either), a real photo in the case panel, a cancel sent during a real triage call, and every real service.
+
 ## Still to verify by a person (as of 11 Nov)
 
 - **Real Claude triage**: no `ANTHROPIC_API_KEY` has been set, so the live call has never run.
 - **Slices 2 to 6 by hand in the simulator**: Ayush has not clicked through them yet. Do this before the Tue 17 Nov checkpoint at the latest.
-- **Everything on branch `pickup-tasks`, on a machine with Docker**: run `alembic upgrade head` (adds migration 0008), the existing tests, then STATUS, CANCEL, LANGUAGE, a description typed between photo and location, the dashboard case panel, a staff assign and a staff cancel, and the response-times panel, all on the simulator. None of this has been run yet, and none of it has its own tests.
+- **The pick-up features by hand**: STATUS, CANCEL, LANGUAGE, the dashboard case panel, a staff assign and a staff cancel. Claude has run them and they have tests, but no person has clicked through them. In the dashboard, check the staff cancel confirmation box, the panel at phone width, and a real photo in the panel.
 - **Konkani, Marathi and Hindi copy**: needs a fluent reader for each language (`docs/TRANSLATIONS.md`).
 - **Real Bhashini voice notes**: needs Bhashini keys and ffmpeg (`docs/VOICE_SETUP.md`). Never tried.
 - **WhatsApp templates**: need the Meta app, three templates created and approved, and their names in `.env` (`docs/WHATSAPP_SETUP.md`). Never tried.

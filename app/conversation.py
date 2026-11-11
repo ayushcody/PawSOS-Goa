@@ -69,6 +69,7 @@ async def handle_inbound(
     # Typed words and a voice note's words are treated alike from here on.
     is_words = message.kind in ("text", "voice")
     result: intake.IntakeResult | None = None
+    noted = False  # the person described the animal in words just now
 
     if message.kind == "image" and message.media_name:
         result = intake.add_photo(
@@ -97,7 +98,10 @@ async def handle_inbound(
                     km=centre.distance_km,
                     map_link=f"https://maps.google.com/?q={centre.latitude:.5f},{centre.longitude:.5f}",
                 )
-            return
+            if not intake.has_photo_waiting(session, number):
+                return
+            # They also sent a photo of an animal and it is waiting for a place.
+            # One location answers both: the person is standing near the animal.
         result = intake.add_location(session, number, message.latitude, message.longitude)
 
     if result is None:
@@ -126,6 +130,7 @@ async def handle_inbound(
         elif message.kind == "voice" and text.lower().strip(" .!।") not in GREETINGS:
             # A spoken description of the animal: keep it with the report.
             result = intake.add_note(session, number, text, message.language)
+            noted = True
         elif (
             message.kind == "text"
             and text.lower().strip(" .!।") not in GREETINGS
@@ -133,6 +138,7 @@ async def handle_inbound(
         ):
             # Typed words between the photo and the location describe the animal.
             result = intake.add_note(session, number, text, None, spoken=False)
+            noted = True
         elif is_words and text:
             await reply("welcome" if text.lower().strip(" .!।") in GREETINGS else "how_to_report")
         else:
@@ -143,9 +149,11 @@ async def handle_inbound(
     if result.status == "need_both":
         await reply("voice_noted")
     elif result.status == "need_location":
-        await reply("ask_location")
+        # After words, thank them for the words: "photo received" would read as if
+        # the description had been ignored.
+        await reply("note_ask_location" if noted else "ask_location")
     elif result.status == "need_photo":
-        await reply("ask_photo")
+        await reply("note_ask_photo" if noted else "ask_photo")
     else:
         # Save the case and tell the citizen straight away. Triage takes a few
         # seconds and must never be able to undo the case.
@@ -238,7 +246,10 @@ async def _tell_routing_outcome(
     primary = outcome.merged_into
     if primary is None:
         if outcome.zone is not None:
-            await tell(number, "zone_assigned", case_id=case.public_id, zone=outcome.zone.short_name)
+            zone = messages.place_name(
+                outcome.zone.short_name, contacts.language_for(session, number)
+            )
+            await tell(number, "zone_assigned", case_id=case.public_id, zone=zone)
         outbox = dispatch.start_dispatch(session, case)
         session.commit()
         await deliver(channel, outbox)
