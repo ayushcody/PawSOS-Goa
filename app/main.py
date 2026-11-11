@@ -38,7 +38,7 @@ def create_app() -> FastAPI:
     app.state.channel = channel
     app.include_router(simulator.build_router(sim_channel, channel))
     app.include_router(whatsapp.build_router(wa_channel, channel))
-    app.include_router(dashboard.build_router())
+    app.include_router(dashboard.build_router(channel))
 
     @app.get("/health")
     def health() -> dict[str, str | bool]:
