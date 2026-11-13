@@ -559,6 +559,12 @@ function duration(seconds) {
   return `${Math.round(hours / 24)} days`;
 }
 
+// "3 good, 1 OK, 0 poor"; with a percentage once satisfaction_percent() is written.
+function ratingWords(r) {
+  const share = r.satisfaction_percent == null ? "" : ` (${r.satisfaction_percent}% good)`;
+  return `${r.good} good, ${r.ok} OK, ${r.poor} poor${share}`;
+}
+
 function drawResponseTimes(data) {
   const rt = data.response_times;
   const a = rt.overall.report_to_accept, r = rt.overall.accept_to_resolve;
@@ -577,7 +583,10 @@ function drawResponseTimes(data) {
     <tbody>${rt.zones.map((z) => `<tr><td>${esc(z.zone_name)}</td>
       <td>${cell(z.report_to_accept)}</td><td>${cell(z.accept_to_resolve)}</td></tr>`).join("")}</tbody></table></div>
     <p class="note">Each cell: median / 90th percentile (number of cases). Last ${data.window_days} days.
-      ${esc(rt.rule)} A median from a handful of cases is a rough guide only.</p>`;
+      ${esc(rt.rule)} A median from a handful of cases is a rough guide only.</p>
+    <p><b>How reporters rated resolved cases:</b> ${data.ratings.total
+      ? ratingWords(data.ratings) + "."
+      : '<span class="muted">no ratings yet.</span>'}</p>`;
 }
 
 // ---------- one case in detail ----------
@@ -624,6 +633,15 @@ function drawDetail(c) {
     ${c.photos.length ? `<div class="photos">${c.photos.map((p) =>
       `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="Photo sent ${goaTime(p.at)}" loading="lazy"></a>`).join("")}</div>`
       : '<span class="muted">No photo stored.</span>'}</div>`);
+
+  // After the rescue: the team's photo and the reporters' ratings, once there is either.
+  if (c.rescue_photos.length || c.ratings.total) {
+    sections.push(`<div class="card"><h2>After the rescue</h2>
+      ${c.rescue_photos.length ? `<div class="photos">${c.rescue_photos.map((p) =>
+        `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="Photo from the team, sent ${goaTime(p.at)}" loading="lazy"></a>`).join("")}</div>
+        <p class="note">Sent by the team and passed to everyone who reported the case.</p>` : ""}
+      ${c.ratings.total ? `<p>Reporters rated it: ${ratingWords(c.ratings)}.</p>` : ""}</div>`);
+  }
 
   let triage;
   if (t.status === "ok") {

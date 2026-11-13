@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from app import citizen, contacts, messages
 from app.booking import flow as booking
 from app.booking.calendar import CalendarClient
-from app.cases import bites, intake
+from app.cases import aftercare, bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.cases.state_machine import InvalidTransition
@@ -56,8 +56,12 @@ async def handle_inbound(
         )
 
     if message.kind == "button" and message.button_id:
-        # A rescue team tapped Accept, Decline, On site or Resolved.
-        outbox = dispatch.handle_button(session, number, message.button_id)
+        if aftercare.is_rating(message.button_id):
+            # A reporter tapped Good, OK or Poor after their case was resolved.
+            outbox = aftercare.handle_rating(session, number, message.button_id)
+        else:
+            # A rescue team tapped Accept, Decline, On site or Resolved.
+            outbox = dispatch.handle_button(session, number, message.button_id)
         session.commit()
         await deliver(channel, outbox)
         return
@@ -78,6 +82,15 @@ async def handle_inbound(
     noted = False  # the person described the animal in words just now
 
     if message.kind == "image" and message.media_name:
+        waiting = aftercare.case_awaiting_photo(session, number)
+        if waiting is not None:
+            # A team's photo just after it resolved a case: the animal after the rescue.
+            outbox = aftercare.add_rescue_photo(
+                session, *waiting, message.media_name, message.media_mime or "image/jpeg"
+            )
+            session.commit()
+            await deliver(channel, outbox)
+            return
         result = intake.add_photo(
             session, number, message.media_name, message.media_mime or "image/jpeg"
         )

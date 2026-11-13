@@ -118,7 +118,16 @@ def test_accept_on_site_resolved_and_the_citizen_hears_each_step(client, seeded,
 
     tap(client, own, "resolved")
     assert the_case(seeded).state == CaseState.RESOLVED
-    assert last_text(client, CITIZEN_1) == messages.render("citizen_resolved", case_id=CASE)
+    # The citizen is told it is resolved, then asked how it went (the rating, added later).
+    heard = [
+        m["text"]
+        for m in client.get("/sim/messages", params={"phone": CITIZEN_1}).json()
+        if m["direction"] == "out"
+    ]
+    assert heard[-2:] == [
+        messages.render("citizen_resolved", case_id=CASE),
+        messages.render("rating_ask", case_id=CASE),
+    ]
     assert last_buttons(client, own.phone) == []
 
 

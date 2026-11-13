@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from app import clock
 from app.booking import flow as booking
 from app.booking.models import Booking, Camp, SterilisationCount
+from app.cases import aftercare
 from app.cases.bites import BiteReport
 from app.cases.models import Case, Event, Photo, Report
 from app.cases.models import CaseState as S
@@ -52,6 +53,20 @@ def _longitude(column):
 def photo_url(photo_id: int) -> str:
     """Photos are fetched by their id, behind the staff password (see routes.py)."""
     return f"/dashboard/photos/{photo_id}"
+
+
+def rescue_photo_url(photo_id: int) -> str:
+    return f"/dashboard/rescue-photos/{photo_id}"
+
+
+def ratings_summary(session: Session, case_ids: list[int] | None = None) -> dict[str, Any]:
+    """Reporters' ratings as counts. `satisfaction` stays None until there is something to show."""
+    counts = aftercare.rating_counts(session, case_ids)
+    return {
+        **counts,
+        "total": sum(counts.values()),
+        "satisfaction_percent": aftercare.satisfaction_percent(**counts),
+    }
 
 
 # ---------- zones ----------
@@ -415,6 +430,8 @@ EVENT_WORDS = {
     "alert_timed_out": "Team did not answer in time",
     "chain_exhausted": "Every team in the chain was asked; none has taken it",
     "team_assigned_by_staff": "Staff sent the case to a team",
+    "rescue_photo_received": "The team sent a photo after the rescue",
+    "case_rated": "A reporter rated how it went",
     "report_withdrawn": "A reporter withdrew; the case stays open for the others",
 }
 # Events written before the case existed carry the report's id instead of the case's.
@@ -633,6 +650,16 @@ def case_detail(session: Session, case: Case) -> dict[str, Any]:
             {"id": photo.id, "url": photo_url(photo.id), "at": photo.created_at.isoformat()}
             for photo in photos
         ],
+        # After the rescue: the team's photo, and what the reporters said (never who said it).
+        "rescue_photos": [
+            {"id": p.id, "url": rescue_photo_url(p.id), "at": p.created_at.isoformat()}
+            for p in session.scalars(
+                select(aftercare.RescuePhoto)
+                .where(aftercare.RescuePhoto.case_id == case.id)
+                .order_by(aftercare.RescuePhoto.id)
+            )
+        ],
+        "ratings": ratings_summary(session, [case.id]),
         "reports": len(reports),
         "reporters": len(reporters),
         "notes": [
@@ -705,4 +732,6 @@ def dashboard_data(
         "sterilisation": sterilisation,
         "suggestion": suggest_next_camp(zones, bites, camps, sterilisation),
         "response_times": response_times(session),
+        # What reporters said after their case was resolved, for the cases in the list.
+        "ratings": ratings_summary(session, [case["id_number"] for case in all_cases]),
     }

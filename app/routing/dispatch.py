@@ -17,7 +17,7 @@ from sqlalchemy import cast, func, select
 from sqlalchemy.orm import Session
 
 from app import clock, messages
-from app.cases import state_machine
+from app.cases import aftercare, state_machine
 from app.cases.audit import log_event
 from app.cases.models import Case, Event, Photo, Report
 from app.cases.models import CaseState as S
@@ -497,7 +497,12 @@ def _resolved(session: Session, case: Case, team: Team) -> list[Outbound]:
         return [_msg(team.phone, "team_not_waiting", case_id=case.public_id)]
 
     state_machine.transition(session, case, S.RESOLVED, actor=team.phone)
-    return [ack] + _tell_reporters(session, case, "citizen_resolved")
+    # Tell the reporters, then ask each how it went (three buttons).
+    return (
+        [ack]
+        + _tell_reporters(session, case, "citizen_resolved")
+        + aftercare.rating_prompts(session, case)
+    )
 
 
 # ---------- the reporter cancelled ----------

@@ -60,6 +60,10 @@ After the merge, Claude ran `docs/CHECKLIST.md` sections 2 and 3 on a scratch da
 
 **One-tap location (committed 12 Nov).** After a photo, a description or a bite report, the request for a location now carries a "Send location" button (D-089). Tested against a stand-in for Meta and clicked through on the simulator by Claude; the suite is now **286 passed, 11 skipped**. Not tried on a real phone.
 
+**Rescue photo and rating (13 Nov).** When a team taps Resolved, each reporter is asked "How did it go?" with Good, OK and Poor buttons, and the team is invited to send a photo of the animal, which is passed to everyone who reported the case (D-091). Migration **0010** adds `rescue_photos` and `case_ratings`. 25 tests in `tests/test_aftercare.py`; the suite is **311 passed, 12 skipped**. Run end to end on the simulator by Claude. Not checked by a person, and not tried on a real phone. `TODO(me)` open: `satisfaction_percent()` in `app/cases/aftercare.py`.
+
+**Model changed to Haiku (13 Nov).** The default is now `claude-haiku-5-5` (D-090). **First real triage calls made that day:** two calls on a drawn test picture, each about 2,200 input and 400 output tokens, and the model correctly said no real animal was visible. No real animal photo has been triaged yet.
+
 What that run did not cover: the staff cancel button's confirmation box and the phone-width layout (the test browser could not show either), a real photo in the case panel, a cancel sent during a real triage call, and every real service.
 
 ## Still to verify by a person (as of 11 Nov)

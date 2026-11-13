@@ -40,7 +40,7 @@ docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOI
 - Triage never claims a diagnosis.
 - Schema changes through migrations, never manual SQL.
 - Tests mock every external API (Anthropic, WhatsApp, Google, Bhashini).
-- Claude model id comes from `ANTHROPIC_MODEL` (default `claude-opus-5-5`).
+- Claude model id comes from `ANTHROPIC_MODEL` (default `claude-haiku-5-5`). Do not use an Opus model in this project.
 
 ## How we work
 

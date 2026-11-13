@@ -8,6 +8,7 @@ Why: Meta approval and test-number setup can stall, and stage Wi-Fi can fail.
 Gave up: early testing on a real phone.
 
 ## D-002 Claude model: `claude-opus-5-5`, set by env var (10 Nov)
+**Replaced by D-090: the model is now `claude-haiku-5-5`.**
 It accepts image input and the Python SDK can parse replies straight into a Pydantic model. The id is read from `ANTHROPIC_MODEL` so it can change without a code edit.
 Gave up: nothing for the demo; cost is small at demo volume.
 
@@ -322,6 +323,14 @@ Gave up: the animal's case uses the person's location, which may be some way fro
 ## D-089 After a photo, ask for the location with WhatsApp's "Send location" button (11 Nov)
 WhatsApp cannot carry a photo and a location in one message. To make the second step one tap, the three messages that ask for a location (after a photo, after a description, and after a bite report) are sent as Meta's location request message: the same words with a Send location button. The answer arrives as an ordinary location message, so nothing else changes. The simulator shows the same button, which opens its place picker. Checked against Meta's documentation on 11 Nov 2026. If Meta refuses the button, the words alone are sent.
 Gave up: the words still say "tap attach, then Location", which stays true but does not mention the button; rewording needs three more translations checked. Not yet tried on a real phone.
+
+## D-090 The model is `claude-haiku-5-5`, not an Opus model (13 Nov)
+Ayush's decision, on cost: Haiku 5.5 is priced at $0.10 per million input tokens and $0.50 per million output tokens (prompts up to 100K tokens), against $4 and $20 for Opus 5.5. It accepts image input and structured output, and the triage call needed no code change: it sets no thinking, sampling or tool-choice options that Haiku 5.5 refuses. The default in `app/config.py`, `.env.example` and the docs is changed; `ANTHROPIC_MODEL` still overrides it.
+Gave up: a smaller model may read hard photos less well. That is to be measured on real photos, not assumed.
+
+## D-091 After Resolved: a three-button rating, and the team's photo passed to reporters (13 Nov)
+The loop closed with a line of text. Now each reporter is asked how it went with three reply buttons (Good, OK, Poor: WhatsApp allows three), one rating per person per case, changeable by tapping again. The team is invited to send one photo of the animal within 30 minutes of resolving; it is stored in `rescue_photos` and sent to every reporter with a caption. A photo from a team outside that window, or a second photo, is an ordinary report as before. Ratings are shown on the dashboard as counts only, never by person. Both are in a new module, `app/cases/aftercare.py`, and neither changes a case's state.
+Gave up: a team cannot send the photo before tapping Resolved, or more than one. The 30-minute window is measured on the database's clock, so tests age the audit event to try it. A rating is not asked for when staff or the reporter cancel a case.
 
 ## Open
 - Nothing right now.

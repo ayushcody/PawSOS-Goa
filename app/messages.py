@@ -143,6 +143,25 @@ MESSAGES: dict[str, dict[str, str]] = {
             "Thank you for reporting."
         ),
     },
+    # After a case is resolved: a rating, and the team's photo if they send one.
+    "rating_ask": {
+        "en": "How did it go with case {case_id}? Your answer helps us improve.",
+    },
+    "rating_good": {"en": "Good"},
+    "rating_ok": {"en": "OK"},
+    "rating_poor": {"en": "Poor"},
+    "rating_thanks": {
+        "en": "Thank you, your rating for case {case_id} is recorded.",
+    },
+    "rating_unavailable": {
+        "en": (
+            "Sorry, I could not record that. A rating can only come from a person who "
+            "reported the case, once it is resolved."
+        ),
+    },
+    "rescue_photo_caption": {
+        "en": "Case {case_id}: the team sent this photo after attending to the animal.",
+    },
     "citizen_escalated": {
         "en": "Update on case {case_id}: the first team could not take it, so we have alerted the next team.",
     },
@@ -198,7 +217,14 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "Noted: on site for case {case_id}. Tap Resolved once the animal has been attended to.",
     },
     "team_resolved_ack": {
-        "en": "Case {case_id} is closed. Thank you.",
+        "en": (
+            "Case {case_id} is closed. Thank you. If you have a photo of the animal after "
+            "the rescue, send it here in the next 30 minutes and we will pass it to the "
+            "person who reported it."
+        ),
+    },
+    "team_photo_passed_on": {
+        "en": "Thank you. The photo has been passed to everyone who reported case {case_id}.",
     },
     "team_declined_ack": {
         "en": "Understood. Case {case_id} has been passed to the next team.",
@@ -516,6 +542,18 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
         "केस {case_id} चें काम पुराय जालां. टीमेन जनावराची काळजी घेतल्या. "
         "खबर दिल्ल्या खातीर देव बरें करूं."
     ),
+    "rating_ask": (
+        "केस {case_id} विशीं तुमचो अणभव कसो आसलो? तुमची जाप आमकां सुदारपाक मदत करता."
+    ),
+    "rating_good": "बरो",
+    "rating_ok": "ठीक",
+    "rating_poor": "वायट",
+    "rating_thanks": "देव बरें करूं, केस {case_id} खातीर तुमचें मत नोंद जालां.",
+    "rating_unavailable": (
+        "माफ करात, तें नोंद करपाक जालें ना. मत फकत केसची खबर दिवपी मनशाकडल्यान, "
+        "केस पुराय जाल्या उपरांत घेतात."
+    ),
+    "rescue_photo_caption": "केस {case_id}: जनावराची काळजी घेतल्या उपरांत टीमेन हो फोटो धाडला.",
     "citizen_escalated": (
         "केस {case_id} चो अपडेट: पयल्या टीमेक ही केस घेवंक जमलें ना, "
         "देखून आमी फुडल्या टीमेक कळयलां."
@@ -736,6 +774,18 @@ MR: dict[str, str] = {  # Marathi
         "केस {case_id} पूर्ण झाली आहे. टीमने प्राण्याची काळजी घेतली आहे. "
         "माहिती दिल्याबद्दल धन्यवाद."
     ),
+    "rating_ask": (
+        "केस {case_id} बद्दल तुमचा अनुभव कसा होता? तुमच्या उत्तरामुळे आम्हाला सुधारणा करता येते."
+    ),
+    "rating_good": "चांगला",
+    "rating_ok": "ठीक",
+    "rating_poor": "वाईट",
+    "rating_thanks": "धन्यवाद, केस {case_id} साठी तुमचे मत नोंदवले आहे.",
+    "rating_unavailable": (
+        "माफ करा, ते नोंदवता आले नाही. मत फक्त केसची माहिती देणाऱ्या व्यक्तीकडून, "
+        "केस पूर्ण झाल्यावर घेतले जाते."
+    ),
+    "rescue_photo_caption": "केस {case_id}: प्राण्याची काळजी घेतल्यानंतर टीमने हा फोटो पाठवला आहे.",
     "citizen_escalated": (
         "केस {case_id} बद्दल अपडेट: पहिली टीम केस घेऊ शकली नाही, "
         "म्हणून आम्ही पुढच्या टीमला कळवले आहे."
@@ -956,6 +1006,18 @@ HI: dict[str, str] = {  # Hindi
         "केस {case_id} पूरा हो गया है। टीम ने जानवर की देखभाल कर दी है। "
         "रिपोर्ट करने के लिए धन्यवाद।"
     ),
+    "rating_ask": (
+        "केस {case_id} में आपका अनुभव कैसा रहा? आपके जवाब से हमें सुधार में मदद मिलती है।"
+    ),
+    "rating_good": "अच्छा",
+    "rating_ok": "ठीक",
+    "rating_poor": "ख़राब",
+    "rating_thanks": "धन्यवाद, केस {case_id} के लिए आपकी राय दर्ज हो गई है।",
+    "rating_unavailable": (
+        "माफ़ कीजिए, यह दर्ज नहीं हो सका। राय सिर्फ़ केस की रिपोर्ट करने वाले से, "
+        "केस पूरा होने के बाद ली जाती है।"
+    ),
+    "rescue_photo_caption": "केस {case_id}: जानवर की देखभाल के बाद टीम ने यह फ़ोटो भेजी है।",
     "citizen_escalated": (
         "केस {case_id} का अपडेट: पहली टीम यह केस नहीं ले सकी, "
         "इसलिए हमने अगली टीम को बता दिया है।"

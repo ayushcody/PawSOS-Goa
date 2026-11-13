@@ -151,6 +151,11 @@ These are in `app/contacts.py` and `app/conversation.py`, not `app/messages.py`.
 | Greetings that get the welcome message (`GREETINGS` in `app/conversation.py`) | `hi`, `hello`, `hey`, `namaste`, `namaskar`, `start`, `नमस्कार`, `नमस्ते`, `हॅलो`, `हेलो`, `हैलो`, `हाय` | [ ] |
 | Pick a language while the menu is open | `1` to `4` (Devanagari digits `१` to `४` work too), or `english`, `konkani`, `कोंकणी`, `कोकणी`, `marathi`, `मराठी`, `hindi`, `हिंदी`, `हिन्दी` | [ ] |
 
+## Rating and rescue photo (added 13 Nov, machine-drafted)
+
+- [ ] `rating_ask`, `rating_thanks`, `rating_unavailable`, `rescue_photo_caption`, in all three languages.
+- [ ] The three button titles, `rating_good`, `rating_ok`, `rating_poor` (at most 20 characters each): Konkani "बरो / ठीक / वायट", Marathi "चांगला / ठीक / वाईट", Hindi "अच्छा / ठीक / ख़राब". Check that each reads naturally as an answer to "how did it go?".
+
 ## Dates and place names (added 11 Nov, machine-drafted)
 
 These are in `app/messages.py` under "dates and place names". Please check each one.

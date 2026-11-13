@@ -86,6 +86,13 @@ class ClaudeTriager:
                 log.warning("Triage: invalid reply on attempt %s: %s", attempt, error)
                 continue
 
+            # What the call used, so spending can be added up from the log.
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                log.info(
+                    "Triage: %s used %s input and %s output tokens.",
+                    self._model, usage.input_tokens, usage.output_tokens,
+                )
             if response.stop_reason == "refusal":
                 log.warning("Triage: the model declined on attempt %s.", attempt)
                 continue

@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     ffmpeg_path: str = "ffmpeg"
 
     anthropic_api_key: str | None = None
-    anthropic_model: str = "claude-opus-5-5"
+    anthropic_model: str = "claude-haiku-5-5"
 
 
 @lru_cache

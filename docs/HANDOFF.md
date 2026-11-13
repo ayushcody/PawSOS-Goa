@@ -29,7 +29,7 @@ docker compose up -d
 .venv/bin/uvicorn app.main:app --reload --port 8040
 ```
 
-- The tests should end with **286 passed, 11 skipped**. The 11 skipped tests are Ayush's learning tasks (see "Leave these alone").
+- The tests should end with **311 passed, 12 skipped**. The 12 skipped tests are Ayush's learning tasks (see "Leave these alone").
 - `alembic upgrade head` applies every migration, including 0008 (each person's language). Run it again if your database is older.
 - For real voice notes you also need `ffmpeg` installed (see `docs/VOICE_SETUP.md`). Nothing else needs it.
 - Simulator (a fake WhatsApp in the browser): `http://localhost:8040/sim`
@@ -48,7 +48,7 @@ Everything works without any API key. Without `ANTHROPIC_API_KEY`, a photo is no
 
 ## Stack and layout
 
-Python 3.12, FastAPI (one service), SQLAlchemy 2 with Alembic migrations (0001 to 0008), Postgres 17 with PostGIS in Docker, Anthropic Python SDK (model id from `ANTHROPIC_MODEL`, default `claude-opus-5-5`), APScheduler, WhatsApp Business Cloud API (Graph API v27.0), Google Calendar API, Leaflet, Bhashini (speech), ffmpeg.
+Python 3.12, FastAPI (one service), SQLAlchemy 2 with Alembic migrations (0001 to 0008), Postgres 17 with PostGIS in Docker, Anthropic Python SDK (model id from `ANTHROPIC_MODEL`, default `claude-haiku-5-5`), APScheduler, WhatsApp Business Cloud API (Graph API v27.0), Google Calendar API, Leaflet, Bhashini (speech), ffmpeg.
 
 ```
 app/channels     simulator and WhatsApp adapters; everything past here sees one message shape
@@ -72,7 +72,7 @@ docs/            SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOIC
 
 ## Where things stand
 
-- Every planned slice (1 to 11) is built and committed. On `main`, 286 automated tests pass.
+- Every planned slice (1 to 11) is built and committed. On `main`, 311 automated tests pass.
 - After the handoff, the pick-up tasks were written on branch `pickup-tasks` (rows 10, 11 and 15 to 18 below). It was written without being run, then merged into `main` on 11 Nov. Claude then ran it on the simulator and dashboard, fixed five problems and added `tests/test_pickup.py` (`docs/PLAN.md`, "First run, fixes and tests"). **Still true: no person has checked it by hand, and nothing has been tried against Meta, Bhashini or the real model.** `docs/PLAN.md`, "What is new since the handoff", lists it; `docs/DECISIONS.md` D-063 to D-078 give the reasons.
 - **Nothing has been verified by a person or against a real external service.** No photo has been triaged by the real model, no booking has reached Google Calendar, no real WhatsApp message has been sent or received, and no voice note has reached Bhashini. Claude ran the slice 1 to 11 flows on the simulator; Ayush has not yet rehearsed them.
 

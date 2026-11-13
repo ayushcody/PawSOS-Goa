@@ -47,7 +47,7 @@ The state machine lives in one module (`app/cases/state_machine.py`) with an exp
 |------|--------|-------|
 | Channel | WhatsApp Business Cloud API (Meta test number in development) | Behind a channel adapter interface. The same logic runs through a **local web-based WhatsApp simulator**, which is also the on-stage fallback. The simulator is built in slice 1. |
 | Orchestrator | Python 3.12 + FastAPI, one service | |
-| AI | Anthropic Python SDK, model `claude-opus-5-5` (supports image input) | Structured output parsed into a Pydantic model; retry once on invalid output. Model id lives in config, not in code. |
+| AI | Anthropic Python SDK, model `claude-haiku-5-5` (supports image input) | Structured output parsed into a Pydantic model; retry once on invalid output. Model id lives in config, not in code. |
 | Voice | Bhashini speech-to-text behind an interface | Stub first; real integration is a stretch goal. |
 | Data | Supabase Postgres with PostGIS | Tables: cases, reports, photos, teams, zones, camps, bookings, events. Migrations only, no manual SQL. |
 | Calendar | Google Calendar API | One calendar per camp. |

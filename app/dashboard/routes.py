@@ -21,6 +21,7 @@ from pydantic import BaseModel, StringConstraints
 from sqlalchemy.orm import Session
 
 from app.auth import require_password
+from app.cases.aftercare import RescuePhoto
 from app.cases.models import Case, Photo
 from app.cases.state_machine import InvalidTransition
 from app.channels import media
@@ -88,6 +89,15 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
         # Looked up by id, and the stored name is checked again by media.path_for,
         # so no request can reach a file that is not one of our saved photos.
         stored = session.get(Photo, photo_id)
+        path = media.path_for(stored.path) if stored else None
+        if path is None:
+            raise HTTPException(status_code=404, detail="Not found")
+        return FileResponse(path, media_type=stored.mime)
+
+    @router.get("/rescue-photos/{photo_id}")
+    def rescue_photo(photo_id: int, session: SessionDep) -> FileResponse:
+        # The team's photo after a rescue, looked up by id like the reporters' photos.
+        stored = session.get(RescuePhoto, photo_id)
         path = media.path_for(stored.path) if stored else None
         if path is None:
             raise HTTPException(status_code=404, detail="Not found")
