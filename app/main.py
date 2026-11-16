@@ -2,9 +2,11 @@
 
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401  (registers every table)
 from app.channels import media, simulator, telegram, whatsapp
@@ -12,6 +14,8 @@ from app.channels.routed import RoutedChannel
 from app.config import get_settings
 from app.dashboard import routes as dashboard
 from app.jobs import scheduler
+
+STATIC_DIR = Path(__file__).with_name("static")
 
 
 def create_app() -> FastAPI:
@@ -50,6 +54,8 @@ def create_app() -> FastAPI:
     app.include_router(simulator.build_router(sim_channel, channel))
     app.include_router(whatsapp.build_router(wa_channel, channel))
     app.include_router(dashboard.build_router(channel))
+    # Files the pages need, kept here so they work with no internet (Leaflet for the map).
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
     @app.get("/health")
     def health() -> dict[str, str | bool]:

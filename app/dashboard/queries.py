@@ -9,7 +9,7 @@ in SQL and page the list.
 """
 
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from statistics import median
 from typing import Any
 
@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app import clock
 from app.booking import flow as booking
 from app.booking.models import Booking, Camp, SterilisationCount
-from app.cases import aftercare
+from app.cases import aftercare, recovery
 from app.cases.bites import BiteReport
 from app.cases.models import Case, Event, Photo, Report
 from app.cases.models import CaseState as S
@@ -94,6 +94,14 @@ def zone_rows(session: Session) -> list[dict[str, Any]]:
 
 def _attention(case: Case, chain_exhausted: bool) -> str | None:
     """Why a person should look at this case now, if there is a reason."""
+    if (
+        case.state in recovery.STUCK_STATES
+        and not case.is_demo
+        and case.updated_at is not None
+        # Database time against real time (not app.clock), as in app/cases/recovery.py.
+        and case.updated_at <= datetime.now(UTC) - recovery.STUCK_AFTER
+    ):
+        return "not_routed"  # no team has been alerted yet; the recovery job should have moved it
     if case.state == S.ESCALATED and chain_exhausted:
         return "no_team"  # every team was asked and nobody took it
     if case.triage_status == "needs_review" and case.state in OPEN_STATES:

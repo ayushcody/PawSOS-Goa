@@ -7,6 +7,11 @@ button taps come in here too.
 Words are tried in this order: the BOOK conversation (it owns a number typed
 mid-booking, and CANCEL there only leaves it), then STATUS and CANCEL
 (app/citizen.py), then bite words, then everything else.
+
+A message that cannot be sent never stops a case. Every reply goes through
+deliver(), which logs a failed send and carries on, and a new case is routed
+and its team alerted before the reporter is told anything about it. If the
+server dies in between, app/cases/recovery.py moves the case on later.
 """
 
 import logging
@@ -20,7 +25,7 @@ from app.cases import aftercare, bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.cases.state_machine import InvalidTransition
-from app.channels.base import ChannelAdapter, InboundMessage, deliver
+from app.channels.base import ChannelAdapter, InboundMessage, Outbound, deliver
 from app.routing import dedup, dispatch
 from app.routing.flow import RoutingOutcome, route_case
 from app.triage.flow import triage_case
@@ -35,6 +40,13 @@ GREETINGS = {
 }
 
 
+async def _send(
+    channel: ChannelAdapter, to: str, text: str, *, request_location: bool = False
+) -> None:
+    """Send one message. A failure is logged, never raised: it must not stop a case."""
+    await deliver(channel, [Outbound(to=to, text=text, request_location=request_location)])
+
+
 async def handle_inbound(
     message: InboundMessage,
     channel: ChannelAdapter,
@@ -45,14 +57,15 @@ async def handle_inbound(
     number = message.from_number
 
     async def reply(key: str, **values: object) -> None:
-        await channel.send_text(
-            number, messages.render(key, contacts.language_for(session, number), **values)
-        )
+        await _send(channel, number, messages.render(key, contacts.language_for(session, number), **values))
 
     async def ask_for_location(key: str) -> None:
         # The same words, with a one-tap "Send location" button where the channel has one.
-        await channel.send_location_request(
-            number, messages.render(key, contacts.language_for(session, number))
+        await _send(
+            channel,
+            number,
+            messages.render(key, contacts.language_for(session, number)),
+            request_location=True,
         )
 
     if message.kind == "button" and message.button_id:
@@ -215,15 +228,29 @@ async def _triage_route_tell(
     *,
     id_sent: bool = True,
 ) -> None:
-    """Triage, route, and tell the reporter. id_sent=False: they have no case ID yet.
+    """Triage, route, alert a team, then tell the reporter. id_sent=False: they have no case ID yet.
 
-    Then the triage reply waits until routing has decided, so the only case ID
-    the person ever sees is the one that stays open: the earlier case after a
-    merge (its message explains why), or this case, announced with "case_created".
+    The case is routed and its team alert saved before any message to the
+    reporter is sent, so a message that cannot be delivered (a closed WhatsApp
+    window, a network failure) can never leave a case without a team.
+
+    The triage reply waits until routing has decided, so the only case ID the
+    person ever sees is the one that stays open: the earlier case after a merge
+    (its message explains why), or this case, announced with "case_created".
     """
     language = contacts.language_for(session, number)
     triage = await triage_case(session, case, triager, language)
     session.commit()
+
+    outcome = route_case(session, case)
+    session.commit()
+    outbox: list[Outbound] = []
+    if outcome.merged_into is None:
+        outbox = dispatch.start_dispatch(session, case)
+        session.commit()
+    # The rescue first: the team's alert goes out before anything to the reporter.
+    # A message to the reporter from dispatch ("no team yet") keeps its place after the others.
+    await deliver(channel, [m for m in outbox if m.to != number])
 
     def triage_text(case_id: str) -> str:
         if triage is None:
@@ -237,17 +264,14 @@ async def _triage_route_tell(
         )
 
     if id_sent:
-        await channel.send_text(number, triage_text(case.public_id))
-    outcome = route_case(session, case)
-    session.commit()
-    if not id_sent:
+        await _send(channel, number, triage_text(case.public_id))
+    else:
         if outcome.merged_into is None:
-            await channel.send_text(
-                number, messages.render("case_created", language, case_id=case.public_id)
-            )
+            await _send(channel, number, messages.render("case_created", language, case_id=case.public_id))
         # After a merge the first-aid steps still come from this person's own photo.
-        await channel.send_text(number, triage_text((outcome.merged_into or case).public_id))
+        await _send(channel, number, triage_text((outcome.merged_into or case).public_id))
     await _tell_routing_outcome(session, case, outcome, channel, number)
+    await deliver(channel, [m for m in outbox if m.to == number])
 
 
 async def _tell_routing_outcome(
@@ -257,10 +281,10 @@ async def _tell_routing_outcome(
     channel: ChannelAdapter,
     number: str,
 ) -> None:
+    """Tell the reporter (and, after a merge, the earlier reporters) where the case stands."""
+
     async def tell(to: str, key: str, **values: object) -> None:
-        await channel.send_text(
-            to, messages.render(key, contacts.language_for(session, to), **values)
-        )
+        await _send(channel, to, messages.render(key, contacts.language_for(session, to), **values))
 
     primary = outcome.merged_into
     if primary is None:
@@ -269,9 +293,6 @@ async def _tell_routing_outcome(
                 outcome.zone.short_name, contacts.language_for(session, number)
             )
             await tell(number, "zone_assigned", case_id=case.public_id, zone=zone)
-        outbox = dispatch.start_dispatch(session, case)
-        session.commit()
-        await deliver(channel, outbox)
         return
 
     if number in outcome.earlier_reporters:

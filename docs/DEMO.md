@@ -71,7 +71,7 @@ After a reset, your first case will be `PAW-0041`.
 | What happens | What to do | What to say |
 |---|---|---|
 | Triage is slow or the API fails | Nothing. After one retry the app carries on: the citizen is told a team member will look at the photo, and the case is routed at high urgency. | "If the model is unavailable the case is not held up. It is flagged for a person and routed anyway." |
-| The map is blank (no internet) | Keep going. The tiles, case list, sterilisation panel and suggestion still work. | "The map needs a connection; the rest of the dashboard does not." |
+| The map has no streets (no internet) | Keep going. The map library is served by PawSOS itself, so the case dots, case list, sterilisation panel and suggestion still work; only the background map tiles need a connection. Checked 17 Nov with the map library removed: the page still loads in full. | "The map background needs a connection; the rest of the dashboard does not." |
 | The second report does not merge | Carry on with the first case. This happens if the two locations differ or an earlier rehearsal left data behind (you skipped the reset). | Skip the dedup line. |
 | The alert does not time out | Press **Decline** as the Panaji team. A decline escalates in the same way. | "Or the team declines." |
 | The server has crashed | Restart it with the command above. Cases are in the database and survive; the simulator's chat history does not. | "Everything is stored in the database, so a restart loses nothing." |

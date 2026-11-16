@@ -51,19 +51,30 @@ async def triage_case(
                 log.exception("Triage failed unexpectedly for %s", case.public_id)
                 reason = "unexpected_error"
 
-    usable = result is not None and result.animal_visible
-    case.triaged_at = datetime.now(UTC)
-    if usable:
-        case.species = result.species
-        case.injury_type = result.injury_type
-        case.urgency = result.urgency
-        case.aggression_risk = result.aggression_risk
-        case.first_aid = result.first_aid
-        case.triage_status = "ok"
-    else:
-        case.urgency = FALLBACK_URGENCY
-        case.triage_status = "needs_review"
+    if result is None or not result.animal_visible:
+        mark_for_review(session, case, reason)
+        return None
 
+    case.triaged_at = datetime.now(UTC)
+    case.species = result.species
+    case.injury_type = result.injury_type
+    case.urgency = result.urgency
+    case.aggression_risk = result.aggression_risk
+    case.first_aid = result.first_aid
+    case.triage_status = "ok"
+    _record(session, case, reason)
+    return result
+
+
+def mark_for_review(session: Session, case: Case, reason: str) -> None:
+    """No usable triage: the case goes on at high urgency, flagged for a person to look."""
+    case.triaged_at = datetime.now(UTC)
+    case.urgency = FALLBACK_URGENCY
+    case.triage_status = "needs_review"
+    _record(session, case, reason)
+
+
+def _record(session: Session, case: Case, reason: str) -> None:
     state_machine.transition(
         session,
         case,
@@ -71,7 +82,6 @@ async def triage_case(
         actor="triage",
         data={"triage_status": case.triage_status, "urgency": case.urgency, "reason": reason},
     )
-    return result if usable else None
 
 
 def _first_photo(session: Session, case: Case) -> bytes | None:
