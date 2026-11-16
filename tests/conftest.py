@@ -21,6 +21,7 @@ os.environ["SPEECH_TO_TEXT"] = "stub"
 os.environ["DASHBOARD_PASSWORD"] = ""
 for _name in ("ACCESS_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "APP_SECRET"):
     os.environ[f"WHATSAPP_{_name}"] = ""
+os.environ["TELEGRAM_BOT_TOKEN"] = ""
 os.environ["MEDIA_DIR"] = tempfile.mkdtemp(prefix="pawsos-test-media-")
 
 import pytest

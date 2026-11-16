@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     app_env: str = "dev"
     port: int = 8040
     public_base_url: str = "http://localhost:8040"
-    channel: Literal["simulator", "whatsapp"] = "simulator"
+    channel: Literal["simulator", "whatsapp", "telegram"] = "simulator"
     escalation_timeout_seconds: int = 600
     # For demos outside working hours: treat every team as open.
     ignore_opening_hours: bool = False
@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     whatsapp_template_team_alert: str | None = None
     whatsapp_template_team_alert_expired: str | None = None
     whatsapp_template_book_reminder: str | None = None
+
+    # Telegram bot (docs/TELEGRAM_SETUP.md). Needed when CHANNEL=telegram.
+    telegram_bot_token: str | None = None
 
     # Voice notes: "stub" understands only the simulator's pretend voice notes,
     # "bhashini" sends real voice notes to Bhashini (docs/VOICE_SETUP.md),

@@ -8,11 +8,15 @@ WhatsApp, when WhatsApp is set up.
 This is what lets one demo mix both: a real phone reports on WhatsApp, a
 placeholder team accepts in the simulator, and the status update goes back
 to the real phone.
+
+A Telegram person has no number: their address is "tg:<chat id>", and it goes
+to Telegram when Telegram is set up.
 """
 
 from app.channels.base import Button, ChannelAdapter, Outbound
 
 SIMULATED_PREFIX = "+91000000"
+TELEGRAM_PREFIX = "tg:"
 
 
 def is_simulated(number: str) -> bool:
@@ -22,11 +26,20 @@ def is_simulated(number: str) -> bool:
 class RoutedChannel(ChannelAdapter):
     name = "routed"
 
-    def __init__(self, simulator: ChannelAdapter, whatsapp: ChannelAdapter | None = None) -> None:
+    def __init__(
+        self,
+        simulator: ChannelAdapter,
+        whatsapp: ChannelAdapter | None = None,
+        telegram: ChannelAdapter | None = None,
+    ) -> None:
         self.simulator = simulator
         self.whatsapp = whatsapp
+        self.telegram = telegram
 
     def channel_for(self, number: str) -> ChannelAdapter:
+        if number.startswith(TELEGRAM_PREFIX):
+            # Never WhatsApp: a chat id is not a phone number.
+            return self.telegram or self.simulator
         if self.whatsapp is None or is_simulated(number):
             return self.simulator
         return self.whatsapp

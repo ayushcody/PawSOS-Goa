@@ -26,7 +26,7 @@ app/messages.py   every outbound message
 seed/             zones, teams, health centres, camps, demo cases
 migrations/       Alembic
 tests/            pytest, external APIs mocked
-docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOICE_SETUP,
+docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, TELEGRAM_SETUP, VOICE_SETUP,
                   TRANSLATIONS, CHECKLIST
 ```
 
@@ -39,7 +39,7 @@ docs/             SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOI
 - Case state changes only through `app/cases/state_machine.py`; every change writes an audit event.
 - Triage never claims a diagnosis.
 - Schema changes through migrations, never manual SQL.
-- Tests mock every external API (Anthropic, WhatsApp, Google, Bhashini).
+- Tests mock every external API (Anthropic, WhatsApp, Telegram, Google, Bhashini).
 - Claude model id comes from `ANTHROPIC_MODEL` (default `claude-haiku-5-5`). Do not use an Opus model in this project.
 
 ## How we work

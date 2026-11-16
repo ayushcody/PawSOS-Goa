@@ -31,7 +31,25 @@
   header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
   header h1 span { color: var(--accent); }
   header .sub { color: var(--soft); font-size: 14px; }
-  header .right { margin-left: auto; color: var(--soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+  header { position: relative; }
+  header .right { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+                  color: var(--soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  /* view settings: a small panel under the gear button */
+  .settings { position: absolute; top: calc(100% + 6px); right: var(--gutter); z-index: 1100; width: min(340px, calc(100vw - 32px));
+              max-height: calc(100vh - 90px); overflow-y: auto; padding: 14px 16px 16px; background: var(--card);
+              border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px #1c282633;
+              color: var(--ink); font-size: 14px; scrollbar-width: thin; }
+  .settings[hidden] { display: none; }
+  .settings h2 { margin: 0 0 8px; font-size: 16px; }
+  .settings fieldset { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 10px 0; min-width: 0; }
+  .settings legend { padding: 0; font-weight: 650; font-size: 13px; float: left; width: 100%; margin-bottom: 6px; }
+  .settings legend + * { clear: both; }
+  .settings label.check { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+  .settings input[type="checkbox"], .settings input[type="radio"] { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .settings .inline { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .settings .line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .settings .foot { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 
   /* the state of things, as a sentence */
   .status { padding: 26px var(--gutter) 6px; max-width: 1100px; }
@@ -60,9 +78,25 @@
 
   /* map */
   .map-col { display: flex; flex-direction: column; }
-  #map { flex: 1 1 auto; min-height: 600px; border-radius: var(--radius); border: 1px solid var(--line); z-index: 0; background: var(--wash); }
-  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 12.5px; color: var(--soft); }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  #map { flex: 1 1 auto; min-height: 560px; border-radius: var(--radius); border: 1px solid var(--line); z-index: 0; background: var(--wash); }
+  .map-wrap { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; }
+  .map-empty { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 500; max-width: calc(100% - 110px);
+               padding: 7px 12px; border-radius: 8px; background: var(--card); border: 1px solid var(--line);
+               box-shadow: 0 2px 8px #1c28261f; font-size: 13.5px; text-align: center; }
+  .map-empty[hidden] { display: none; }
+  .legend { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 5px 18px;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); font-size: 12.5px; color: var(--soft); }
+  .legend li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .legend .key { flex: 0 0 22px; display: flex; align-items: center; justify-content: center; gap: 2px; height: 16px; }
+  .legend-title { margin: 12px 0 0; font-size: 12.5px; font-weight: 650; color: var(--ink); }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .dot.open { width: 14px; height: 14px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px #0002; }
+  .dot.ring { width: 14px; height: 14px; background: var(--closed); border: 3px solid var(--ink); }
+  .dot.shut { width: 9px; height: 9px; background: var(--closed); opacity: 0.6; border: 1px solid #fff; box-shadow: 0 0 0 1px #0002; }
+  .dot.bite { width: 9px; height: 9px; background: var(--bite); border-radius: 0; transform: rotate(45deg); border: 1.5px solid #fff; box-shadow: 0 0 0 1px #0003; }
+  .dot.hot { width: 16px; height: 16px; background: #6b3fa033; }
+  .dot.camp { width: 14px; height: 14px; background: var(--camp); border-radius: 3px; color: #fff; font: 700 9px/14px sans-serif; text-align: center; }
+  .dot.area { width: 16px; height: 16px; border: 1px dashed var(--accent); background: #0f6b5c0d; }
   .pin-bite { width: 14px; height: 14px; background: var(--bite); transform: rotate(45deg); border: 2px solid #fff; box-shadow: 0 1px 3px #0006; }
   .pin-camp { width: 18px; height: 18px; background: var(--camp); border: 2px solid #fff; border-radius: 4px;
               color: #fff; font: 700 12px/14px sans-serif; text-align: center; box-shadow: 0 1px 3px #0006; }
@@ -94,11 +128,26 @@
   /* cases */
   .cases-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 12px; }
   .cases-head h2 { margin: 0; }
-  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
-  select, input[type="text"] { font: inherit; padding: 6px 10px; border: 1px solid #cfc9b8; border-radius: 8px;
+  .cases-head .count { color: var(--soft); font-variant-numeric: tabular-nums; }
+  .cases-head #clear-filters { margin-left: auto; }
+  .toolbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .tool-row { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--soft); font-weight: 600; min-width: 0; }
+  .field.grow { flex: 1 1 220px; }
+  .field select { min-width: 150px; }
+  .chip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .chip-label { font-size: 12.5px; color: var(--soft); font-weight: 600; min-width: 58px; }
+  .fchip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 99px; font-size: 13px;
+           font-weight: 600; background: #fff; color: var(--ink); border: 1px solid #cfc9b8; transition: none; }
+  .fchip:hover { background: #f4f0e5; border-color: #a9a290; }
+  .fchip[data-u]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--u); }
+  .fchip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .fchip[aria-pressed="true"]:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .fchip[aria-pressed="true"][data-u]::before { box-shadow: 0 0 0 1.5px #fff; }
+  select, input[type="text"], input[type="search"] { font: inherit; padding: 6px 10px; border: 1px solid #cfc9b8; border-radius: 8px;
                                background: #fff; color: var(--ink); }
-  select:hover, input[type="text"]:hover { border-color: #a9a290; }
-  input[type="text"] { width: 100%; }
+  select:hover, input[type="text"]:hover, input[type="search"]:hover { border-color: #a9a290; }
+  input[type="text"], input[type="search"] { width: 100%; }
   input::placeholder { color: #66736f; }
   .scroll { max-height: 640px; overflow: auto; border: 1px solid var(--line); border-radius: 10px;
             scrollbar-color: #b9b3a2 transparent; scrollbar-width: thin; }
@@ -109,13 +158,52 @@
   td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
   tbody tr:last-child td { border-bottom: 0; }
   table.cases { min-width: 720px; }
-  table.cases td:first-child, table.cases td:nth-child(2), table.cases td:nth-child(4),
-  table.cases td:last-child { white-space: nowrap; }
-  table.cases td:nth-child(3) { width: 40%; }
-  table.cases tbody tr { cursor: pointer; }
-  table.cases tbody tr:hover { background: #f4f0e5; }
-  table.cases tbody tr:focus-visible { outline-offset: -2px; }
+  table.cases .col-id, table.cases .col-urgency, table.cases .col-reported { white-space: nowrap; }
+  table.cases td.col-what { width: 30%; }
+  table.cases tbody tr[data-case] { cursor: pointer; }
+  table.cases tbody tr[data-case]:hover { background: #f4f0e5; }
   table.cases .id { font-weight: 700; }
+  /* the case ID is the row's own "open" control, so it works with the actions column hidden */
+  button.id-btn { padding: 0; border: 0; background: none; color: var(--ink); font-weight: 700; text-decoration: underline;
+                  text-decoration-color: #b9b3a2; text-underline-offset: 3px; }
+  button.id-btn:hover { background: none; color: var(--accent-deep); text-decoration-color: currentColor; }
+  th .th-sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; display: inline-flex; gap: 5px; }
+  th .th-sort:hover { background: none; color: var(--ink); }
+  th .th-sort::after { content: "↕"; opacity: 0.45; }
+  th[aria-sort="ascending"] .th-sort::after { content: "↑"; opacity: 1; }
+  th[aria-sort="descending"] .th-sort::after { content: "↓"; opacity: 1; }
+  th[aria-sort="ascending"] .th-sort, th[aria-sort="descending"] .th-sort { color: var(--ink); }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  @media (min-width: 1280px) { .row-actions { flex-wrap: nowrap; } }
+  button.mini { padding: 3px 9px; font-size: 12.5px; border-radius: 6px; white-space: nowrap; }
+  table.cases .col-actions { min-width: 172px; }
+  button.mini.stop { color: var(--critical); }
+  table.cases.compact td { padding: 5px 12px; font-size: 14px; }
+  table.cases.compact th { padding: 6px 12px; }
+  table.cases.compact button.mini { padding: 1px 8px; }
+  table.cases.hide-urgency .col-urgency, table.cases.hide-what .col-what, table.cases.hide-area .col-area,
+  table.cases.hide-status .col-status, table.cases.hide-reported .col-reported,
+  table.cases.hide-actions .col-actions { display: none !important; }
+  .empty { padding: 26px 12px; text-align: center; color: var(--soft); }
+  .empty b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+  .empty button { margin-top: 10px; }
+
+  /* small messages ("Copied PAW-0042") and the cancel confirmation */
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 3000; padding: 9px 16px;
+           border-radius: 99px; background: var(--ink); color: #fff; font-size: 14px; box-shadow: 0 6px 20px #1c282655;
+           max-width: calc(100vw - 32px); }
+  .toast:empty { display: none; }
+  dialog.confirm { width: min(440px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: var(--radius);
+                   padding: 18px 20px; background: var(--card); color: var(--ink); box-shadow: 0 16px 48px #1c282655; }
+  dialog.confirm::backdrop { background: #1c282680; }
+  dialog.confirm h2 { margin: 0 0 6px; font-size: 19px; font-variant-numeric: tabular-nums; }
+  dialog.confirm p { margin: 0 0 12px; color: var(--soft); }
+  dialog.confirm label { display: block; margin-bottom: 4px; font-weight: 650; }
+  dialog.confirm .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .grid.top.no-map { grid-template-columns: minmax(0, 1fr); }
+  .grid.top.no-map .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+  .grid.pair.one { grid-template-columns: minmax(0, 1fr); }
+  [hidden] { display: none !important; }
   .chip { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px 1px 7px; border-radius: 99px;
           font-size: 12.5px; font-weight: 600; color: var(--ink);
           background: color-mix(in srgb, var(--u, var(--closed)) 16%, var(--card)); }
@@ -196,8 +284,11 @@
     .status .now { font-size: 22px; }
     .status .then { font-size: 15px; }
     #map { height: 360px; }
-    .filters select { flex: 1 1 calc(50% - 4px); min-width: 0; }
-    .filters #f-zone { flex-basis: 100%; }
+    .field { flex: 1 1 calc(50% - 5px); }
+    .field.grow { flex-basis: 100%; }
+    .field select { min-width: 0; width: 100%; }
+    .chip-label { min-width: 0; flex-basis: 100%; }
+    .settings { right: 16px; }
     /* the case list as stacked entries: a six-column table cannot be read at this width */
     .scroll { max-height: none; border: 0; border-radius: 0; overflow: visible; }
     table.cases { min-width: 0; }
@@ -206,13 +297,17 @@
     table.cases tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; padding: 12px 0;
                      border-top: 1px solid var(--line); }
     table.cases td { display: block; padding: 0; border: 0; white-space: normal !important; }
-    table.cases td:nth-child(2) { justify-self: end; }
-    table.cases td:nth-child(n+3) { grid-column: 1 / -1; width: auto; }
-    table.cases td:nth-child(n+4) { color: var(--soft); font-size: 13.5px; }
-    table.cases td:nth-child(n+4) br { display: none; }
-    table.cases td:nth-child(n+4) .muted::before { content: " · "; }
+    table.cases td.col-urgency { justify-self: end; }
+    table.cases td.col-what, table.cases td.col-area, table.cases td.col-status, table.cases td.col-reported,
+    table.cases td.col-actions, table.cases td.empty { grid-column: 1 / -1; width: auto; }
+    table.cases td.col-area, table.cases td.col-status, table.cases td.col-reported { color: var(--soft); font-size: 13.5px; }
+    table.cases td.col-area br, table.cases td.col-status br, table.cases td.col-reported br { display: none; }
+    table.cases td.col-status .muted::before, table.cases td.col-reported .muted::before { content: " · "; }
+    table.cases td.col-actions { margin-top: 4px; min-width: 0; }
+    table.cases.compact tr { padding: 7px 0; }
+    table.cases.compact td { padding: 0; }
+    button.mini { padding: 5px 11px; }
     .scroll-x { overflow-x: auto; }
-    .filters { margin-left: 0; width: 100%; }
     .bar-row { grid-template-columns: 110px 1fr; }
     dl.facts { grid-template-columns: 100px minmax(0, 1fr); }
     .trail li { grid-template-columns: 1fr; gap: 0; }
@@ -226,7 +321,69 @@
 <header>
   <h1>Paw<span>SOS</span> Goa</h1>
   <span class="sub">Operations dashboard</span>
-  <span class="right" id="updated">Loading…</span>
+  <div class="right">
+    <span id="updated">Loading…</span>
+    <button type="button" class="secondary mini" id="settings-btn" aria-haspopup="dialog" aria-expanded="false"
+            aria-controls="settings"><span aria-hidden="true">⚙</span> View settings</button>
+  </div>
+
+  <div class="settings" id="settings" role="dialog" aria-labelledby="settings-title" hidden>
+    <h2 id="settings-title">View settings</h2>
+    <p class="note" style="margin:0 0 10px">Saved in this browser only. They change what you see, not the cases.</p>
+    <fieldset>
+      <legend>Sections shown</legend>
+      <label class="check"><input type="checkbox" data-section="map"> Map</label>
+      <label class="check"><input type="checkbox" data-section="attention"> Need a person to look</label>
+      <label class="check"><input type="checkbox" data-section="camp"> Where the next camp should go</label>
+      <label class="check"><input type="checkbox" data-section="times"> Response times and ratings</label>
+      <label class="check"><input type="checkbox" data-section="cases"> Cases table</label>
+    </fieldset>
+    <fieldset>
+      <legend>Table density</legend>
+      <div class="inline">
+        <label class="check"><input type="radio" name="density" value="comfortable"> Comfortable</label>
+        <label class="check"><input type="radio" name="density" value="compact"> Compact</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Table columns</legend>
+      <div class="inline">
+        <label class="check"><input type="checkbox" data-column="urgency"> Urgency</label>
+        <label class="check"><input type="checkbox" data-column="what"> What the photo showed</label>
+        <label class="check"><input type="checkbox" data-column="area"> Area</label>
+        <label class="check"><input type="checkbox" data-column="status"> Status</label>
+        <label class="check"><input type="checkbox" data-column="reported"> Reported</label>
+        <label class="check"><input type="checkbox" data-column="actions"> Actions</label>
+      </div>
+      <p class="note" style="margin:6px 0 0">The case ID is always shown.</p>
+    </fieldset>
+    <fieldset>
+      <legend>Auto-refresh</legend>
+      <div class="line">
+        <select id="set-refresh" aria-label="Auto-refresh interval">
+          <option value="0">Off</option>
+          <option value="30">Every 30 seconds</option>
+          <option value="60">Every minute</option>
+          <option value="300">Every 5 minutes</option>
+        </select>
+        <button type="button" class="secondary mini" id="refresh-now">Refresh now</button>
+      </div>
+      <p class="note" style="margin:6px 0 0" id="updated-2" role="status"></p>
+    </fieldset>
+    <fieldset>
+      <legend>Filters when the page opens</legend>
+      <p style="margin:0 0 8px" id="default-filters-words"></p>
+      <div class="line">
+        <button type="button" class="secondary mini" id="default-save">Use the current filters</button>
+        <button type="button" class="secondary mini" id="default-clear">Open with no filters</button>
+      </div>
+    </fieldset>
+    <p class="note" id="storage-note" hidden>This browser is blocking saved settings, so they last only until the page is closed.</p>
+    <div class="foot">
+      <button type="button" class="secondary mini" id="settings-reset">Reset to defaults</button>
+      <button type="button" class="mini" id="settings-close">Done</button>
+    </div>
+  </div>
 </header>
 
 <section class="status" aria-live="polite">
@@ -235,26 +392,34 @@
 </section>
 <div class="demo-flag" id="demo-flag"></div>
 
-<section class="grid top">
-  <div class="map-col">
-    <div id="map"></div>
-    <div class="legend">
-      <span><i class="dot" style="background:var(--critical)"></i>critical</span>
-      <span><i class="dot" style="background:var(--high)"></i>high</span>
-      <span><i class="dot" style="background:var(--medium)"></i>medium</span>
-      <span><i class="dot" style="background:var(--low)"></i>low</span>
-      <span><i class="dot" style="background:var(--closed)"></i>closed case</span>
-      <span><i class="dot" style="background:var(--bite);border-radius:0;transform:rotate(45deg)"></i>bite report (shaded = hotspot)</span>
-      <span><i class="dot" style="background:var(--camp);border-radius:2px"></i>camp</span>
-      <span>Dashed circles: approximate service areas, not official boundaries.</span>
+<section class="grid top" id="grid-top">
+  <div class="map-col" id="sec-map">
+    <div class="map-wrap">
+      <div id="map" role="region" aria-label="Map of cases, bite reports and camps"></div>
+      <div class="map-empty" id="map-empty" role="status" hidden></div>
     </div>
+    <h2 class="legend-title" id="legend-title">Map key</h2>
+    <ul class="legend" aria-labelledby="legend-title">
+      <li><span class="key"><i class="dot open" style="background:var(--critical)"></i></span>Open case, critical</li>
+      <li><span class="key"><i class="dot open" style="background:var(--high)"></i></span>Open case, high</li>
+      <li><span class="key"><i class="dot open" style="background:var(--medium)"></i></span>Open case, medium</li>
+      <li><span class="key"><i class="dot open" style="background:var(--low)"></i></span>Open case, low</li>
+      <li><span class="key"><i class="dot open" style="background:var(--closed)"></i></span>Open case, urgency not known yet</li>
+      <li><span class="key"><i class="dot ring"></i></span>Dark ring: needs a person to look</li>
+      <li><span class="key"><i class="dot shut"></i></span>Small grey dot: resolved or cancelled</li>
+      <li><span class="key"><i class="dot bite"></i></span>Diamond: bite report to PawSOS</li>
+      <li><span class="key"><i class="dot hot"></i></span>Shaded circle: bite hotspot (3 or more within 500 m in 30 days)</li>
+      <li><span class="key"><i class="dot camp">C</i></span>Square: upcoming camp</li>
+      <li><span class="key"><i class="dot area"></i></span>Dashed circle: approximate service area, not an official boundary</li>
+    </ul>
+    <p class="note" style="margin:8px 0 0">Case dots follow the filters on the cases table. Bite reports, camps and service areas are always shown; switch them off with the layers button on the map.</p>
   </div>
   <div class="side">
-    <div class="card">
+    <div class="card" id="sec-attention">
       <h2>Need a person to look <span class="count" id="attention-count"></span></h2>
       <div id="attention"><span class="muted">Loading…</span></div>
     </div>
-    <div class="card suggest">
+    <div class="card suggest" id="sec-camp">
       <h2>Where the next camp should go</h2>
       <div id="suggestion"><span class="muted">Loading…</span></div>
     </div>
@@ -265,38 +430,74 @@
   </div>
 </section>
 
-<section class="grid">
+<section class="grid" id="sec-cases">
   <div class="card">
     <div class="cases-head">
-      <h2>Cases <span class="count" id="case-count"></span></h2>
-      <div class="filters">
-        <select id="f-status" aria-label="Status">
-          <option value="all">All cases</option>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-        </select>
-        <select id="f-urgency" aria-label="Urgency">
-          <option value="">Any urgency</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <select id="f-zone" aria-label="Municipality"><option value="">All municipalities</option></select>
+      <h2>Cases</h2>
+      <span class="count" id="case-count" role="status"></span>
+      <button type="button" class="secondary mini" id="clear-filters" hidden>Clear filters</button>
+    </div>
+    <div class="toolbar" role="search" aria-label="Find cases">
+      <div class="tool-row">
+        <label class="field grow">Search
+          <input type="search" id="f-q" placeholder="Case ID, area or species" autocomplete="off" spellcheck="false"></label>
+        <label class="field">Area
+          <select id="f-zone"><option value="">All areas</option></select></label>
+        <label class="field">Reported
+          <select id="f-range">
+            <option value="all">Any time</option>
+            <option value="today">Today</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+          </select></label>
+        <label class="field">Sort by
+          <select id="f-sort">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="urgent">Most urgent first</option>
+            <option value="waiting">Longest waiting first</option>
+            <option value="id">Case ID</option>
+            <option value="area">Area, A to Z</option>
+            <option value="status">Status</option>
+          </select></label>
+      </div>
+      <div class="chip-row" role="group" aria-label="Filter by state">
+        <span class="chip-label">State</span>
+        <button type="button" class="fchip" data-filter="states" data-value="waiting" aria-pressed="false">Waiting for a team</button>
+        <button type="button" class="fchip" data-filter="states" data-value="assigned" aria-pressed="false">Assigned</button>
+        <button type="button" class="fchip" data-filter="states" data-value="onsite" aria-pressed="false">On site</button>
+        <button type="button" class="fchip" data-filter="states" data-value="resolved" aria-pressed="false">Resolved</button>
+        <button type="button" class="fchip" data-filter="states" data-value="cancelled" aria-pressed="false">Cancelled</button>
+      </div>
+      <div class="chip-row" role="group" aria-label="Filter by urgency">
+        <span class="chip-label">Urgency</span>
+        <button type="button" class="fchip" data-filter="urgencies" data-value="critical" data-u style="--u:var(--critical)" aria-pressed="false">Critical</button>
+        <button type="button" class="fchip" data-filter="urgencies" data-value="high" data-u style="--u:var(--high)" aria-pressed="false">High</button>
+        <button type="button" class="fchip" data-filter="urgencies" data-value="medium" data-u style="--u:var(--medium)" aria-pressed="false">Medium</button>
+        <button type="button" class="fchip" data-filter="urgencies" data-value="low" data-u style="--u:var(--low)" aria-pressed="false">Low</button>
+        <button type="button" class="fchip" data-filter="attention" aria-pressed="false" style="margin-left:10px">Needs a person</button>
       </div>
     </div>
     <div class="scroll">
-      <table class="cases">
-        <thead><tr><th>Case</th><th>Urgency</th><th>What the photo showed</th><th>Area</th><th>Status</th><th>Reported</th></tr></thead>
+      <table class="cases" id="cases-table">
+        <thead><tr>
+          <th class="col-id" aria-sort="none"><button type="button" class="th-sort" data-sort="id">Case</button></th>
+          <th class="col-urgency" aria-sort="none"><button type="button" class="th-sort" data-sort="urgent">Urgency</button></th>
+          <th class="col-what">What the photo showed</th>
+          <th class="col-area" aria-sort="none"><button type="button" class="th-sort" data-sort="area">Area</button></th>
+          <th class="col-status" aria-sort="none"><button type="button" class="th-sort" data-sort="status">Status</button></th>
+          <th class="col-reported" aria-sort="none"><button type="button" class="th-sort" data-sort="newest">Reported</button></th>
+          <th class="col-actions">Actions</th>
+        </tr></thead>
         <tbody id="cases"></tbody>
       </table>
     </div>
-    <p class="note">Last 30 days. Duplicate reports are merged into one case. "What the photo showed" is an automated description, not a diagnosis. Choose a case for its photos, history and staff actions.</p>
+    <p class="note">Cases from the last 30 days are loaded, so "Any time" and "Last 30 days" show the same list. Duplicate reports are merged into one case. "What the photo showed" is an automated description, not a diagnosis. Choose a case for its photos, history and staff actions.</p>
   </div>
 </section>
 
-<section class="grid pair">
-  <div class="card">
+<section class="grid pair" id="grid-pair">
+  <div class="card" id="sec-times">
     <h2>Response times</h2>
     <div id="response-times"><span class="muted">Loading…</span></div>
   </div>
@@ -311,14 +512,30 @@
 <aside class="drawer" id="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="detail-title">
   <div class="drawer-head">
     <h2 id="detail-title">Case</h2>
+    <button type="button" class="secondary mini" id="detail-copy" data-act="copy">Copy ID</button>
     <button type="button" class="secondary close" id="detail-close">Close</button>
   </div>
   <div id="detail"></div>
 </aside>
 
+<dialog class="confirm" id="cancel-dialog" aria-labelledby="cancel-title">
+  <form id="cancel-form" novalidate>
+    <h2 id="cancel-title">Cancel this case?</h2>
+    <p>Reporters and any team involved get a short message that the case is closed. This cannot be undone.</p>
+    <label for="cancel-reason">Reason, for the log (required)</label>
+    <input type="text" id="cancel-reason" maxlength="200" autocomplete="off" aria-describedby="cancel-error">
+    <div class="result error" id="cancel-error" role="alert"></div>
+    <div class="dialog-actions">
+      <button type="button" class="secondary" id="cancel-keep">Keep the case</button>
+      <button type="submit" class="danger" id="cancel-confirm">Cancel the case</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <footer class="note">
   Bite reports on this page are reports made to PawSOS, not Goa's official bite statistics.
-  Updates every 15 seconds.
+  <span id="refresh-note"></span>
 </footer>
 
 <script>
@@ -331,6 +548,20 @@ const ATTENTION_LABEL = {
   no_team: "No team has taken this case",
   needs_review: "Photo could not be triaged automatically",
 };
+
+// The five state chips above the table, and the case states each one covers.
+const STATE_GROUP = {
+  waiting: ["REPORTED", "TRIAGED", "NEW", "ROUTED", "ESCALATED"],
+  assigned: ["ACCEPTED"], onsite: ["ON_SITE"], resolved: ["RESOLVED"], cancelled: ["CANCELLED"],
+};
+const STATE_GROUP_LABEL = { waiting: "Waiting for a team", assigned: "Assigned", onsite: "On site",
+                            resolved: "Resolved", cancelled: "Cancelled" };
+const STATE_ORDER = Object.values(STATE_GROUP).flat();
+const URGENCY_RANK = { critical: 0, high: 1, medium: 2, low: 3 };  // not known yet sorts last
+const RANGE_LABEL = { all: "Any time", today: "Today", 7: "Last 7 days", 30: "Last 30 days" };
+const SORT_LABEL = { newest: "Newest first", oldest: "Oldest first", urgent: "Most urgent first",
+                     waiting: "Longest waiting first", id: "Case ID", area: "Area, A to Z", status: "Status" };
+const REFRESH_CHOICES = [0, 30, 60, 300];
 
 // Text from the database is never trusted as HTML.
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) =>
@@ -396,9 +627,21 @@ function casePopup(c, now) {
     ${c.photo_url ? ' · <a href="' + esc(c.photo_url) + '" target="_blank" rel="noopener">Open photo</a>' : ""}`;
 }
 
-function drawMap(data, now) {
-  Object.values(layers).forEach((layer) => layer.clearLayers());
+// The case dots: only the cases the filters let through, so the map and the table always agree.
+function drawCaseMarkers(cases, now) {
+  layers.rescues.clearLayers();
   for (const key in caseMarkers) delete caseMarkers[key];
+  cases.forEach((c) => {
+    const colour = c.open ? (URGENCY_COLOUR[c.urgency] || "#9aa5a2") : "#9aa5a2";
+    caseMarkers[c.id] = L.circleMarker([c.latitude, c.longitude], {
+      radius: c.open ? 8 : 5, color: c.attention ? "#1c2826" : "#fff", weight: c.attention ? 3 : 1.5,
+      fillColor: colour, fillOpacity: c.open ? 0.95 : 0.55,
+    }).bindPopup(casePopup(c, now)).addTo(layers.rescues);
+  });
+}
+
+function drawMap(data, now) {
+  [layers.zones, layers.bites, layers.camps].forEach((layer) => layer.clearLayers());
 
   data.zones.forEach((z) => {
     L.circle([z.latitude, z.longitude], {
@@ -420,14 +663,6 @@ function drawMap(data, now) {
       .addTo(layers.bites);
   });
 
-  data.cases.forEach((c) => {
-    const colour = c.open ? (URGENCY_COLOUR[c.urgency] || "#9aa5a2") : "#9aa5a2";
-    caseMarkers[c.id] = L.circleMarker([c.latitude, c.longitude], {
-      radius: c.open ? 8 : 5, color: c.attention ? "#1c2826" : "#fff", weight: c.attention ? 3 : 1.5,
-      fillColor: colour, fillOpacity: c.open ? 0.95 : 0.55,
-    }).bindPopup(casePopup(c, now)).addTo(layers.rescues);
-  });
-
   data.camps.forEach((camp) => {
     L.marker([camp.latitude, camp.longitude], {
       icon: L.divIcon({ className: "", html: '<div class="pin-camp">C</div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
@@ -436,12 +671,12 @@ function drawMap(data, now) {
   });
 }
 
-async function showCase(id) {
-  if (!caseMarkers[id]) {
-    // The filters are hiding this case: clear them, then look again.
-    $("f-status").value = "all"; $("f-urgency").value = ""; $("f-zone").value = "";
-    await load(true);
+function showCase(id) {
+  if (!settings.sections.map) {
+    toast("The map is hidden. Switch it on in View settings to see this case on it.");
+    return;
   }
+  if (!caseMarkers[id]) clearFilters();  // the filters are hiding this case
   const marker = caseMarkers[id];
   if (!marker) return;
   mapMoved = true;
@@ -514,17 +749,139 @@ function drawCamps(data) {
     : '<span class="muted">No camps scheduled.</span>';
 }
 
-function drawCases(data, now) {
-  $("case-count").textContent = `(${data.cases.length})`;
-  $("cases").innerHTML = data.cases.map((c) => `<tr data-case="${esc(c.id)}" tabindex="0">
-      <td><span class="id">${esc(c.id)}</span>${c.is_demo ? '<span class="tag">demo</span>' : ""}</td>
-      <td><span class="chip ${c.urgency ? esc(c.urgency) : "none"}">${esc(c.urgency || "unknown")}</span></td>
-      <td>${c.species ? esc(c.species) + ": " : ""}${esc(c.injury_type || "not described")}
+// ---------- filters, search and sorting (all in the browser, on what /dashboard/data returned) ----------
+const noFilters = () => ({ q: "", states: [], urgencies: [], attention: false, zone: "", range: "all", sort: "newest" });
+const goaDay = (date) => new Date(date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+
+function matches(c, f, now) {
+  const q = f.q.trim().toLowerCase();
+  if (q && ![c.id, c.zone_name, c.species].some((v) => v && String(v).toLowerCase().includes(q))) return false;
+  if (f.states.length && !f.states.some((group) => STATE_GROUP[group].includes(c.state))) return false;
+  if (f.urgencies.length && !f.urgencies.includes(c.urgency)) return false;
+  if (f.attention && !c.attention) return false;
+  if (f.zone && c.zone !== f.zone) return false;
+  if (f.range === "today") return goaDay(c.created_at) === goaDay(now);
+  if (f.range === "7" || f.range === "30") return now - c.at <= Number(f.range) * 86400000;
+  return true;
+}
+
+// TODO(me): Ayush improves "Longest waiting first". Right now it is the same as
+// "Oldest first": a case resolved five days ago sits above one that has been open
+// for an hour, although nobody is waiting on the resolved one. Make the order:
+//   1. open cases before closed ones   (c.open is true or false)
+//   2. then the oldest first           (c.at is the report time as a number; smaller = older)
+// A comparator returns a negative number when `a` goes first and a positive one
+// when `b` does. Tip: (b.open - a.open) is negative when only `a` is open.
+// To check: reload /dashboard, open the browser console and run  checkWaitingSort()
+// It prints "pass" once open cases come first, oldest at the top.
+function compareWaiting(a, b) {
+  return a.at - b.at;
+}
+
+function checkWaitingSort() {
+  const sample = [
+    { id: "closed-old", open: false, at: 1 }, { id: "open-new", open: true, at: 3 },
+    { id: "open-old", open: true, at: 2 }, { id: "closed-new", open: false, at: 4 },
+  ].sort(compareWaiting).map((c) => c.id).join(", ");
+  const wanted = "open-old, open-new, closed-old, closed-new";
+  return sample === wanted ? "pass" : `not yet: got ${sample}; wanted ${wanted}`;
+}
+
+const urgencyRank = (c) => URGENCY_RANK[c.urgency] ?? 4;
+const COMPARE = {
+  newest: (a, b) => b.at - a.at,
+  oldest: (a, b) => a.at - b.at,
+  urgent: (a, b) => urgencyRank(a) - urgencyRank(b) || a.at - b.at,
+  waiting: compareWaiting,
+  id: (a, b) => a.id.localeCompare(b.id, "en", { numeric: true }),
+  area: (a, b) => (a.zone_name == null) - (b.zone_name == null)
+    || String(a.zone_name).localeCompare(String(b.zone_name)) || b.at - a.at,
+  status: (a, b) => STATE_ORDER.indexOf(a.state) - STATE_ORDER.indexOf(b.state) || b.at - a.at,
+};
+// Which column header shows an arrow for each sort, and which way it points.
+const SORT_HEADER = { id: ["id", "ascending"], urgent: ["urgent", "descending"], area: ["area", "ascending"],
+                      status: ["status", "ascending"], newest: ["newest", "descending"], oldest: ["newest", "ascending"] };
+
+const activeFilterCount = (f) => (f.q.trim() ? 1 : 0) + f.states.length + f.urgencies.length
+  + (f.attention ? 1 : 0) + (f.zone ? 1 : 0) + (f.range !== "all" ? 1 : 0);
+
+function filterWords(f) {
+  const zone = f.zone && (allZones.find((z) => z.slug === f.zone) || {}).name;
+  const parts = [
+    ...f.states.map((group) => STATE_GROUP_LABEL[group]),
+    ...f.urgencies.map((u) => u[0].toUpperCase() + u.slice(1)),
+    f.attention ? "Needs a person" : null,
+    zone || null,
+    f.range !== "all" ? RANGE_LABEL[f.range] : null,
+    f.sort !== "newest" ? "sorted: " + SORT_LABEL[f.sort].toLowerCase() : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(", ") : "No filters, newest first";
+}
+
+function clearFilters() {
+  filters = { ...noFilters(), sort: filters.sort };
+  render();
+}
+
+function syncFilterControls() {
+  $("f-q").value = filters.q; $("f-zone").value = filters.zone;
+  $("f-range").value = filters.range; $("f-sort").value = filters.sort;
+  document.querySelectorAll(".fchip").forEach((chip) => {
+    const on = chip.dataset.filter === "attention" ? filters.attention
+      : filters[chip.dataset.filter].includes(chip.dataset.value);
+    chip.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  const [header, direction] = SORT_HEADER[filters.sort] || [];
+  document.querySelectorAll("#cases-table th[aria-sort]").forEach((th) => {
+    th.setAttribute("aria-sort", th.querySelector(".th-sort").dataset.sort === header ? direction : "none");
+  });
+}
+
+// Draws the table and the case dots from the cases already downloaded.
+function render() {
+  if (!lastData) return;
+  syncFilterControls();
+  const shown = allCases.filter((c) => matches(c, filters, dataNow)).sort(COMPARE[filters.sort]);
+  const filtered = activeFilterCount(filters) > 0;
+  $("case-count").textContent = filtered
+    ? `${shown.length} of ${plural(allCases.length, "case")}` : plural(allCases.length, "case");
+  $("clear-filters").hidden = !filtered;
+  drawCaseMarkers(shown, dataNow);
+  const mapNote = $("map-empty");
+  mapNote.hidden = shown.length > 0;
+  mapNote.textContent = allCases.length ? "No cases match these filters." : `No cases in the last ${lastData.window_days} days.`;
+  drawCases(shown, dataNow);
+}
+
+function drawCases(cases, now) {
+  // Keep the keyboard where it was when the list is redrawn by a refresh.
+  const active = document.activeElement;
+  const focused = active && active.closest && active.closest("#cases")
+    ? [active.closest("tr").dataset.case, active.dataset.act] : null;
+  const empty = allCases.length
+    ? `<b>No cases match these filters.</b>Try a wider date range or fewer filters.
+       <br><button type="button" class="secondary" data-act="clear">Clear filters</button>`
+    : `<b>No cases in the last ${lastData.window_days} days.</b>New reports appear here as soon as they arrive.`;
+  $("cases").innerHTML = cases.map((c) => `<tr data-case="${esc(c.id)}">
+      <td class="col-id"><button type="button" class="id-btn" data-act="open" data-id="${esc(c.id)}"
+            aria-label="Open ${esc(c.id)}">${esc(c.id)}</button>${c.is_demo ? '<span class="tag">demo</span>' : ""}</td>
+      <td class="col-urgency"><span class="chip ${c.urgency ? esc(c.urgency) : "none"}">${esc(c.urgency || "unknown")}</span></td>
+      <td class="col-what">${c.species ? esc(c.species) + ": " : ""}${esc(c.injury_type || "not described")}
           ${c.attention ? '<br><span class="warn">' + esc(ATTENTION_LABEL[c.attention]) + "</span>" : ""}</td>
-      <td>${esc(c.zone_name || "–")}${c.zone_is_approximate ? ' <span class="tag">nearest</span>' : ""}</td>
-      <td>${esc(STATE_LABEL[c.state] || c.state)}${c.team ? '<br><span class="muted">' + esc(c.team) + "</span>" : ""}</td>
-      <td>${timeAgo(c.created_at, now)}${c.reports > 1 ? '<br><span class="muted">' + plural(c.reports, "report") + "</span>" : ""}</td>
-    </tr>`).join("") || '<tr><td colspan="6" class="muted">No cases match these filters.</td></tr>';
+      <td class="col-area">${esc(c.zone_name || "–")}${c.zone_is_approximate ? ' <span class="tag">nearest</span>' : ""}</td>
+      <td class="col-status">${esc(STATE_LABEL[c.state] || c.state)}${c.team ? '<br><span class="muted">' + esc(c.team) + "</span>" : ""}</td>
+      <td class="col-reported">${timeAgo(c.created_at, now)}<br><span class="muted">${goaTime(c.created_at)}${
+          c.reports > 1 ? ", " + plural(c.reports, "report") : ""}</span></td>
+      <td class="col-actions"><div class="row-actions">
+        <button type="button" class="secondary mini" data-act="details" data-id="${esc(c.id)}" aria-label="Open ${esc(c.id)}">Open</button>
+        <button type="button" class="secondary mini" data-act="copy" data-id="${esc(c.id)}" aria-label="Copy ID ${esc(c.id)}">Copy ID</button>
+        ${c.open ? `<button type="button" class="secondary mini stop" data-act="cancel" data-id="${esc(c.id)}" aria-label="Cancel ${esc(c.id)}">Cancel</button>` : ""}
+      </div></td>
+    </tr>`).join("") || `<tr><td colspan="7" class="empty">${empty}</td></tr>`;
+  if (focused) {
+    const again = document.querySelector(`#cases tr[data-case="${CSS.escape(focused[0])}"] [data-act="${focused[1]}"]`);
+    if (again) again.focus();
+  }
 }
 
 function drawSterilisation(data) {
@@ -698,10 +1055,9 @@ function drawDetail(c) {
       </div>` : `<div class="action"><span class="muted">Sending to another team is only possible while the case is
         waiting for one${c.team ? `; ${esc(c.team)} has already accepted it` : ""}.</span></div>`;
     const cancel = c.can_cancel ? `<div class="action">
-        <label for="cancel-reason"><b>Cancel this case</b></label>
-        <div class="row"><input type="text" id="cancel-reason" maxlength="200" placeholder="Reason, for the log (required)">
-          <button type="button" class="danger" id="cancel-btn">Cancel case</button></div>
-        <span class="note">The reason stays in the log. Reporters and any team involved get a short message that the case is closed.</span>
+        <b>Cancel this case</b>
+        <div><button type="button" class="danger" data-act="cancel" data-id="${esc(c.id)}">Cancel case…</button></div>
+        <span class="note">You will be asked for a reason, which stays in the log. Reporters and any team involved get a short message that the case is closed.</span>
       </div>` : "";
     sections.push(`<div class="card"><h2>Staff actions</h2>${assign}${cancel}<div class="result" id="action-result" role="status"></div></div>`);
   }
@@ -754,66 +1110,271 @@ function assignTeam(button) {
     button, `Alert sent to ${team.textContent.split(" · ")[0]}. The reporter has been told.`);
 }
 
-function cancelCase(button) {
+// ---------- small messages, copy, and the cancel confirmation ----------
+let toastTimer;
+function toast(words) {
+  $("toast").textContent = words;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $("toast").textContent = ""; }, 4000);
+}
+
+async function copyId(id) {
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(id);
+    copied = true;
+  } catch (error) {
+    try {  // older browsers, or a page without clipboard permission
+      const box = document.createElement("textarea");
+      box.value = id;
+      box.style.cssText = "position:fixed;opacity:0";
+      document.body.append(box);
+      box.select();
+      copied = document.execCommand("copy");
+      box.remove();
+    } catch (error2) { copied = false; }
+  }
+  toast(copied ? `Copied ${id}` : `Could not copy. The case ID is ${id}.`);
+}
+
+let cancelId = null;
+function askCancel(id) {
+  cancelId = id;
+  $("cancel-title").textContent = `Cancel ${id}?`;
+  $("cancel-reason").value = "";
+  $("cancel-error").textContent = "";
+  $("cancel-confirm").disabled = false;
+  $("cancel-dialog").showModal();
+  $("cancel-reason").focus();
+}
+
+async function confirmCancel() {
+  const id = cancelId;
   const reason = $("cancel-reason").value.trim();
   if (reason.length < 3) {
-    $("action-result").className = "result error";
-    $("action-result").textContent = "Please give a short reason (at least 3 characters).";
+    $("cancel-error").textContent = "Please give a short reason (at least 3 characters).";
     $("cancel-reason").focus();
     return;
   }
-  if (!confirm(`Cancel ${detailId}? Reporters and any team involved will be told it is closed. This cannot be undone.`)) return;
-  return staffAction("cancel", { reason }, button, "Case cancelled. Reporters and teams have been told.");
+  $("cancel-confirm").disabled = true;
+  $("cancel-error").textContent = "";
+  try {
+    const response = await fetch(`/dashboard/cases/${encodeURIComponent(id)}/cancel`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason }),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(apiError(payload, response.status));
+    $("cancel-dialog").close();
+    toast(`${id} cancelled. Reporters and teams have been told.`);
+    if (id === detailId) drawDetail(payload);
+    load(true);
+  } catch (error) {
+    $("cancel-error").textContent = error.message;
+    $("cancel-confirm").disabled = false;
+  }
+}
+
+// ---------- view settings (this browser only) ----------
+const STORE_KEY = "pawsos.dashboard.view.v1";
+const SECTIONS = ["map", "attention", "camp", "times", "cases"];
+const COLUMNS = ["urgency", "what", "area", "status", "reported", "actions"];
+const defaultSettings = () => ({
+  sections: Object.fromEntries(SECTIONS.map((name) => [name, true])),
+  columns: Object.fromEntries(COLUMNS.map((name) => [name, true])),
+  density: "comfortable", refresh: 30, defaultFilters: null,
+});
+
+// Saved filters are checked value by value: anything unexpected is dropped, never trusted.
+function cleanFilters(saved) {
+  const f = noFilters();
+  if (!saved || typeof saved !== "object") return f;
+  if (Array.isArray(saved.states)) f.states = saved.states.filter((v) => v in STATE_GROUP);
+  if (Array.isArray(saved.urgencies)) f.urgencies = saved.urgencies.filter((v) => v in URGENCY_RANK);
+  f.attention = saved.attention === true;
+  if (typeof saved.zone === "string") f.zone = saved.zone;
+  if (String(saved.range) in RANGE_LABEL) f.range = String(saved.range);
+  if (saved.sort in SORT_LABEL) f.sort = saved.sort;
+  return f;
+}
+
+let storageBlocked = false;
+function readSettings() {
+  const s = defaultSettings();
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved && typeof saved === "object") {
+      SECTIONS.forEach((name) => { if (saved.sections && saved.sections[name] === false) s.sections[name] = false; });
+      COLUMNS.forEach((name) => { if (saved.columns && saved.columns[name] === false) s.columns[name] = false; });
+      if (saved.density === "compact") s.density = "compact";
+      if (REFRESH_CHOICES.includes(saved.refresh)) s.refresh = saved.refresh;
+      if (saved.defaultFilters) s.defaultFilters = cleanFilters(saved.defaultFilters);
+    }
+  } catch (error) { storageBlocked = true; }  // blocked or damaged: carry on with the defaults
+  return s;
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(settings));
+    storageBlocked = false;
+  } catch (error) { storageBlocked = true; }
+  $("storage-note").hidden = !storageBlocked;
+}
+
+let refreshTimer;
+function applySettings() {
+  const show = settings.sections;
+  $("sec-map").hidden = !show.map; $("sec-attention").hidden = !show.attention; $("sec-camp").hidden = !show.camp;
+  $("sec-times").hidden = !show.times; $("sec-cases").hidden = !show.cases;
+  $("grid-top").classList.toggle("no-map", !show.map);
+  $("grid-pair").classList.toggle("one", !show.times);
+  const table = $("cases-table");
+  table.classList.toggle("compact", settings.density === "compact");
+  COLUMNS.forEach((name) => table.classList.toggle("hide-" + name, !settings.columns[name]));
+
+  document.querySelectorAll("[data-section]").forEach((box) => { box.checked = show[box.dataset.section]; });
+  document.querySelectorAll("[data-column]").forEach((box) => { box.checked = settings.columns[box.dataset.column]; });
+  document.querySelectorAll('input[name="density"]').forEach((radio) => { radio.checked = radio.value === settings.density; });
+  $("set-refresh").value = String(settings.refresh);
+  $("default-filters-words").textContent = settings.defaultFilters ? filterWords(settings.defaultFilters) : "No filters, newest first";
+  $("default-clear").disabled = !settings.defaultFilters;
+  $("storage-note").hidden = !storageBlocked;
+  $("refresh-note").textContent = settings.refresh
+    ? `Updates every ${settings.refresh < 60 ? settings.refresh + " seconds" : plural(settings.refresh / 60, "minute")}.`
+    : "Automatic updates are off; use Refresh now in View settings.";
+
+  clearInterval(refreshTimer);
+  if (settings.refresh) refreshTimer = setInterval(load, settings.refresh * 1000);
+}
+
+function openSettings(open) {
+  $("settings").hidden = !open;
+  $("settings-btn").setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) $("settings").querySelector("input").focus();
+  else $("settings-btn").focus();
 }
 
 // ---------- loading ----------
+let settings = readSettings();
+let filters = settings.defaultFilters ? { ...settings.defaultFilters } : noFilters();
+let lastData = null, allCases = [], allZones = [], dataNow = new Date();
 let zonesFilled = false;
+
 async function load(force) {
-  if (popupOpen && !force) return;  // do not pull a popup out from under someone reading it
-  const params = new URLSearchParams({ status: $("f-status").value });
-  if ($("f-urgency").value) params.set("urgency", $("f-urgency").value);
-  if ($("f-zone").value) params.set("zone", $("f-zone").value);
+  // do not pull a popup or a confirmation out from under someone
+  if ((popupOpen || $("cancel-dialog").open) && force !== true) return;
   try {
-    const response = await fetch(`/dashboard/data?${params}`);
+    const response = await fetch("/dashboard/data");  // every case; the filters are applied here in the page
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const now = new Date(data.generated_at);
+    lastData = data; dataNow = now; allZones = data.zones;
+    allCases = data.cases.map((c) => ({ ...c, at: Date.parse(c.created_at) }));
     if (!zonesFilled) {
       data.zones.forEach((z) => $("f-zone").add(new Option(z.name, z.slug)));
       zonesFilled = true;
+      applySettings();  // the saved default may name an area, which only now has words
     }
     drawTiles(data); drawMap(data, now); drawSuggestion(data); drawAttention(data, now);
-    drawCamps(data); drawCases(data, now); drawSterilisation(data); drawResponseTimes(data);
-    $("updated").textContent = "Updated " + now.toLocaleTimeString("en-IN",
+    drawCamps(data); drawSterilisation(data); drawResponseTimes(data);
+    render();
+    const at = now.toLocaleTimeString("en-IN",
       { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" });
+    $("updated").textContent = "Updated " + at;
+    $("updated-2").textContent = "Last updated " + at + ".";
   } catch (error) {
-    $("updated").textContent = "Could not load data (" + error.message + "). Retrying…";
+    $("updated").textContent = "Could not load data (" + error.message + ").";
+    $("updated-2").textContent = "The last refresh failed (" + error.message + ").";
   }
 }
 
 document.addEventListener("click", (event) => {
   const target = event.target;
+  const act = target.closest("[data-act]");  // Open, Copy ID, Cancel, Clear filters
+  if (act) {
+    const id = act.dataset.id || detailId;
+    if (act.dataset.act === "open" || act.dataset.act === "details") openDetail(id);
+    if (act.dataset.act === "copy") copyId(id);
+    if (act.dataset.act === "cancel") askCancel(id);
+    if (act.dataset.act === "clear") { clearFilters(); $("f-q").focus(); }
+    return;
+  }
+  const chip = target.closest(".fchip");
+  if (chip) {
+    if (chip.dataset.filter === "attention") filters.attention = !filters.attention;
+    else {
+      const list = filters[chip.dataset.filter], value = chip.dataset.value;
+      filters[chip.dataset.filter] = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    }
+    render();
+    return;
+  }
+  const sort = target.closest(".th-sort");
+  if (sort) {
+    // "Reported" flips between newest and oldest; the other headers each have one order.
+    filters.sort = sort.dataset.sort === "newest" && filters.sort === "newest" ? "oldest" : sort.dataset.sort;
+    render();
+    return;
+  }
   const detail = target.closest("[data-detail]");  // "Case details" in a map popup
   if (detail) { event.preventDefault(); openDetail(detail.dataset.detail); return; }
   const onMap = target.closest("[data-map]");  // "Show on map" in the detail panel
   if (onMap) { closeDetail(); showCase(onMap.dataset.map); return; }
   if (target.id === "assign-btn") { assignTeam(target); return; }
-  if (target.id === "cancel-btn") { cancelCase(target); return; }
+  if (!$("settings").hidden && !target.closest("#settings") && !target.closest("#settings-btn")) openSettings(false);
   const row = target.closest("[data-case]");  // a row in the case list, or a flagged case
   if (row && !target.closest("a")) openDetail(row.dataset.case);
 });
 $("detail-close").addEventListener("click", closeDetail);
 $("detail-back").addEventListener("click", closeDetail);
 document.addEventListener("keydown", (event) => {
-  // Enter on a focused row of the case list opens it, as a click does.
-  if (event.key === "Enter" && event.target.matches && event.target.matches("tr[data-case]")) {
-    openDetail(event.target.dataset.case);
-  }
-  if (event.key === "Escape" && detailId) closeDetail();
+  if (event.key !== "Escape" || $("cancel-dialog").open) return;  // the dialog closes itself on Escape
+  if (!$("settings").hidden) openSettings(false);
+  else if (detailId) closeDetail();
 });
-["f-status", "f-urgency", "f-zone"].forEach((id) => $(id).addEventListener("change", () => load(true)));
+
+// the toolbar
+$("f-q").addEventListener("input", () => { filters.q = $("f-q").value; render(); });
+$("f-zone").addEventListener("change", () => { filters.zone = $("f-zone").value; render(); });
+$("f-range").addEventListener("change", () => { filters.range = $("f-range").value; render(); });
+$("f-sort").addEventListener("change", () => { filters.sort = $("f-sort").value; render(); });
+$("clear-filters").addEventListener("click", () => { clearFilters(); $("f-q").focus(); });
+
+// the cancel confirmation
+$("cancel-form").addEventListener("submit", (event) => { event.preventDefault(); confirmCancel(); });
+$("cancel-keep").addEventListener("click", () => $("cancel-dialog").close());
+
+// view settings
+$("settings-btn").addEventListener("click", () => openSettings($("settings").hidden));
+$("settings-close").addEventListener("click", () => openSettings(false));
+$("settings").addEventListener("change", (event) => {
+  const box = event.target;
+  if (box.dataset.section) settings.sections[box.dataset.section] = box.checked;
+  else if (box.dataset.column) settings.columns[box.dataset.column] = box.checked;
+  else if (box.name === "density") settings.density = box.value;
+  else if (box.id === "set-refresh") settings.refresh = Number(box.value);
+  saveSettings(); applySettings();
+});
+$("refresh-now").addEventListener("click", () => load(true));
+$("default-save").addEventListener("click", () => {
+  settings.defaultFilters = cleanFilters(filters);  // the search text is not kept
+  saveSettings(); applySettings();
+  toast("These filters will be applied when the page opens.");
+});
+$("default-clear").addEventListener("click", () => {
+  settings.defaultFilters = null;
+  saveSettings(); applySettings();
+});
+$("settings-reset").addEventListener("click", () => {
+  settings = defaultSettings();
+  try { localStorage.removeItem(STORE_KEY); } catch (error) { storageBlocked = true; }
+  filters = noFilters();
+  applySettings(); render();
+  toast("View settings are back to the defaults.");
+});
+
+applySettings();
 load(true);
-setInterval(load, 15000);
 </script>
 </body>
 </html>

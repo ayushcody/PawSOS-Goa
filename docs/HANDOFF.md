@@ -29,7 +29,7 @@ docker compose up -d
 .venv/bin/uvicorn app.main:app --reload --port 8040
 ```
 
-- The tests should end with **311 passed, 12 skipped**. The 12 skipped tests are Ayush's learning tasks (see "Leave these alone").
+- The tests should end with **339 passed, 13 skipped**. The 13 skipped tests are Ayush's learning tasks (see "Leave these alone").
 - `alembic upgrade head` applies every migration, including 0008 (each person's language). Run it again if your database is older.
 - For real voice notes you also need `ffmpeg` installed (see `docs/VOICE_SETUP.md`). Nothing else needs it.
 - Simulator (a fake WhatsApp in the browser): `http://localhost:8040/sim`
@@ -67,7 +67,7 @@ app/messages.py  every message sent to a person, in English, Konkani, Marathi an
 seed/            zones, placeholder teams, health centres, camps, demo cases
 migrations/      Alembic
 tests/           pytest; every external service is replaced by a stand-in
-docs/            SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, VOICE_SETUP, TRANSLATIONS
+docs/            SPEC, PLAN, DECISIONS, DEMO, ARCHITECTURE, WHATSAPP_SETUP, TELEGRAM_SETUP, VOICE_SETUP, TRANSLATIONS
 ```
 
 ## Where things stand

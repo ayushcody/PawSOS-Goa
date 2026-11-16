@@ -147,6 +147,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     "rating_ask": {
         "en": "How did it go with case {case_id}? Your answer helps us improve.",
     },
+    # The one-tap button under a request for a location (Telegram; WhatsApp draws its own).
+    "location_button": {"en": "Send my location"},
     "rating_good": {"en": "Good"},
     "rating_ok": {"en": "OK"},
     "rating_poor": {"en": "Poor"},
