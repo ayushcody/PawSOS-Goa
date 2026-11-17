@@ -6,6 +6,12 @@
       "runtimeExecutable": ".venv/bin/uvicorn",
       "runtimeArgs": ["app.main:app", "--reload", "--port", "8040"],
       "port": 8040
+    },
+    {
+      "name": "pawsos-open",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["DASHBOARD_PASSWORD=", "CHANNEL=simulator", "IGNORE_OPENING_HOURS=true", ".venv/bin/uvicorn", "app.main:app", "--port", "8043"],
+      "port": 8043
     }
   ]
 }

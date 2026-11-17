@@ -149,6 +149,15 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     # The one-tap button under a request for a location (Telegram; WhatsApp draws its own).
     "location_button": {"en": "Send my location"},
+    # A bite message that does not say who was bitten (app/cases/bites.py, bite_kind).
+    "bite_which": {
+        "en": (
+            "Thank you for telling us. So we can help in the right way: "
+            "was a person bitten, or is an animal hurt?"
+        ),
+    },
+    "bite_choice_person": {"en": "A person was bitten"},
+    "bite_choice_animal": {"en": "An animal is hurt"},
     "rating_good": {"en": "Good"},
     "rating_ok": {"en": "OK"},
     "rating_poor": {"en": "Poor"},
@@ -415,8 +424,9 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "outside_goa": {
         "en": (
-            "That location looks outside Goa. PawSOS covers Goa only. "
-            "Please check the pin and send it again."
+            "Thank you for trying to help. That location looks outside Goa, and PawSOS works only in Goa. "
+            "If the animal is outside Goa, please contact the local municipality or an animal welfare group there. "
+            "If you are in Goa, the pin may be off: please share your current location again."
         ),
     },
     "photo_rejected": {
@@ -472,6 +482,9 @@ def triage_message(
 # book_camp_line, which has no words) fall back to English.
 
 KOK: dict[str, str] = {  # Konkani, Devanagari script
+    "bite_which": "सांगिल्ल्याखातीर देव बरें करूं. योग्य तरेन मदत करपाक: मनशाक चाबलां, वा जनावर जखमी जालां?",
+    "bite_choice_person": "मनशाक चाबलां",
+    "bite_choice_animal": "जनावर जखमी जालां",
     "welcome": (
         "नमस्कार, हें PawSOS Goa. "
         "मदत जाय आशिल्ल्या जनावराची खबर दिवपाक, ताचो फोटो आनी तुमचें लोकेशन धाडात. "
@@ -622,8 +635,9 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
         "उपकार करून तुमचो मेसेज टायप करात, वा फोटो आनी लोकेशन धाडात."
     ),
     "outside_goa": (
-        "तें लोकेशन गोंया भायर दिसता. PawSOS फकत गोंयांत काम करता. "
-        "उपकार करून पिन तपासात आनी परत धाडात."
+        "मदत करपाचो यत्न केल्ल्याखातीर देव बरें करूं. तें लोकेशन गोंया भायर दिसता, आनी PawSOS फकत गोंयांत काम करता. "
+        "जनावर गोंया भायर आसल्यार, उपकार करून थंयच्या स्थानीक नगरपालिकेक वा जनावरां कल्याण संस्थेक संपर्क करात. "
+        "तुमी गोंयांत आसल्यार, पिन चुकीची आसूं येता: उपकार करून तुमचें सद्याचें लोकेशन परत धाडात."
     ),
     "photo_rejected": (
         "माफ करात, तो फोटो उगडूंक जमलो ना. उपकार करून 10 MB परस ल्हान JPEG वा PNG फोटो धाडात."
@@ -703,6 +717,9 @@ KOK: dict[str, str] = {  # Konkani, Devanagari script
 }
 
 MR: dict[str, str] = {  # Marathi
+    "bite_which": "सांगितल्याबद्दल धन्यवाद. योग्य प्रकारे मदत करण्यासाठी: माणसाला चावले आहे, की प्राणी जखमी आहे?",
+    "bite_choice_person": "माणसाला चावले",
+    "bite_choice_animal": "प्राणी जखमी आहे",
     "welcome": (
         "नमस्कार, हे PawSOS Goa आहे. "
         "मदतीची गरज असलेल्या प्राण्याची माहिती देण्यासाठी, त्याचा फोटो आणि तुमचे लोकेशन पाठवा. "
@@ -856,8 +873,9 @@ MR: dict[str, str] = {  # Marathi
         "कृपया तुमचा मेसेज टाइप करा, किंवा फोटो आणि लोकेशन पाठवा."
     ),
     "outside_goa": (
-        "ते लोकेशन गोव्याबाहेरचे दिसते. PawSOS फक्त गोव्यासाठी आहे. "
-        "कृपया पिन तपासा आणि पुन्हा पाठवा."
+        "मदत करण्याचा प्रयत्न केल्याबद्दल धन्यवाद. ते लोकेशन गोव्याबाहेरचे दिसते, आणि PawSOS फक्त गोव्यात काम करते. "
+        "प्राणी गोव्याबाहेर असेल, तर कृपया तिथल्या स्थानिक नगरपालिकेशी किंवा प्राणी कल्याण संस्थेशी संपर्क साधा. "
+        "तुम्ही गोव्यात असाल, तर पिन चुकलेली असू शकते: कृपया तुमचे सध्याचे लोकेशन पुन्हा पाठवा."
     ),
     "photo_rejected": (
         "माफ करा, तो फोटो उघडता आला नाही. कृपया 10 MB पेक्षा लहान JPEG किंवा PNG फोटो पाठवा."
@@ -937,6 +955,9 @@ MR: dict[str, str] = {  # Marathi
 }
 
 HI: dict[str, str] = {  # Hindi
+    "bite_which": "बताने के लिए धन्यवाद। सही तरीके से मदद करने के लिए: किसी इंसान को काटा है, या कोई जानवर घायल है?",
+    "bite_choice_person": "इंसान को काटा है",
+    "bite_choice_animal": "जानवर घायल है",
     "welcome": (
         "नमस्ते, यह PawSOS Goa है। "
         "किसी जानवर को मदद चाहिए, तो उसकी फ़ोटो और अपनी लोकेशन भेजें। "
@@ -1090,8 +1111,9 @@ HI: dict[str, str] = {  # Hindi
         "कृपया अपना मैसेज टाइप करें, या फ़ोटो और लोकेशन भेजें।"
     ),
     "outside_goa": (
-        "यह लोकेशन गोवा के बाहर की लगती है। PawSOS सिर्फ़ गोवा में काम करता है। "
-        "कृपया पिन जाँचें और फिर से भेजें।"
+        "मदद करने की कोशिश के लिए धन्यवाद। यह लोकेशन गोवा के बाहर की लगती है, और PawSOS सिर्फ़ गोवा में काम करता है। "
+        "अगर जानवर गोवा के बाहर है, तो कृपया वहाँ की स्थानीय नगरपालिका या किसी पशु कल्याण संस्था से संपर्क करें। "
+        "अगर आप गोवा में हैं, तो पिन ग़लत हो सकती है: कृपया अपनी अभी की लोकेशन फिर से भेजें।"
     ),
     "photo_rejected": (
         "माफ़ कीजिए, यह फ़ोटो खुल नहीं पाई। कृपया 10 MB से छोटी JPEG या PNG फ़ोटो भेजें।"

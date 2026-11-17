@@ -25,7 +25,7 @@ from app.cases import aftercare, bites, intake
 from app.cases.geo import in_goa
 from app.cases.models import Case
 from app.cases.state_machine import InvalidTransition
-from app.channels.base import ChannelAdapter, InboundMessage, Outbound, deliver
+from app.channels.base import Button, ChannelAdapter, InboundMessage, Outbound, deliver
 from app.routing import dedup, dispatch
 from app.routing.flow import RoutingOutcome, route_case
 from app.triage.flow import triage_case
@@ -68,7 +68,23 @@ async def handle_inbound(
             request_location=True,
         )
 
-    if message.kind == "button" and message.button_id:
+    # Typed words and a voice note's words are treated alike from here on.
+    is_words = message.kind in ("text", "voice")
+    result: intake.IntakeResult | None = None
+    noted = False  # the person described the animal in words just now
+
+    if message.kind == "button" and message.button_id in bites.CHOICES:
+        # The answer to "was a person bitten, or is an animal hurt?"
+        if message.button_id == bites.CHOICE_PERSON:
+            intake.drop_words_only_draft(session, number)  # the words were about a person
+            bites.start(session, number)
+            session.commit()
+            await ask_for_location("bite_first_aid")
+            return
+        # An animal is hurt: their words are already with the report; ask for what is missing.
+        result = intake.draft_status(session, number)
+        noted = True
+    elif message.kind == "button" and message.button_id:
         if aftercare.is_rating(message.button_id):
             # A reporter tapped Good, OK or Poor after their case was resolved.
             outbox = aftercare.handle_rating(session, number, message.button_id)
@@ -89,11 +105,6 @@ async def handle_inbound(
         # Say back what we understood, so the person can correct us.
         await reply("voice_heard", text=heard)
 
-    # Typed words and a voice note's words are treated alike from here on.
-    is_words = message.kind in ("text", "voice")
-    result: intake.IntakeResult | None = None
-    noted = False  # the person described the animal in words just now
-
     if message.kind == "image" and message.media_name:
         waiting = aftercare.case_awaiting_photo(session, number)
         if waiting is not None:
@@ -113,7 +124,8 @@ async def handle_inbound(
         and message.longitude is not None
     ):
         if not in_goa(message.latitude, message.longitude):
-            await reply("outside_goa")
+            # A wrong pin is common: ask again with the one-tap button. Any photo stays waiting.
+            await ask_for_location("outside_goa")
             return
         bite = bites.pending_for(session, number)
         if bite is not None:
@@ -154,11 +166,37 @@ async def handle_inbound(
             contacts.close_menu(session, number)  # from here on a number is for BOOK
             session.commit()
             await deliver(channel, outbox)
-        elif is_words and text and bites.is_bite_report(text):
-            # A person is hurt: answer at once, before anything else.
-            bites.start(session, number)
-            session.commit()
-            await ask_for_location("bite_first_aid")
+        elif is_words and text and (kind := bites.bite_kind(text)) is not None:
+            spoken = message.kind == "voice"
+            language = message.language if spoken else None
+            if kind == "person":
+                # A person is hurt: answer at once, before anything else.
+                bites.start(session, number)
+                session.commit()
+                await ask_for_location("bite_first_aid")
+            elif kind == "animal":
+                # An animal was bitten: that is a rescue, and the words describe it.
+                result = intake.add_note(session, number, text, language, spoken=spoken)
+                noted = True
+            else:
+                # Not clear who was bitten. Keep the words with the report in case it is
+                # an animal, and ask; the answer comes back as one of two buttons.
+                intake.add_note(session, number, text, language, spoken=spoken)
+                session.commit()
+                language_now = contacts.language_for(session, number)
+                await deliver(
+                    channel,
+                    [
+                        Outbound(
+                            to=number,
+                            text=messages.render("bite_which", language_now),
+                            buttons=[
+                                Button(bites.CHOICE_PERSON, messages.render("bite_choice_person", language_now)),
+                                Button(bites.CHOICE_ANIMAL, messages.render("bite_choice_animal", language_now)),
+                            ],
+                        )
+                    ],
+                )
         elif message.kind == "voice" and text.lower().strip(" .!।") not in GREETINGS:
             # A spoken description of the animal: keep it with the report.
             result = intake.add_note(session, number, text, message.language)

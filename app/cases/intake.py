@@ -30,10 +30,10 @@ def format_case_id(number: int) -> str:
     return f"PAW-{number:04d}"
 
 
-def _draft_for(session: Session, number: str) -> Report:
-    """The sender's open draft, or a fresh one."""
+def _open_draft(session: Session, number: str) -> Report | None:
+    """The sender's open draft, if they have one."""
     cutoff = datetime.now(UTC) - DRAFT_WINDOW
-    draft = session.scalar(
+    return session.scalar(
         select(Report)
         .where(
             Report.reporter_number == number,
@@ -43,6 +43,11 @@ def _draft_for(session: Session, number: str) -> Report:
         .order_by(Report.created_at.desc())
         .limit(1)
     )
+
+
+def _draft_for(session: Session, number: str) -> Report:
+    """The sender's open draft, or a fresh one."""
+    draft = _open_draft(session, number)
     if draft is None:
         draft = Report(reporter_number=number)
         session.add(draft)
@@ -118,6 +123,25 @@ def add_note(
         data={"report_id": draft.id, "language": language, "characters": len(text)},
     )
     return _open_case_if_complete(session, draft)
+
+
+def draft_status(session: Session, number: str) -> IntakeResult:
+    """What the sender's report still needs, without adding anything to it."""
+    return _open_case_if_complete(session, _draft_for(session, number))
+
+
+def drop_words_only_draft(session: Session, number: str) -> None:
+    """Forget an open draft that holds only words: no photo and no location yet.
+
+    Used when words kept "in case an animal is hurt" turn out to be about a
+    person: later messages must not be filed as a description of an animal.
+    """
+    draft = _open_draft(session, number)
+    if draft is None or draft.location is not None:
+        return
+    has_photo = session.scalar(select(Photo.id).where(Photo.report_id == draft.id).limit(1))
+    if has_photo is None:
+        session.delete(draft)
 
 
 def _open_case_if_complete(session: Session, draft: Report) -> IntakeResult:
