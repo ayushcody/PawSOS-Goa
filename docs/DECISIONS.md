@@ -355,5 +355,10 @@ Why: the audit (C2) found that with no internet the whole dashboard stayed on "L
 What: Leaflet 1.9.4 (`leaflet.js`, `leaflet.css`, its control images and BSD licence) is in `app/static/leaflet`, served at `/static`, byte-identical to the CDN copy (the page keeps the same integrity hashes). The map is set up only when Leaflet loaded; otherwise the map box says "The map could not load" and every list, figure and the case panel still work. Map tiles still come from OpenStreetMap, so they need a connection; without one the markers are drawn on a blank background.
 Gave up: no offline tiles.
 
+## D-096 Triage gets 15 seconds and one retry, then the case goes on without it (17 Nov)
+Why (audit H2): the client waited 60 seconds and the SDK retried twice by itself, so a slow or unreachable API could hold the first team alert for about 3 minutes. "Triage must never block a rescue."
+What: `TRIAGE_TIMEOUT_SECONDS` (default 15) limits one call, both in the client and around the call, because the client's timeout is per read, not for the whole answer. The SDK's own retries are off (`max_retries=0`); `ClaudeTriager` makes exactly two tries, shared across every kind of failure: timeout, unreachable, 408/409/429/5xx, an invalid reply or a declined one. A 400, 401, 403 or 404 is not retried. `triage_case` also cuts off any triager after 2 x the timeout (30 s) and then uses the existing fallback: high urgency, flagged "needs review", routed as usual. Tests: `tests/test_triage_timeout.py`.
+Gave up: routing first and updating the urgency when triage returns (the audit's "better still"); it changes the order of messages to the reporter and is too large for freeze day. No pause between the two tries. One real call on a drawn picture answered in 3.6 s; latency on a real animal photo is still unmeasured.
+
 ## Open
 - Nothing right now.

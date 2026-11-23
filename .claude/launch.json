@@ -10,7 +10,7 @@
     {
       "name": "pawsos-open",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["DASHBOARD_PASSWORD=", "CHANNEL=simulator", "IGNORE_OPENING_HOURS=true", ".venv/bin/uvicorn", "app.main:app", "--port", "8043"],
+      "runtimeArgs": ["DASHBOARD_PASSWORD=", "CHANNEL=simulator", "IGNORE_OPENING_HOURS=true", "ESCALATION_TIMEOUT_SECONDS=30", ".venv/bin/uvicorn", "app.main:app", "--port", "8043"],
       "port": 8043
     }
   ]

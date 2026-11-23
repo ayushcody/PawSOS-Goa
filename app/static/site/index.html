@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PawSOS Goa</title>
+  <meta name="description" content="One WhatsApp number for every animal emergency in Goa. Report, triage, merge duplicates, alert the nearest team, close the loop.">
+  <meta name="color-scheme" content="light dark">
+  <!-- Mock stage: fonts from Google Fonts. Build stage self-hosts them under /static/site/fonts. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <link rel="stylesheet" href="/static/site/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <div class="wrap nav-row">
+      <a class="brand" href="/" aria-label="PawSOS Goa home">
+        <span class="brand-mark" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+        <span>PawSOS <span class="brand-goa">Goa</span></span>
+      </a>
+      <nav aria-label="Sections">
+        <ul class="nav-links">
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#try">Try it</a></li>
+          <li><a href="#officials">For officials</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+        </ul>
+      </nav>
+      <div class="nav-end">
+        <a class="icon-btn" href="https://github.com/ayushcody/PawSOS-Goa" aria-label="Source code on GitHub"><i class="ph ph-github-logo"></i></a>
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch colour theme"><i class="ph ph-moon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- 1. HERO -->
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">One number for every animal emergency in Goa.</h1>
+        <p class="lede">Send a photo and your location on WhatsApp. PawSOS assesses it, finds the nearest rescue team and keeps you posted.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="#try">Try it live <i class="ph ph-arrow-right"></i></a>
+          <a class="btn btn-ghost" href="#film"><i class="ph ph-play-circle"></i> Watch the film</a>
+        </div>
+      </div>
+
+      <figure class="phone" aria-label="Example conversation with PawSOS">
+        <div class="phone-top">
+          <span class="avatar" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+          <div>
+            <b>PawSOS Goa</b>
+            <small id="phone-status">online</small>
+          </div>
+        </div>
+        <ol class="chat" id="chat" aria-live="off"></ol>
+        <figcaption>Example run in the simulator, using PawSOS's own message text. Triage steps vary with each photo.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 2. PROBLEM -->
+    <section class="problem wrap" aria-labelledby="problem-title">
+      <h2 id="problem-title" class="sr-only">The problem</h2>
+      <div class="stat-lead">
+        <p class="big-num"><span data-count="19368">19,368</span></p>
+        <p class="stat-text">dog bite cases in Goa in 2025. About one every 27 minutes.</p>
+      </div>
+      <div class="stat-side">
+        <p><b>Four towns, zero camps.</b> Canacona, Sankhalim, Valpoi and Mapusa held no sterilisation camps in 2025.</p>
+        <p><b>A different helpline in every town.</b> Each municipality runs its own number. Panaji's closes at 8 pm.</p>
+      </div>
+      <p class="source">Sources: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn, January 2026.</p>
+    </section>
+
+    <!-- 3. HOW IT WORKS: steps on the left, the real screen on the right, swapped as you scroll -->
+    <section id="how" class="how wrap" aria-labelledby="how-title">
+      <h2 id="how-title" class="h2">Six steps. One case number from start to finish.</h2>
+      <div class="how-grid">
+        <ol class="how-steps">
+          <li data-shot="citizen" class="is-active"><i class="ph ph-camera"></i><div><h3>Report</h3><p>A photo and a live location on WhatsApp. A voice note works too, in Konkani, Marathi, Hindi or English.</p></div></li>
+          <li data-shot="citizen"><i class="ph ph-first-aid-kit"></i><div><h3>Triage</h3><p>Claude reads the photo: species, urgency, aggression risk, and two or three safe things to do. It never names a diagnosis.</p></div></li>
+          <li data-shot="citizen"><i class="ph ph-intersect"></i><div><h3>Merge duplicates</h3><p>Another report within 200 m and 2 hours of a similar open case joins it. Both people get the updates.</p></div></li>
+          <li data-shot="team"><i class="ph ph-siren"></i><div><h3>Alert the nearest team</h3><p>The zone's partner team gets the photo, a map link and two buttons: Accept or Decline.</p></div></li>
+          <li data-shot="team"><i class="ph ph-timer"></i><div><h3>Escalate</h3><p>Closed, declined, or 10 minutes of silence: the next team is alerted, then the taluka officer.</p></div></li>
+          <li data-shot="citizen"><i class="ph ph-check-circle"></i><div><h3>Close the loop</h3><p>Accepted, on site, resolved. Every reporter hears each step, then rates how it went.</p></div></li>
+        </ol>
+        <figure class="how-shot" aria-live="polite">
+          <img data-shot="citizen" src="/static/site/img/2_citizen_report_and_triage.jpg" alt="Citizen chat: case PAW-0051 triaged with three safe steps, routed to Panaji, and merged with a second report" width="860" height="1800" loading="lazy">
+          <img data-shot="team" src="/static/site/img/3_escalated_alert_to_officer.jpg" alt="Escalated alert for case PAW-0051 reaching the Tiswadi taluka officer with Accept and Decline buttons" width="860" height="1800" loading="lazy" hidden>
+          <figcaption>Real screens from a run on 24 Nov: a street-dog photo, real Claude triage, two reports merged, two teams timed out, the taluka officer resolved it.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 4. TRY IT LIVE: a private sandbox through the real code path -->
+    <section id="try" class="try" aria-labelledby="try-title">
+      <div class="wrap">
+        <h2 id="try-title" class="h2">Try it live.</h2>
+        <p class="section-lede">Your own private demo. Report an animal as a citizen, then answer as the rescue team. Nobody else sees your cases.</p>
+
+        <div class="sandbox" id="sandbox">
+          <div class="sb-col">
+            <div class="sb-head">
+              <div class="seg" role="tablist" aria-label="Which citizen you are">
+                <button role="tab" aria-selected="true" data-who="c1">You</button>
+                <button role="tab" aria-selected="false" data-who="c2">A passer-by</button>
+              </div>
+              <span class="sb-sub">Citizen on WhatsApp</span>
+            </div>
+            <ol class="sb-chat" id="sb-citizen" aria-live="polite">
+              <li class="sb-empty">Start with a photo of the animal, then share where it is.</li>
+            </ol>
+            <div class="sb-tools">
+              <div class="sb-row">
+                <button class="chip-btn" id="sb-sample" type="button"><i class="ph ph-image"></i> Send sample photo</button>
+                <label class="chip-btn"><i class="ph ph-upload-simple"></i> Your photo<input id="sb-file" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>
+              </div>
+              <div class="sb-row">
+                <label class="sr-only" for="sb-place">Place</label>
+                <select id="sb-place"></select>
+                <button class="chip-btn" id="sb-loc" type="button"><i class="ph-fill ph-map-pin"></i> Send location</button>
+              </div>
+              <form class="sb-row" id="sb-form">
+                <label class="sr-only" for="sb-text">Message</label>
+                <input id="sb-text" type="text" maxlength="300" placeholder="Message, or BOOK / STATUS" autocomplete="off">
+                <button class="send-btn" type="submit" aria-label="Send message"><i class="ph-fill ph-paper-plane-right"></i></button>
+              </form>
+            </div>
+          </div>
+
+          <div class="sb-col sb-team">
+            <div class="sb-head">
+              <label class="sr-only" for="sb-teams">Rescue team</label>
+              <select id="sb-teams" disabled><option>No team alerted yet</option></select>
+              <span class="sb-sub">Rescue team on WhatsApp</span>
+            </div>
+            <ol class="sb-chat" id="sb-team" aria-live="polite">
+              <li class="sb-empty">When your case is routed, the team's alert appears here. Accept it, or leave it and watch it escalate.</li>
+            </ol>
+            <p class="sb-foot">Teams and phone numbers are invented. Your demo cases are deleted after 24 hours.</p>
+          </div>
+        </div>
+        <p class="sb-note" id="sb-status" role="status">Real Claude triage, limited to a few photos per visitor each hour. Over the limit, the case still goes ahead and is flagged for a person, exactly as when the model is unavailable.</p>
+      </div>
+    </section>
+
+    <!-- 5. FOR OFFICIALS -->
+    <section id="officials" class="officials wrap" aria-labelledby="officials-title">
+      <h2 id="officials-title" class="h2">For officials, every case on one map.</h2>
+      <div class="off-stage">
+        <img class="off-main" src="/static/site/img/4_dashboard_map_and_cases.jpg" alt="Officials' dashboard: open cases across Goa, a map of cases, bite reports and camps, and a list of cases that need a person" width="2400" height="1500" loading="lazy">
+        <img class="off-detail" src="/static/site/img/5_case_detail_audit_trail.jpg" alt="Case PAW-0051 detail: what the photo showed, safety steps sent, two reports, phone numbers hidden" width="2400" height="1500" loading="lazy">
+      </div>
+      <div class="off-points">
+        <p><b>Need a person to look.</b> Cases no team has taken, and photos that could not be checked, rise to the top.</p>
+        <p><b>Every step on record.</b> Who was alerted, who timed out, who accepted, with times. Phone numbers are never shown.</p>
+        <p><b>Where the next camp should go.</b> Bite reports by area beside 2025 sterilisation figures. A simple count, with the rule printed on the page.</p>
+      </div>
+      <div class="ctas">
+        <a class="btn btn-primary" href="/dashboard">Open the live dashboard <i class="ph ph-arrow-up-right"></i></a>
+      </div>
+      <p class="small-note">Most cases on the dashboard are invented demo data and are tagged "demo". Reporters' photos are shown to staff only.</p>
+    </section>
+
+    <!-- 6. UNDER THE HOOD -->
+    <section id="architecture" class="arch wrap" aria-labelledby="arch-title">
+      <h2 id="arch-title" class="h2">Under the hood.</h2>
+      <p class="section-lede">One Python service and one database. WhatsApp, Telegram and the demo above all become the same message, so they run the same logic.</p>
+      <a class="arch-img" href="/static/site/img/architecture.jpg" aria-label="Open the architecture diagram full size">
+        <img src="/static/site/img/architecture.jpg" alt="Architecture: channels in, then intake, triage, dedup, route, close the loop and a single state machine, then Postgres with PostGIS, the scheduler, the dashboard and Google Calendar" width="1920" height="1080" loading="lazy">
+      </a>
+      <div class="rules">
+        <div><h3>Triage never blocks a rescue</h3><p>If the model is slow or fails, the case is routed at high urgency and flagged for a person.</p></div>
+        <div><h3>Save, then send</h3><p>A message that cannot be delivered never undoes a case. A job picks up anything that stalled.</p></div>
+        <div><h3>One state machine</h3><p>Every change of state is checked against a table and written to an audit log.</p></div>
+        <div><h3>Deadlines in the database</h3><p>Escalation timers survive a restart. Nothing waits in memory.</p></div>
+      </div>
+      <p class="small-note">Python 3.12, FastAPI, Postgres with PostGIS, APScheduler, Claude Haiku with structured output, Leaflet. 480 automated tests, every outside service mocked.</p>
+    </section>
+
+    <!-- 7. HONEST STATUS -->
+    <section id="honest" class="honest" aria-labelledby="honest-title">
+      <div class="wrap">
+        <h2 id="honest-title" class="h2">What is real today.</h2>
+        <div class="ledger">
+          <div class="led-col">
+            <h3><span class="pill pill-ok">Working</span></h3>
+            <ul>
+              <li>Report, triage, merge, route, escalate and close the loop, end to end</li>
+              <li>Claude triage on a real street-dog photo (24 Nov)</li>
+              <li>Bite flow, camp booking, STATUS and CANCEL</li>
+              <li>Officials' dashboard with audit trail</li>
+            </ul>
+          </div>
+          <div class="led-col">
+            <h3><span class="pill pill-part">Built, not live yet</span></h3>
+            <ul>
+              <li>WhatsApp: receiving works; Meta blocks replies until the business is verified</li>
+              <li>Telegram bot, Bhashini voice, Google Calendar: tested against stand-ins</li>
+              <li>Konkani, Marathi and Hindi: machine-drafted, awaiting a fluent reader</li>
+            </ul>
+          </div>
+          <div class="led-col">
+            <h3><span class="pill pill-no">Placeholders</span></h3>
+            <ul>
+              <li>Every team and phone number is invented</li>
+              <li>Service areas are approximate circles</li>
+              <li>The health centre list is unconfirmed</li>
+              <li>No accuracy or time saving is claimed</li>
+            </ul>
+          </div>
+        </div>
+        <p class="small-note">Triage is guidance from a photo, not a diagnosis. In our live test the same photo was rated "needs attention soon" once and "not urgent" once, which is why routing never depends on it and a trained team always decides.</p>
+      </div>
+    </section>
+
+    <!-- 8. FILM AND CODE -->
+    <section id="film" class="film wrap" aria-labelledby="film-title">
+      <div class="film-frame" id="film-frame">
+        <div class="film-empty">
+          <i class="ph ph-film-slate"></i>
+          <p><b>The 2-minute film is in the edit.</b> It will play here once it is ready.</p>
+        </div>
+      </div>
+      <div class="film-side">
+        <h2 id="film-title" class="h2">Film, slides and code.</h2>
+        <ul class="links">
+          <li><a href="https://github.com/ayushcody/PawSOS-Goa"><i class="ph ph-github-logo"></i><span>Source code on GitHub</span></a></li>
+          <li><a href="/static/site/files/PawSOS_Goa_Presentation.pdf"><i class="ph ph-presentation-chart"></i><span>Presentation (PDF)</span></a></li>
+          <li><a href="/static/site/files/PawSOS_Goa_Evidence_and_Status.pdf"><i class="ph ph-seal-check"></i><span>Evidence and status (PDF)</span></a></li>
+        </ul>
+        <p class="small-note">Goa AI Hackathon 2026, Track 3: AI-powered emergency management for animal welfare operations.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <p>PawSOS Goa. Goa AI Hackathon 2026, Track 3.</p>
+    <p>Figures: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn.</p>
+  </footer>
+
+  <script src="/static/site/site.js" defer></script>
+</body>
+</html>

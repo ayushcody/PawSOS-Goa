@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<title>PawSOS Goa architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f3f6f4; --card:#fff; --ink:#10211e; --soft:#4a5c57; --line:#cdd9d4; --brand:#0f6b5c; --wash:#e3efea; --urgent:#d8432a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; background: var(--bg); color: var(--ink); font: 400 20px/1.4 "Geist", system-ui, sans-serif; }
+  .page { padding: 56px 72px; height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 28px; }
+  h1 { font: 800 46px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em; margin: 0; }
+  h1 span { color: var(--brand); }
+  .sub { color: var(--soft); margin-top: 8px; font-size: 21px; }
+  .grid { display: grid; grid-template-columns: 300px 1fr 360px; gap: 28px; align-items: stretch; }
+  .col { display: flex; flex-direction: column; gap: 18px; }
+  .label { font: 500 14px "Geist Mono", monospace; color: var(--soft); text-transform: uppercase; letter-spacing: .08em; }
+  .box { background: var(--card); border: 1.5px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .box b { display: block; font: 700 21px "Bricolage Grotesque", sans-serif; margin-bottom: 4px; }
+  .box p { margin: 0; color: var(--soft); font-size: 17px; }
+  .box.brand { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .box.brand p { color: #d6ece6; }
+  .core { background: var(--wash); border: 2px solid var(--brand); border-radius: 22px; padding: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; position: relative; }
+  .core .title { grid-column: 1 / -1; font: 700 24px "Bricolage Grotesque", sans-serif; display: flex; justify-content: space-between; align-items: baseline; }
+  .core .title small { font: 500 15px "Geist Mono", monospace; color: var(--soft); }
+  .step { background: #fff; border-radius: 14px; padding: 14px 16px; border: 1.5px solid var(--line); }
+  .step b { font: 700 19px "Bricolage Grotesque", sans-serif; }
+  .step p { margin: 2px 0 0; color: var(--soft); font-size: 16px; }
+  .step.key { border-color: var(--brand); }
+  .step .n { font: 500 14px "Geist Mono", monospace; color: var(--brand); margin-right: 6px; }
+  .wide { grid-column: 1 / -1; }
+  .arrow { font: 600 15px "Geist Mono", monospace; color: var(--brand); text-align: center; }
+  .rules { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .rule { border-top: 3px solid var(--brand); padding-top: 10px; font-size: 17px; color: var(--soft); }
+  .rule b { color: var(--ink); display: block; font: 700 18px "Bricolage Grotesque", sans-serif; }
+  .tag { display: inline-block; font: 500 13px "Geist Mono", monospace; padding: 2px 8px; border-radius: 999px; background: #fde9e5; color: var(--urgent); margin-left: 6px; vertical-align: middle; }
+  .tag.ok { background: #dff1ea; color: var(--brand); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>PawSOS <span>Goa</span>: how a report moves</h1>
+    <div class="sub">One Python service (FastAPI) and one database (Postgres with PostGIS). Every channel shares the same logic.</div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <div class="label">Channels in</div>
+      <div class="box"><b>WhatsApp Cloud API</b><p>Signed webhook. Receiving tested; Meta blocks replies until business verification.</p><span class="tag">not live yet</span></div>
+      <div class="box"><b>Telegram bot</b><p>Polling, no public URL needed.</p><span class="tag">stand-in tested</span></div>
+      <div class="box"><b>Web simulator</b><p>Same logic as WhatsApp. Stage fallback and public demo sandbox.</p><span class="tag ok">verified</span></div>
+      <div class="box"><b>Voice notes</b><p>Bhashini speech-to-text behind an interface; Konkani, Marathi, Hindi, English.</p><span class="tag">stand-in tested</span></div>
+      <div class="arrow">all become one InboundMessage &rarr;</div>
+    </div>
+
+    <div class="core">
+      <div class="title">Conversation and case engine <small>app/conversation.py</small></div>
+      <div class="step key"><span class="n">1</span><b>Intake</b><p>Photo + location (+ words) open a case: PAW-0041. Outside Goa is refused.</p></div>
+      <div class="step key"><span class="n">2</span><b>Triage</b><p>Claude Haiku vision returns fixed JSON: species, injury, urgency, aggression, 2 to 3 safe steps. Validated; one retry; on failure a person reviews and the case goes on at high urgency. Never a diagnosis.</p></div>
+      <div class="step key"><span class="n">3</span><b>Dedup</b><p>PostGIS: an open case within 200 m and 2 hours with a similar animal absorbs the report. Every reporter is told.</p></div>
+      <div class="step key"><span class="n">4</span><b>Route</b><p>Nearest zone's team gets Accept / Decline. Closed, declined or 10 minutes of silence: next team, then the taluka officer.</p></div>
+      <div class="step"><span class="n">5</span><b>Close the loop</b><p>Accepted, on site, resolved: sent to every reporter, with a rescue photo and a rating at the end.</p></div>
+      <div class="step"><span class="n">6</span><b>Bite flow and booking</b><p>Wash-the-wound steps and the nearest listed health centre. BOOK picks a camp slot; reminder the day before.</p></div>
+      <div class="step wide"><b>State machine</b> <span style="color:var(--soft);font-size:16px">REPORTED &rarr; TRIAGED &rarr; NEW &rarr; ROUTED &harr; ESCALATED &rarr; ACCEPTED &rarr; ON_SITE &rarr; RESOLVED (or MERGED / CANCELLED). The only place a case changes state; every change writes an audit event.</span></div>
+    </div>
+
+    <div class="col">
+      <div class="label">Stores and outputs</div>
+      <div class="box brand"><b>Postgres + PostGIS</b><p>Cases, reports, photos, teams, zones, alerts, bites, camps, bookings, audit log. Migrations only.</p></div>
+      <div class="box"><b>Scheduler</b><p>Escalation deadlines stored in the database, so a restart loses nothing. Stuck-case recovery, reminders, demo cleanup.</p></div>
+      <div class="box"><b>Officials' dashboard</b><p>Leaflet map, case list with filters, case detail and audit trail, sterilisation counts, next-camp suggestion. Phone numbers never shown.</p></div>
+      <div class="box"><b>Google Calendar</b><p>One calendar per camp for booked slots.</p><span class="tag">not run live</span></div>
+    </div>
+  </div>
+
+  <div class="rules">
+    <div class="rule"><b>Save, then send</b>A failed message never undoes or stalls a case.</div>
+    <div class="rule"><b>Checked AI output</b>Nothing unchecked from the model reaches a citizen.</div>
+    <div class="rule"><b>One copy file</b>All messages in app/messages.py; English, Konkani, Marathi, Hindi.</div>
+    <div class="rule"><b>Privacy</b>Numbers masked in logs, staff pages behind a password, reporter words sanitised.</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<title>PawSOS Goa presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page { size: 1920px 1080px; margin: 0; }
+  :root { --bg:#f3f6f4; --ink:#10211e; --soft:#4a5c57; --line:#cdd9d4; --brand:#0f6b5c; --urgent:#d8432a; --wash:#e3efea; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 400 28px/1.45 "Geist", system-ui, sans-serif; }
+  .slide { width: 1920px; height: 1080px; padding: 90px 110px; page-break-after: always; break-after: page; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  .slide:last-child { page-break-after: auto; }
+  h1 { font: 800 96px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.035em; margin: 0; }
+  h2 { font: 800 64px/1.05 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; margin: 0 0 40px; max-width: 22ch; }
+  p { margin: 0; }
+  .soft { color: var(--soft); }
+  .foot { position: absolute; left: 110px; right: 110px; bottom: 44px; display: flex; justify-content: space-between; font: 500 18px "Geist Mono", monospace; color: var(--soft); }
+  .dark { background: var(--brand); color: #fff; }
+  .dark .soft, .dark .foot { color: #cfe6df; }
+  .brand { color: var(--brand); }
+  .dark .brand { color: #9fe0cf; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; flex: 1; }
+  .split.wide { grid-template-columns: 1.1fr .9fr; }
+  .list { display: grid; gap: 26px; }
+  .list div { border-left: 4px solid var(--brand); padding-left: 24px; }
+  .list b { display: block; font: 700 34px/1.2 "Bricolage Grotesque", sans-serif; }
+  .list span { color: var(--soft); }
+  .num { font: 800 230px/.85 "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; color: var(--urgent); }
+  .shot { border-radius: 24px; border: 1.5px solid var(--line); box-shadow: 0 30px 70px -30px rgb(15 107 92 / .45); display: block; }
+  .phones { display: flex; gap: 40px; justify-content: center; align-items: flex-start; }
+  .phones img { height: 780px; }
+  .cap { font-size: 20px; color: var(--soft); margin-top: 14px; text-align: center; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; flex: 1; align-content: center; }
+  .steps div { background: #fff; border: 1.5px solid var(--line); border-radius: 22px; padding: 30px; }
+  .steps b { font: 700 36px "Bricolage Grotesque", sans-serif; display: block; margin-bottom: 8px; }
+  .steps i { font: 500 20px "Geist Mono", monospace; color: var(--brand); font-style: normal; }
+  table { border-collapse: collapse; width: 100%; font-size: 25px; }
+  td { padding: 14px 18px; vertical-align: top; border-bottom: 1.5px solid var(--line); }
+  td:first-child { font-weight: 600; width: 34%; }
+  .pill { display: inline-block; font: 500 19px "Geist Mono", monospace; padding: 4px 12px; border-radius: 999px; }
+  .ok { background: #dff1ea; color: var(--brand); } .part { background: #fff2d6; color: #8a5a00; } .no { background: #fde9e5; color: var(--urgent); }
+  .arch { height: 780px; width: auto; align-self: center; border-radius: 20px; border: 1.5px solid var(--line); }
+</style>
+</head>
+<body>
+
+<section class="slide dark">
+  <div style="margin-top:auto">
+    <p class="soft" style="font:500 24px 'Geist Mono',monospace;margin-bottom:30px">Goa AI Hackathon 2026 · Track 3 · AI-Powered Emergency Management for Animal Welfare</p>
+    <h1>PawSOS Goa</h1>
+    <p style="font:600 48px/1.2 'Bricolage Grotesque',sans-serif;margin-top:26px;max-width:24ch">One WhatsApp number for every animal emergency in Goa.</p>
+  </div>
+  <div class="foot"><span>goa.ayushchougula.in</span><span>github.com/ayushcody/PawSOS-Goa</span></div>
+</section>
+
+<section class="slide">
+  <div class="split">
+    <div>
+      <div class="num">19,368</div>
+      <p style="font:700 44px/1.2 'Bricolage Grotesque',sans-serif;margin-top:24px">dog bite cases in Goa in 2025. About one every 27 minutes.</p>
+    </div>
+    <div class="list">
+      <div><b>Four towns, zero camps</b><span>Canacona, Sankhalim, Valpoi and Mapusa held no sterilisation camps in 2025, while Panaji's partner sterilised 2,918 dogs.</span></div>
+      <div><b>A different helpline in every town</b><span>Each municipality runs its own number. Panaji's runs 8 am to 8 pm.</span></div>
+      <div><b>No shared record</b><span>A citizen does not know whom to call, and nobody tells them what happened next.</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Sources: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097); Goemkarponn, Jan 2026</span><span>The problem</span></div>
+</section>
+
+<section class="slide">
+  <h2>Send a photo and a location. PawSOS does the rest.</h2>
+  <div class="steps">
+    <div><i>Report</i><b>No app</b><span class="soft">WhatsApp photo and live location, or a voice note in Konkani, Marathi, Hindi or English.</span></div>
+    <div><i>Triage</i><b>Safe steps in seconds</b><span class="soft">Claude vision: species, urgency, aggression risk, 2 to 3 safe first-aid steps. Never a diagnosis.</span></div>
+    <div><i>Dedup</i><b>One animal, one case</b><span class="soft">Reports within 200 m and 2 hours of a similar open case are merged; every reporter is told.</span></div>
+    <div><i>Route</i><b>The nearest team</b><span class="soft">The zone's partner team gets Accept and Decline buttons on WhatsApp.</span></div>
+    <div><i>Escalate</i><b>Never left waiting</b><span class="soft">Closed, declined or 10 minutes of silence: the next team, then the taluka officer.</span></div>
+    <div><i>Close the loop</i><b>Everyone told</b><span class="soft">Accepted, on site, resolved, each with the case ID. Then a rescue photo and a rating.</span></div>
+  </div>
+  <div class="foot"><span>The solution</span><span>2</span></div>
+</section>
+
+<section class="slide">
+  <div class="split wide">
+    <div>
+      <h2>A real report, end to end</h2>
+      <div class="list">
+        <div><b>Real photo, real triage</b><span>A street dog photo, triaged by Claude Haiku in about 6 seconds: urgency, three safe steps, the "not a diagnosis" line.</span></div>
+        <div><b>A second person reports it</b><span>Within 200 m: merged. "That makes 2 reports."</span></div>
+        <div><b>Nobody answered</b><span>Panaji and Mormugao timed out; the Tiswadi taluka officer accepted and resolved it.</span></div>
+      </div>
+    </div>
+    <div class="phones">
+      <div><img class="shot" src="shots/2_citizen_report_and_triage.png"><p class="cap">Citizen's chat</p></div>
+      <div><img class="shot" src="shots/3_escalated_alert_to_officer.png"><p class="cap">Escalated alert</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Run on the simulator, 24 Nov 2026. Teams are placeholders.</span><span>3</span></div>
+</section>
+
+<section class="slide">
+  <h2>For officials: every case on one map</h2>
+  <img class="shot" src="shots/4_dashboard_map_and_cases.png" style="width:100%;height:660px;object-fit:cover;object-position:top">
+  <p class="cap" style="text-align:left">Map of cases, bite reports and camps; filters; sterilisation counts per municipality; a suggestion for the next camp. Demo data is tagged "demo".</p>
+  <div class="foot"><span>Dashboard</span><span>4</span></div>
+</section>
+
+<section class="slide">
+  <div class="split wide">
+    <img class="shot" src="shots/5_case_detail_audit_trail.png" style="width:100%">
+    <div>
+      <h2>Every step on record</h2>
+      <div class="list">
+        <div><b>What the photo showed</b><span>An automated description, labelled as not a diagnosis.</span></div>
+        <div><b>Who was asked, and what they said</b><span>Each alert, time-out and acceptance, from the audit log.</span></div>
+        <div><b>No phone numbers</b><span>Reporters appear as "Reporter 1". Staff can reassign or cancel with a reason.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Case detail</span><span>5</span></div>
+</section>
+
+<section class="slide">
+  <h2 style="margin-bottom:24px">Architecture</h2>
+  <img class="arch" src="architecture.png">
+  <div class="foot"><span>Python 3.12 · FastAPI · Postgres + PostGIS · APScheduler · Claude Haiku · Leaflet</span><span>6</span></div>
+</section>
+
+<section class="slide">
+  <div class="split">
+    <div>
+      <h2>Built to fail safely</h2>
+      <div class="list">
+        <div><b>Triage never blocks a rescue</b><span>Timed out or failed: the case is routed at high urgency and flagged for a person.</span></div>
+        <div><b>Save, then send</b><span>A message that cannot be delivered never stops a case; a job picks up stuck cases.</span></div>
+        <div><b>One state machine</b><span>Every change of state is checked against a table and written to the audit log.</span></div>
+      </div>
+    </div>
+    <div class="list">
+      <div><b>Checked AI output</b><span>Fixed schema, validated, one retry. Prompt and copy forbid a diagnosis.</span></div>
+      <div><b>Untrusted words cleaned</b><span>Links, phone numbers and hidden characters are removed before a reporter's words reach a team.</span></div>
+      <div><b>Tested</b><span>464 automated tests pass, every external service mocked.</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Reliability and safety</span><span>7</span></div>
+</section>
+
+<section class="slide">
+  <h2>What is real today</h2>
+  <table>
+    <tr><td>Report, dedup, routing, escalation, close the loop, bite flow, BOOK, dashboard</td><td><span class="pill ok">verified</span> automated tests and end-to-end runs on the simulator</td></tr>
+    <tr><td>Claude photo triage</td><td><span class="pill ok">run live</span> on a real street-dog photo, 24 Nov. The same photo was rated "needs attention soon" once and "not urgent" once: urgency is guidance, and a trained team decides</td></tr>
+    <tr><td>WhatsApp Cloud API</td><td><span class="pill part">partly</span> receiving works; Meta blocks replies until the business is verified</td></tr>
+    <tr><td>Telegram, Bhashini voice, Google Calendar</td><td><span class="pill part">stand-ins only</span> built and tested against mocks, not yet run live</td></tr>
+    <tr><td>Konkani, Marathi, Hindi replies</td><td><span class="pill part">drafted</span> machine-drafted; not yet checked by a fluent reader</td></tr>
+    <tr><td>Partner teams, zone boundaries, health centres</td><td><span class="pill no">placeholders</span> invented teams; approximate circles; centre list unconfirmed</td></tr>
+  </table>
+  <div class="foot"><span>Honest status</span><span>8</span></div>
+</section>
+
+<section class="slide">
+  <div class="split">
+    <div>
+      <h2>Pilot: start in Panaji</h2>
+      <div class="list">
+        <div><b>One urban local body</b><span>Panaji, with its partner team, alongside the existing helpline.</span></div>
+        <div><b>Measure, then grow</b><span>Minutes to acceptance, share of reports merged, reporters who got every update, same-day bite referrals.</span></div>
+        <div><b>Data, not code</b><span>Adding a council means adding its zone, team and hours.</span></div>
+      </div>
+    </div>
+    <div class="list">
+      <div><b>What we need</b><span>A verified WhatsApp Business number, council agreement on zones and teams, a confirmed list of anti-rabies centres.</span></div>
+      <div><b>Proven channel</b><span>Andhra Pradesh's Mana Mitra WhatsApp platform runs 1,126 services and has served 58.2 lakh people.</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Pilot and scale</span><span>9</span></div>
+</section>
+
+<section class="slide dark">
+  <div style="margin:auto 0">
+    <h1 style="max-width:16ch">One number. Every report heard.</h1>
+    <p class="soft" style="margin-top:34px;font-size:32px">Try the live demo at <b class="brand">goa.ayushchougula.in</b></p>
+  </div>
+  <div class="foot"><span>PawSOS Goa · Goa AI Hackathon 2026</span><span>github.com/ayushcody/PawSOS-Goa</span></div>
+</section>
+
+</body>
+</html>

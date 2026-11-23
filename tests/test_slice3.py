@@ -201,12 +201,12 @@ def test_a_declined_request_is_retried_then_gives_up():
         go()
 
 
-def test_an_unreachable_api_gives_up_without_our_own_retry():
+def test_an_unreachable_api_gives_up_after_one_retry():
     error = anthropic.APIConnectionError(request=httpx.Request("POST", "https://example.invalid"))
-    fake, go = run_triage([error])
+    fake, go = run_triage([error, error])
     with pytest.raises(TriageUnavailable):
         go()
-    assert len(fake.calls) == 1  # the SDK already retried the network for us
+    assert len(fake.calls) == 2  # the SDK no longer retries; the one retry is ours (audit H2)
 
 
 def test_a_file_that_is_not_an_image_never_reaches_the_api():

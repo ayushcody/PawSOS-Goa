@@ -68,6 +68,23 @@ class Settings(BaseSettings):
 
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-haiku-5-5"
+    # How long one triage call may take. There is one retry, so a photo can hold
+    # up the first team alert for at most twice this (app/triage/flow.py).
+    triage_timeout_seconds: float = 15.0
+
+    # Public demo (app/sandbox): each visitor gets private invented numbers.
+    # Signs the visitor's cookie. Empty = a new random key each start (visitors lose their sandbox on restart).
+    sandbox_secret: str | None = None
+    sandbox_ttl_hours: int = 24  # sandbox cases older than this are deleted
+    # Real triage calls allowed from sandboxes: per visitor per hour, and in total per day.
+    sandbox_triage_per_hour: int = 5
+    triage_daily_cap: int = 300
+    # Requests a single address may make to /sandbox per minute.
+    sandbox_requests_per_minute: int = 40
+    # Behind Cloudflare, the visitor's address is in this header. Leave empty when not behind a proxy you trust.
+    client_ip_header: str = ""
+    # true = anyone may view the dashboard (read only); photos and staff actions still need DASHBOARD_PASSWORD.
+    public_dashboard: bool = False
 
 
 @lru_cache
