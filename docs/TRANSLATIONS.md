@@ -156,6 +156,12 @@ These are in `app/contacts.py` and `app/conversation.py`, not `app/messages.py`.
 - [ ] `rating_ask`, `rating_thanks`, `rating_unavailable`, `rescue_photo_caption`, in all three languages.
 - [ ] The three button titles, `rating_good`, `rating_ok`, `rating_poor` (at most 20 characters each): Konkani "बरो / ठीक / वायट", Marathi "चांगला / ठीक / वाईट", Hindi "अच्छा / ठीक / ख़राब". Check that each reads naturally as an answer to "how did it go?".
 
+## Out of Goa, and who was bitten (added 17 Nov, machine-drafted)
+
+- [ ] The reworded `outside_goa` (it now thanks the person, says to contact the local municipality or an animal welfare group outside Goa, and asks for the current location again), in all three languages.
+- [ ] `bite_which`, the question asked when a bite message does not say who was bitten, in all three languages. It must read as calm and quick to answer.
+- [ ] The two button titles, `bite_choice_person` and `bite_choice_animal` (at most 20 characters each): Konkani "मनशाक चाबलां / जनावर जखमी जालां", Marathi "माणसाला चावले / प्राणी जखमी आहे", Hindi "इंसान को काटा है / जानवर घायल है". Check that each is a natural answer to the question. The word for "bitten" matters most: check "चाबलां" for Konkani.
+
 ## Dates and place names (added 11 Nov, machine-drafted)
 
 These are in `app/messages.py` under "dates and place names". Please check each one.

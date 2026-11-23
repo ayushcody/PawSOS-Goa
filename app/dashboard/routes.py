@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, StringConstraints
 from sqlalchemy.orm import Session
 
-from app.auth import require_password
+from app.auth import require_password, staff_or_public
 from app.cases.aftercare import RescuePhoto
 from app.cases.models import Case, Photo
 from app.cases.state_machine import InvalidTransition
@@ -56,10 +56,12 @@ class CancelBody(BaseModel):
 
 def build_router(channel: ChannelAdapter) -> APIRouter:
     """`channel` sends the messages that staff actions produce (see app/channels/routed.py)."""
-    router = APIRouter(
-        prefix="/dashboard", tags=["dashboard"], dependencies=[Depends(require_password)]
-    )
+    # Read-only pages use `staff_or_public` (open to all when PUBLIC_DASHBOARD is on);
+    # photos and staff actions always need the password.
+    router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+    staff = [Depends(require_password)]
     SessionDep = Annotated[Session, Depends(get_session)]
+    StaffDep = Annotated[bool, Depends(staff_or_public)]
 
     def case_or_404(session: Session, case_id: str, *, lock: bool = False) -> Case:
         case = queries.find_case(session, case_id, lock=lock)
@@ -68,23 +70,35 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
         return case
 
     @router.get("", response_class=HTMLResponse)
-    def page() -> str:
+    def page(is_staff: StaffDep) -> str:
         return PAGE.read_text(encoding="utf-8")
 
     @router.get("/data")
     def data(
         session: SessionDep,
+        is_staff: StaffDep,
         status: Literal["open", "closed", "all"] = "all",
         urgency: Literal["low", "medium", "high", "critical"] | None = None,
         zone: str | None = None,
     ) -> dict[str, Any]:
-        return queries.dashboard_data(session, status=status, urgency=urgency, zone=zone)
+        result = queries.dashboard_data(session, status=status, urgency=urgency, zone=zone)
+        if not is_staff:
+            for case in result.get("cases", []):
+                case["photo_url"] = None
+            result["public_view"] = True
+        return result
 
     @router.get("/cases/{case_id}")
-    def case_detail(case_id: str, session: SessionDep) -> dict[str, Any]:
-        return queries.case_detail(session, case_or_404(session, case_id))
+    def case_detail(case_id: str, session: SessionDep, is_staff: StaffDep) -> dict[str, Any]:
+        detail = queries.case_detail(session, case_or_404(session, case_id))
+        if not is_staff:
+            # The public sees what happened, never the photos people sent.
+            detail["photos"] = []
+            detail["rescue_photos"] = []
+            detail["photos_hidden"] = True
+        return detail
 
-    @router.get("/photos/{photo_id}")
+    @router.get("/photos/{photo_id}", dependencies=staff)
     def photo(photo_id: int, session: SessionDep) -> FileResponse:
         # Looked up by id, and the stored name is checked again by media.path_for,
         # so no request can reach a file that is not one of our saved photos.
@@ -94,7 +108,7 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
             raise HTTPException(status_code=404, detail="Not found")
         return FileResponse(path, media_type=stored.mime)
 
-    @router.get("/rescue-photos/{photo_id}")
+    @router.get("/rescue-photos/{photo_id}", dependencies=staff)
     def rescue_photo(photo_id: int, session: SessionDep) -> FileResponse:
         # The team's photo after a rescue, looked up by id like the reporters' photos.
         stored = session.get(RescuePhoto, photo_id)
@@ -103,7 +117,7 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
             raise HTTPException(status_code=404, detail="Not found")
         return FileResponse(path, media_type=stored.mime)
 
-    @router.post("/cases/{case_id}/assign", dependencies=[Depends(same_site_only)])
+    @router.post("/cases/{case_id}/assign", dependencies=[*staff, Depends(same_site_only)])
     async def assign(case_id: str, body: AssignBody, session: SessionDep) -> dict[str, Any]:
         case = case_or_404(session, case_id, lock=True)
         team = session.get(Team, body.team_id)
@@ -123,7 +137,7 @@ def build_router(channel: ChannelAdapter) -> APIRouter:
         await deliver(channel, outbox)
         return queries.case_detail(session, case)
 
-    @router.post("/cases/{case_id}/cancel", dependencies=[Depends(same_site_only)])
+    @router.post("/cases/{case_id}/cancel", dependencies=[*staff, Depends(same_site_only)])
     async def cancel(case_id: str, body: CancelBody, session: SessionDep) -> dict[str, Any]:
         case = case_or_404(session, case_id, lock=True)
         try:

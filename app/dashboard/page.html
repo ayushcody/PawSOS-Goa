@@ -1006,6 +1006,7 @@ function drawDetail(c) {
   sections.push(`<div class="card"><h2>Photos (${c.photos.length})</h2>
     ${c.photos.length ? `<div class="photos">${c.photos.map((p) =>
       `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="Photo sent ${goaTime(p.at)}" loading="lazy"></a>`).join("")}</div>`
+      : c.photos_hidden ? '<span class="muted">Photos are shown to staff only.</span>'
       : '<span class="muted">No photo stored.</span>'}</div>`);
 
   // After the rescue: the team's photo and the reporters' ratings, once there is either.

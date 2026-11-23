@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<title>PawSOS Goa: evidence and status</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  :root { --ink:#10211e; --soft:#4a5c57; --line:#d5dfdb; --brand:#0f6b5c; --urgent:#d8432a; }
+  body { color: var(--ink); font: 400 10.5pt/1.5 "Geist", system-ui, sans-serif; margin: 0; }
+  h1 { font: 800 26pt/1.05 "Bricolage Grotesque", sans-serif; margin: 0 0 4pt; letter-spacing: -.02em; }
+  h1 span { color: var(--brand); }
+  h2 { font: 700 15pt "Bricolage Grotesque", sans-serif; margin: 20pt 0 6pt; color: var(--brand); break-after: avoid; }
+  p { margin: 0 0 7pt; }
+  .soft { color: var(--soft); }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 8pt; font-size: 9.5pt; }
+  th { text-align: left; font: 600 9pt "Geist Mono", monospace; color: var(--soft); border-bottom: 1.5pt solid var(--ink); padding: 4pt 6pt; }
+  td { border-bottom: .75pt solid var(--line); padding: 5pt 6pt; vertical-align: top; }
+  tr { break-inside: avoid; }
+  code { font: 9pt "Geist Mono", monospace; }
+  ul { margin: 0 0 8pt; padding-left: 14pt; }
+  li { margin-bottom: 3pt; }
+  .box { border: 1pt solid var(--line); border-left: 3pt solid var(--brand); padding: 8pt 10pt; margin: 6pt 0 10pt; break-inside: avoid; }
+</style>
+</head>
+<body>
+<h1>PawSOS <span>Goa</span>: evidence and status</h1>
+<p class="soft">Supporting document for the Goa AI Hackathon 2026, Track 3. Written 24 November 2026 from the project repository (docs/SPEC.md, docs/PLAN.md, docs/AUDIT.md, docs/DECISIONS.md, docs/site/CLAIMS.md). Every claim below says how it was checked.</p>
+
+<h2>1. The problem, in published figures only</h2>
+<ul>
+  <li>Goa recorded <b>19,368 dog bite cases in 2025</b> (stray and pet), about one every 27 minutes. Source: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn, January 2026.</li>
+  <li>In 2025 <b>Canacona, Sankhalim, Valpoi and Mapusa held zero sterilisation camps</b>, while Panaji's partner sterilised 2,918 dogs, Ponda 1,121 and Curchorem-Cacora 243.</li>
+  <li>Each municipality has its own helpline, run by the council or a partner NGO; Panaji's runs 8 am to 8 pm.</li>
+  <li>The channel is proven: Andhra Pradesh's Mana Mitra WhatsApp platform runs 1,126 services and has served 58.2 lakh people.</li>
+</ul>
+
+<h2>2. Live run on 24 November 2026</h2>
+<div class="box">
+  <p><b>Real Claude triage on a real animal photo</b> (a street dog lying on a pavement at night), model <code>claude-haiku-5-5</code>, through the same code path as WhatsApp:</p>
+  <ul>
+    <li>First run (case PAW-0050): answered in about 6 seconds. Urgency "needs attention soon"; three safe steps (keep a distance, keep people away, do not approach or touch); the "not a diagnosis" line.</li>
+    <li>Second run, same photo (case PAW-0051): urgency "does not look urgent"; three safe steps. <b>Urgency from one photo varies between runs</b>; it is guidance, and the routing never depends on it.</li>
+    <li>A second citizen reporting within 200 m was merged into PAW-0051 ("That makes 2 reports").</li>
+    <li>Escalation: Panaji's placeholder team did not answer, then Mormugao's did not; the Tiswadi taluka officer was alerted, accepted, arrived and resolved. Both reporters were told at each step.</li>
+    <li>Public-demo isolation: a second browser session could not see or act on the first session's case ("That case is not in your demo").</li>
+  </ul>
+</div>
+
+<h2>3. What is verified, and how</h2>
+<table>
+  <tr><th>Capability</th><th>Evidence</th></tr>
+  <tr><td>Photo plus location opens a case; outside Goa refused</td><td>Automated tests; simulator runs</td></tr>
+  <tr><td>Duplicate merging (200 m, 2 hours, similar animal)</td><td>Tests; live run above</td></tr>
+  <tr><td>Team alert with Accept / Decline; escalation to next team and taluka officer</td><td>Tests; live run above; audit run 17 Nov</td></tr>
+  <tr><td>Reporter told at every step</td><td>Tests; live run above</td></tr>
+  <tr><td>Triage failure or slowness never blocks routing</td><td><code>tests/test_reliability.py</code>, <code>tests/test_triage_timeout.py</code></td></tr>
+  <tr><td>A failed message send never stops a case; stuck cases recovered</td><td>17 tests in <code>test_reliability.py</code> (fail on the old code)</td></tr>
+  <tr><td>Bite flow, BOOK with reminder, STATUS, CANCEL, rescue photo and rating</td><td>Tests; simulator runs</td></tr>
+  <tr><td>Dashboard: map, filters, case detail with audit trail, sterilisation counts, next-camp suggestion, response times; no phone numbers shown</td><td>Tests; browser runs; dashboard data test</td></tr>
+  <tr><td>Test suite</td><td><b>464 passed, 11 skipped</b> (24 Nov), every external API mocked</td></tr>
+</table>
+
+<h2>4. Built, not yet live</h2>
+<table>
+  <tr><th>Part</th><th>Status</th></tr>
+  <tr><td>WhatsApp Cloud API</td><td>Receiving works. Meta blocks replies until the business is verified with documents (decision D-092).</td></tr>
+  <tr><td>Telegram bot</td><td>Tested against a stand-in; not yet run with a real bot.</td></tr>
+  <tr><td>Bhashini speech-to-text</td><td>Written; never run with real keys.</td></tr>
+  <tr><td>Google Calendar sync</td><td>Written; never run against Google.</td></tr>
+  <tr><td>Konkani, Marathi, Hindi</td><td>Machine-drafted; needs a fluent reader for each language.</td></tr>
+</table>
+
+<h2>5. Not real (placeholders)</h2>
+<ul>
+  <li>Partner teams and officers are invented, with invented numbers.</li>
+  <li>Service areas are approximate circles around town centres, not official boundaries.</li>
+  <li>The health centre list is unconfirmed.</li>
+  <li>No measured accuracy, response-time improvement or cost saving is claimed.</li>
+</ul>
+
+<h2>6. Safety and privacy design</h2>
+<ul>
+  <li>Triage returns a fixed schema, validated with one retry; on failure a person reviews and the case continues at high urgency. The prompt and every message forbid a diagnosis.</li>
+  <li>Every state change goes through one state machine with a transitions table and writes an audit event.</li>
+  <li>Phone numbers are masked in logs and never shown on the dashboard. Reporter words are stripped of links, numbers and hidden characters before reaching a team.</li>
+  <li>The WhatsApp webhook is verified with HMAC; staff pages are behind a password.</li>
+  <li>The public demo gives each visitor private invented numbers in a range no real Indian mobile uses, caps real model calls per visitor and per day, and deletes demo cases after 24 hours.</li>
+</ul>
+
+<h2>7. Stack</h2>
+<p>Python 3.12, FastAPI, SQLAlchemy and Alembic, Postgres with PostGIS, APScheduler, Anthropic Claude Haiku (vision, structured output), Leaflet. Source: github.com/ayushcody/PawSOS-Goa. Live demo: goa.ayushchougula.in.</p>
+</body>
+</html>

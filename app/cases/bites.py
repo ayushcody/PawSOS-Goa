@@ -38,7 +38,63 @@ _BITE_WORDS = re.compile(
 
 
 def is_bite_report(text: str) -> bool:
+    """Does the message mention a bite at all? bite_kind() then says who was bitten."""
     return bool(_BITE_WORDS.search(text))
+
+
+# Who was bitten. Only English is understood; a bite in Devanagari ("काटा") counts as a
+# person's, as it always has, because that reply also asks about the animal.
+_ANIMALS = (
+    r"(?:dogs?|pupp(?:y|ies)|pups?|cats?|kittens?|cows?|calf|calves|bulls?|buffalo(?:es)?|goats?|"
+    r"pigs?|monkeys?|birds?|crows?|pigeons?|horses?|donkeys?|animals?|strays?)"
+)
+_PEOPLE = (
+    r"(?:child|children|boy|girl|man|woman|person|kid|baby|son|daughter|brother|sister|mother|father|"
+    r"mom|mum|dad|friend|wife|husband|grandmother|grandfather|neighbou?r|hand|leg|arm|finger|foot|ankle)"
+)
+_PERSON_BITTEN = re.compile(
+    r"\bi\s*(?:was|got|have been|'ve been|am|'m)\s+(?:bitten|bit)\b"
+    # A message that starts "bitten by a dog" or "got bit by a stray" is about the sender.
+    r"|^\W*(?:just\s+)?(?:got\s+)?(?:bitten|bit)\s+by\b"
+    r"|\bbit(?:ten)?\s+me\b"
+    r"|\b(?:my|our|a|the|this|that)\s+" + _PEOPLE + r"\s+(?:was|got|has been|is|have been)\s+(?:bitten|bit)\b"
+    r"|\b(?:someone|somebody)\s+(?:was|got|has been|is)\s+(?:bitten|bit)\b"
+    r"|\bbit\s+(?:him|her|us|them|someone|somebody|people)\b"
+    # "bit my hand", "bit a child": anyone or anything that is not an animal.
+    r"|(?<!\ba )\bbit\s+(?:my|our|a|an|the|this|that)\s+(?!(?:little\s+|small\s+|stray\s+|other\s+)?" + _ANIMALS + r"\b)"
+    r"|काटा|काट लिया|चावला|चावलो",
+    re.IGNORECASE,
+)
+_ANIMAL_BITTEN = re.compile(
+    # "a dog has been bitten", "my cat was bitten", "the cow is bitten on its neck"
+    r"\b" + _ANIMALS + r"\b[^.!?]{0,30}?\b(?:was|is|got|gets|has been|have been|been|being)\s+(?:bitten|bit)\b"
+    # "a snake bit the dog", "dogs biting a calf". The word before the animal is required:
+    # "a biting dog" is a dog that bites, not a dog that was bitten.
+    r"|\b(?:bit|bites|biting)\s+(?:a|an|the|my|our|this|that|another|one|some|two|three)\s+"
+    r"(?:little\s+|small\s+|stray\s+|other\s+)?" + _ANIMALS + r"\b",
+    re.IGNORECASE,
+)
+
+
+def bite_kind(text: str) -> str | None:
+    """Who was bitten: "person", "animal", "unclear", or None when no bite is mentioned.
+
+    A person comes first when both are named: their reply is first aid, and it
+    also asks for the animal's photo and location.
+    """
+    if not is_bite_report(text):
+        return None
+    if _PERSON_BITTEN.search(text):
+        return "person"
+    if _ANIMAL_BITTEN.search(text):
+        return "animal"
+    return "unclear"
+
+
+# The two answers to "was a person bitten, or is an animal hurt?"
+CHOICE_PERSON = "bite:person"
+CHOICE_ANIMAL = "bite:animal"
+CHOICES = (CHOICE_PERSON, CHOICE_ANIMAL)
 
 
 def _point_column(nullable: bool):

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401  (registers every table)
@@ -14,6 +14,7 @@ from app.channels.routed import RoutedChannel
 from app.config import get_settings
 from app.dashboard import routes as dashboard
 from app.jobs import scheduler
+from app.sandbox import routes as sandbox
 
 STATIC_DIR = Path(__file__).with_name("static")
 
@@ -33,7 +34,7 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Runs when the server starts and stops (not during tests that skip startup).
-        jobs = scheduler.start(channel)
+        jobs = scheduler.start(channel, sim_channel)
         # Telegram has no webhook here: one background task keeps asking it for messages.
         poller = None
         if tg_channel is not None:
@@ -54,8 +55,18 @@ def create_app() -> FastAPI:
     app.include_router(simulator.build_router(sim_channel, channel))
     app.include_router(whatsapp.build_router(wa_channel, channel))
     app.include_router(dashboard.build_router(channel))
+    app.include_router(sandbox.build_router(sim_channel, channel))
     # Files the pages need, kept here so they work with no internet (Leaflet for the map).
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+    # The public product site. /demo is the link given to judges; it opens the live sandbox.
+    @app.get("/", include_in_schema=False)
+    def site() -> FileResponse:
+        return FileResponse(STATIC_DIR / "site" / "index.html")
+
+    @app.get("/demo", include_in_schema=False)
+    def demo() -> RedirectResponse:
+        return RedirectResponse("/#try", status_code=307)
 
     @app.get("/health")
     def health() -> dict[str, str | bool]:

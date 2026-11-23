@@ -5,6 +5,7 @@ unusable answer twice, or cannot see an animal, the case still moves on:
 marked urgent and flagged for a person to review.
 """
 
+import asyncio
 import logging
 from datetime import UTC, datetime
 
@@ -14,13 +15,24 @@ from sqlalchemy.orm import Session
 from app.cases import state_machine
 from app.cases.models import Case, CaseState, Photo, Report
 from app.channels import media
+from app.config import get_settings
 from app.messages import DEFAULT_LANGUAGE
 from app.triage.schema import TriageResult
-from app.triage.service import Triager, TriageUnavailable
+from app.triage.service import ATTEMPTS, Triager, TriageUnavailable
 
 log = logging.getLogger(__name__)
 
 FALLBACK_URGENCY = "high"
+
+
+def triage_deadline_seconds() -> float:
+    """The longest triage may hold a case before it goes on without it: 30 s by default.
+
+    The triager keeps to this by itself (one try and one retry, each timed).
+    It is enforced here too, so that no triager, however it fails, can delay
+    the first team alert for longer.
+    """
+    return ATTEMPTS * get_settings().triage_timeout_seconds
 
 
 async def triage_case(
@@ -39,12 +51,16 @@ async def triage_case(
             reason = "photo_missing"
         else:
             try:
-                if language == DEFAULT_LANGUAGE:
-                    # The one-argument call, so stand-ins written before languages still work.
-                    result = await triager.triage(image)
-                else:
-                    result = await triager.triage(image, language=language)
+                async with asyncio.timeout(triage_deadline_seconds()):
+                    if language == DEFAULT_LANGUAGE:
+                        # The one-argument call, so stand-ins written before languages still work.
+                        result = await triager.triage(image)
+                    else:
+                        result = await triager.triage(image, language=language)
                 reason = "ok" if result.animal_visible else "no_animal_visible"
+            except TimeoutError:
+                log.warning("Triage for %s took too long; the case goes on without it.", case.public_id)
+                reason = "unavailable: timed out"
             except TriageUnavailable as error:
                 reason = f"unavailable: {error}"
             except Exception:  # anything unexpected must not lose the case

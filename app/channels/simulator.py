@@ -86,12 +86,25 @@ class SimulatorAdapter(ChannelAdapter):
         self._transcripts: dict[str, list[SimMessage]] = {}
         self._next_id = 1
 
+    # A public demo server runs for weeks: keep only the newest messages per number.
+    MAX_PER_NUMBER = 1000
+
     def _append(self, number: str, direction: Literal["in", "out"], text: str, **extra) -> None:
         entry = SimMessage(
             id=self._next_id, direction=direction, text=text, at=datetime.now(UTC), **extra
         )
         self._next_id += 1
-        self._transcripts.setdefault(number, []).append(entry)
+        chat = self._transcripts.setdefault(number, [])
+        chat.append(entry)
+        if len(chat) > self.MAX_PER_NUMBER:
+            del chat[: len(chat) - self.MAX_PER_NUMBER]
+
+    def prune(self, before: datetime) -> int:
+        """Forget chats whose last message is older than `before`. Returns how many."""
+        stale = [n for n, chat in self._transcripts.items() if not chat or chat[-1].at < before]
+        for number in stale:
+            del self._transcripts[number]
+        return len(stale)
 
     def record_inbound(self, number: str, text: str, **extra) -> None:
         self._append(number, "in", text, **extra)

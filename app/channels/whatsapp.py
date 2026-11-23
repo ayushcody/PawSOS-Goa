@@ -52,11 +52,35 @@ _MEDIA_ID = re.compile(r"^[A-Za-z0-9_.-]{1,128}$")
 
 
 class WhatsAppError(RuntimeError):
-    """Meta refused something we asked for. `code` is Meta's error code, if it gave one."""
+    """Meta refused something we asked for.
 
-    def __init__(self, message: str, code: int | None = None) -> None:
+    `code` is Meta's error code, if it gave one. `body` is Meta's whole "error"
+    object with the recipient's number removed; `subcode`, `details` and
+    `trace_id` are pulled out of it, because they are what tells a closed
+    24-hour window, a test number's allowed list, an expired token and a
+    restricted account apart. Quote `trace_id` to Meta support.
+    """
+
+    def __init__(self, message: str, code: int | None = None, body: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.code = code
+        self.body = body or {}
+        subcode = self.body.get("error_subcode")
+        self.subcode = subcode if isinstance(subcode, int) else None
+        error_data = self.body.get("error_data")
+        self.details = str(error_data.get("details") or "") if isinstance(error_data, dict) else ""
+        self.trace_id = str(self.body.get("fbtrace_id") or "")
+
+
+def _without_number(value: Any, digits: str) -> Any:
+    """Meta's error with every copy of the recipient's number replaced, at any depth."""
+    if isinstance(value, str):
+        return value.replace(digits, mask_number("+" + digits)) if digits else value
+    if isinstance(value, dict):
+        return {key: _without_number(item, digits) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_without_number(item, digits) for item in value]
+    return value
 
 
 def mask_number(number: str) -> str:
@@ -228,20 +252,35 @@ class WhatsAppCloudAdapter(ChannelAdapter):
         }
         response = await self.client.post(f"/{self.phone_number_id}/messages", json=payload)
         if response.status_code >= 400:
-            try:
-                error = response.json()["error"]
-                reason, code = error["message"], error.get("code")
-            except (ValueError, KeyError, TypeError, AttributeError):
-                reason, code = "no reason given", None
-            raise WhatsAppError(
-                f"WhatsApp refused a message to {mask_number(to_number)} "
-                f"({response.status_code}): {reason}",
-                code=code if isinstance(code, int) else None,
-            )
+            raise self._refusal(response, to_number)
         try:
             return str(response.json()["messages"][0]["id"])
         except (ValueError, KeyError, IndexError, TypeError):
             return None
+
+    @staticmethod
+    def _refusal(response: httpx.Response, to_number: str) -> WhatsAppError:
+        """Meta's answer to a refused send, as an error that carries (and logs) all of it."""
+        try:
+            error = response.json()["error"]
+            if not isinstance(error, dict):
+                raise TypeError
+        except (ValueError, KeyError, TypeError):
+            error = {}
+        error = _without_number(error, to_number.lstrip("+"))
+        code = error.get("code")
+        code = code if isinstance(code, int) else None
+        reason = error.get("message") or "no reason given"
+        full = json.dumps(error, ensure_ascii=False, sort_keys=True) if error else "(no JSON error body)"
+        log.warning(
+            "WhatsApp refused a message to %s (HTTP %s): %s", mask_number(to_number), response.status_code, full
+        )
+        return WhatsAppError(
+            f"WhatsApp refused a message to {mask_number(to_number)} "
+            f"({response.status_code}): {reason}. Meta's full error: {full}",
+            code=code,
+            body=error,
+        )
 
     @staticmethod
     def _text_body(text: str) -> dict[str, Any]:

@@ -144,20 +144,79 @@ def test_format_case_id():
     assert intake.format_case_id(12345) == "PAW-12345"
 
 
-# --- TODO(me): Ayush implements in_goa() in app/cases/geo.py, then removes the skips ---
+# --- in_goa(): Goa's real boundary (seed/goa_boundary.json), widened by 1 km ---
+
+MUMBAI = (19.0760, 72.8777)
+
+INSIDE_GOA = {
+    "Panaji": (15.4909, 73.8278),
+    "Mapusa": (15.5937, 73.8142),
+    "Margao": (15.2832, 73.9862),
+    "Vasco da Gama": (15.3982, 73.8113),
+    "Pernem (north)": (15.7230, 73.7950),
+    "Terekhol fort (northern tip)": (15.7230, 73.6870),
+    "Valpoi (east)": (15.5320, 74.1370),
+    "Mollem (east)": (15.3880, 74.2140),
+    "Canacona (south)": (15.0100, 74.0230),
+    # On the sand, just seaward of the mapped coastline: the 1 km margin keeps them in.
+    "Palolem beach": (15.0100, 74.0170),
+    "Polem (southern tip)": (14.9000, 74.0900),
+    "Baga beach": (15.5560, 73.7510),
+}
+
+OUTSIDE_GOA = {
+    "Mumbai": MUMBAI,
+    "Bengaluru": (12.9716, 77.5946),
+    # The nearest towns across the border, each at least 6 km beyond it.
+    "Karwar, Karnataka": (14.8136, 74.1297),
+    "Dodamarg, Maharashtra": (15.7557, 74.0177),
+    "Sawantwadi, Maharashtra": (15.9050, 73.8210),
+    "Anmod ghat, Karnataka side": (15.4300, 74.3700),
+    "Londa, Karnataka": (15.4660, 74.5160),
+    "Belagavi, Karnataka": (15.8497, 74.4977),
+    "Arabian Sea, 23 km off Panaji": (15.4000, 73.5000),
+}
 
 
-@pytest.mark.skip(reason="TODO(me): implement in_goa() in app/cases/geo.py")
-def test_in_goa():
-    assert in_goa(15.4909, 73.8278)  # Panaji
-    assert in_goa(15.0100, 74.0230)  # Canacona, far south
-    assert not in_goa(19.0760, 72.8777)  # Mumbai
-    assert not in_goa(12.9716, 77.5946)  # Bengaluru
+@pytest.mark.parametrize("place", INSIDE_GOA)
+def test_places_in_goa_are_in_goa(place):
+    assert in_goa(*INSIDE_GOA[place])
 
 
-@pytest.mark.skip(reason="TODO(me): implement in_goa() in app/cases/geo.py")
-def test_a_location_outside_goa_does_not_open_a_case(client, db):
+@pytest.mark.parametrize("place", OUTSIDE_GOA)
+def test_places_outside_goa_are_not(place):
+    assert not in_goa(*OUTSIDE_GOA[place])
+
+
+def test_a_mumbai_pin_does_not_open_a_case(client, db):
     send_photo(client, CITIZEN_1)
-    send_location(client, CITIZEN_1, latitude=19.0760, longitude=72.8777)
-    assert last_reply(client, CITIZEN_1) == messages.render("outside_goa")
+    send_location(client, CITIZEN_1, *MUMBAI)
     assert db.scalars(select(Case)).all() == []
+    assert last_reply(client, CITIZEN_1) == messages.render("outside_goa")
+
+
+def test_the_out_of_goa_reply_offers_to_send_the_location_again(client, db):
+    send_photo(client, CITIZEN_1)
+    send_location(client, CITIZEN_1, *MUMBAI)
+    last = client.get("/sim/messages", params={"phone": CITIZEN_1}).json()[-1]
+    assert last["location_request"] is True  # a one-tap "Send location" button
+
+
+def test_the_out_of_goa_reply_is_polite_and_says_where_to_turn():
+    reply = messages.render("outside_goa")
+    assert reply.startswith("Thank you")
+    assert "only in Goa" in reply
+    assert "local" in reply  # who to contact outside Goa
+
+
+def test_after_a_wrong_pin_the_right_one_still_opens_the_case(client, db):
+    send_photo(client, CITIZEN_1)
+    send_location(client, CITIZEN_1, *MUMBAI)
+    send_location(client, CITIZEN_1)  # Panaji: the photo is still waiting
+    assert db.scalars(select(Case)).one().public_id == "PAW-0001"
+
+
+def test_a_bite_reported_outside_goa_gets_the_out_of_goa_reply(client, db):
+    client.post("/sim/inbound", json={"from_number": CITIZEN_1, "kind": "text", "text": "a dog bit me"})
+    send_location(client, CITIZEN_1, *MUMBAI)
+    assert last_reply(client, CITIZEN_1) == messages.render("outside_goa")
