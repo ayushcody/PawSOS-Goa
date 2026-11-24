@@ -1,0 +1,41 @@
+<template>
+  <style>
+@font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/BricolageGrotesque.woff2") format("woff2"); font-weight: 500 800; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist.woff2") format("woff2"); font-weight: 400 600; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 500; }
+
+#root { position: absolute; inset: 0; overflow: hidden; background: #f3f6f4; color: #10211e;
+  font-family: "Geist", sans-serif; }
+.display { font-family: "Bricolage Grotesque", sans-serif; font-weight: 780; letter-spacing: -0.03em; }
+.mono { font-family: "Geist Mono", monospace; font-weight: 500; }
+.coral { color: #d8432a; } .teal { color: #0f6b5c; } .soft { color: #4a5c57; }
+.mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.mask > span { display: inline-block; }
+
+    .r-dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; }
+    #r-mark-box { width: 210px; height: 210px; border-radius: 52px; background: #0f6b5c; display: grid; place-items: center;
+      box-shadow: 0 30px 70px -30px rgba(15,107,92,.55); }
+</style>
+  <div id="root" data-composition-id="reveal" data-width="1920" data-height="1080" data-duration="7.4">
+    <div id="r-dots" class="clip " data-start="0.00" data-duration="1.60" style="position:absolute; inset:0;" data-layout-allow-overlap><div class="r-dot" style="left:288px; top:333px; background:#0f6b5c;" data-dx="661" data-dy="56"></div><div class="r-dot" style="left:277px; top:248px; background:#d8432a;" data-dx="672" data-dy="141"></div><div class="r-dot" style="left:262px; top:141px; background:#0f6b5c;" data-dx="687" data-dy="248"></div><div class="r-dot" style="left:398px; top:252px; background:#0f6b5c;" data-dx="551" data-dy="137"></div><div class="r-dot" style="left:435px; top:275px; background:#d8432a;" data-dx="514" data-dy="114"></div><div class="r-dot" style="left:534px; top:299px; background:#d8432a;" data-dx="415" data-dy="90"></div><div class="r-dot" style="left:432px; top:406px; background:#0f6b5c;" data-dx="517" data-dy="-17"></div><div class="r-dot" style="left:275px; top:410px; background:#0f6b5c;" data-dx="674" data-dy="-21"></div><div class="r-dot" style="left:414px; top:505px; background:#0f6b5c;" data-dx="535" data-dy="-116"></div><div class="r-dot" style="left:420px; top:592px; background:#0f6b5c;" data-dx="529" data-dy="-203"></div><div class="r-dot" style="left:487px; top:563px; background:#0f6b5c;" data-dx="462" data-dy="-174"></div><div class="r-dot" style="left:511px; top:521px; background:#0f6b5c;" data-dx="438" data-dy="-132"></div><div class="r-dot" style="left:546px; top:550px; background:#0f6b5c;" data-dx="403" data-dy="-161"></div><div class="r-dot" style="left:444px; top:731px; background:#d8432a;" data-dx="505" data-dy="-342"></div></div>
+    <div id="r-mark" class="clip " data-start="1.00" data-duration="6.40" style="position:absolute; left:855px; top:295px;" ><div id="r-mark-box"><svg width="128" height="128" viewBox="0 0 256 256" id="r-paw"><path d="M240,108a28,28,0,1,1-28-28A28,28,0,0,1,240,108ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm72,0a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm23.12,60.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72Z" fill="#f3f6f4"/></svg></div></div>
+    <div id="r-word" class="clip " data-start="1.50" data-duration="5.90" style="position:absolute; left:0; right:0; top:540px; text-align:center;" ><div class="display" style="font-size:120px; white-space:nowrap;">PawSOS <span class="teal">Goa</span></div></div>
+    <div id="r-line" class="clip " data-start="2.30" data-duration="5.10" style="position:absolute; left:0; right:0; top:700px; text-align:center;" ><div style="font-size:48px; font-weight:500;"><span class="mask"><span class="w">One</span></span> <span class="mask"><span class="w">WhatsApp</span></span> <span class="mask"><span class="w">number</span></span> <span class="mask"><span class="w">for</span></span> <span class="mask"><span class="w">every</span></span> <span class="mask"><span class="w">animal</span></span> <span class="mask"><span class="w">emergency.</span></span></div></div>
+    <div id="r-noapp" class="clip " data-start="5.30" data-duration="2.10" style="position:absolute; left:0; right:0; top:790px; text-align:center;" ><div class="mono teal" style="font-size:30px;">No app to install.</div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    document.querySelectorAll(".r-dot").forEach((d, i) => {
+      tl.fromTo(d, { x: 0, y: 0, scale: 1 }, { x: +d.dataset.dx, y: +d.dataset.dy, scale: 0.6, duration: 0.9, ease: "power3.inOut" }, 0.15 + i * 0.03);
+    });
+    tl.fromTo("#r-mark-box", { scale: 0.1, borderRadius: "50%" }, { scale: 1, borderRadius: "52px", duration: 0.8, ease: "expo.out" }, 1.0);
+    tl.fromTo("#r-paw", { scale: 0.4, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)" }, 1.25);
+    tl.fromTo("#r-word > div", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: "power3.inOut" }, 1.5);
+    tl.fromTo("#r-line .w", { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "expo.out", stagger: 0.05 }, 2.3);
+    tl.fromTo("#r-noapp > div", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 5.3);
+    tl.to(["#r-mark-box", "#r-word > div", "#r-line > div", "#r-noapp > div"], { opacity: 0, scale: 0.96, duration: 0.35, ease: "power2.in" }, 7.0);
+
+    window.__timelines["reveal"] = tl;
+  </script>
+</template>

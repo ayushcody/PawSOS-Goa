@@ -182,7 +182,13 @@
     const key = `${owner}:${who}`;
     const after = state.last[key] || 0;
     const msgs = await api(`/sandbox/messages?who=${encodeURIComponent(who)}&after=${after}`);
-    msgs.forEach((m) => { render(list, m, owner); state.last[key] = m.id; });
+    // The visitor may have switched chats while this request was in flight.
+    if ((owner === "citizen" ? state.who : state.team) !== who) return;
+    msgs.forEach((m) => {
+      if (m.id <= (state.last[key] || 0)) return;  // already shown
+      render(list, m, owner);
+      state.last[key] = m.id;
+    });
   }
 
   function resetChat(list, text) {
@@ -192,26 +198,34 @@
   async function refreshTeams() {
     const info = await api("/sandbox/session");
     if (!info.teams.length) return;
-    const current = [...teamSelect.options].map((o) => o.value).join();
-    if (current !== info.teams.map((t) => t.who).join()) {
+    const before = [...teamSelect.options].map((o) => o.value);
+    if (before.join() !== info.teams.map((t) => t.who).join()) {
       teamSelect.innerHTML = info.teams.map((t) => `<option value="${esc(t.who)}">${esc(t.label)}</option>`).join("");
       teamSelect.disabled = false;
-      if (!state.team || !info.teams.some((t) => t.who === state.team)) {
-        // Follow the newest team alerted (an escalation moves the case on).
-        state.team = info.teams[info.teams.length - 1].who;
+      // Follow a newly alerted team (an escalation moves the case on), or keep the visitor's choice.
+      const added = info.teams.filter((t) => !before.includes(t.who));
+      if (added.length || !info.teams.some((t) => t.who === state.team)) {
+        state.team = (added.length ? added : info.teams)[added.length ? added.length - 1 : info.teams.length - 1].who;
         resetChat(teamChat, "Loading the team's chat…");
         delete state.last[`team:${state.team}`];
+        if (before.length && before[0] !== "No team alerted yet") say("No answer in time, so the case moved to the next team.");
       }
       teamSelect.value = state.team;
     }
   }
 
+  // One poll at a time: a second request arriving mid-poll runs once the first finishes.
+  let polling = false, again = false;
   async function poll() {
+    if (polling) { again = true; return; }
+    polling = true;
     try {
       await load(citizenChat, state.who, "citizen");
       await refreshTeams();
       if (state.team) await load(teamChat, state.team, "team");
     } catch (e) { say(e.message, true); }
+    polling = false;
+    if (again) { again = false; poll(); }
   }
 
   async function sendPhoto(blob, name) {

@@ -1,0 +1,77 @@
+<template>
+  <style>
+@font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/BricolageGrotesque.woff2") format("woff2"); font-weight: 500 800; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist.woff2") format("woff2"); font-weight: 400 600; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 500; }
+
+#root { position: absolute; inset: 0; overflow: hidden; background: #f3f6f4; color: #10211e;
+  font-family: "Geist", sans-serif; }
+.display { font-family: "Bricolage Grotesque", sans-serif; font-weight: 780; letter-spacing: -0.03em; }
+.mono { font-family: "Geist Mono", monospace; font-weight: 500; }
+.coral { color: #d8432a; } .teal { color: #0f6b5c; } .soft { color: #4a5c57; }
+.mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.mask > span { display: inline-block; }
+
+    .a-box { position: absolute; background: #ffffff; border: 2px solid #d5dfdb; border-radius: 18px; }
+    .a-chan { width: 290px; height: 104px; display: flex; align-items: center; gap: 18px; padding: 0 24px;
+      font: 700 32px "Bricolage Grotesque", sans-serif; }
+    #a-engine { left: 690px; top: 170px; width: 850px; height: 610px; border: 3px solid #0f6b5c; background: #eaf2ef; }
+    #a-engine-title { position: absolute; left: 32px; top: 24px; font: 760 36px "Bricolage Grotesque", sans-serif; letter-spacing: -0.02em; }
+    #a-engine-title small { font: 500 28px "Geist Mono", monospace; color: #4a5c57; margin-left: 12px; }
+    .a-step { position: absolute; width: 396px; height: 112px; padding: 16px 20px; background: #ffffff; border: 2px solid #d5dfdb; border-radius: 14px; }
+    .a-step b { display: block; font: 740 30px "Bricolage Grotesque", sans-serif; }
+    .a-step span { font: 500 28px "Geist", sans-serif; color: #4a5c57; }
+    .a-step.on { border-color: #0f6b5c; }
+    #a-states { position: absolute; left: 32px; right: 32px; bottom: 26px; display: flex; gap: 8px; }
+    .a-state { flex: 1; text-align: center; padding: 10px 0; border-radius: 10px; background: #ffffff; border: 2px solid #d5dfdb;
+      font: 500 28px "Geist Mono", monospace; color: #4a5c57; }
+    .a-store { width: 290px; height: 176px; padding: 20px 24px; }
+    .a-store b { display: block; font: 740 30px "Bricolage Grotesque", sans-serif; margin-top: 6px; }
+    .a-store span { font: 500 28px "Geist", sans-serif; color: #4a5c57; }
+    .a-token { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #0f6b5c; }
+    .a-call { position: absolute; background: #10211e; color: #f3f6f4; border-radius: 14px; padding: 14px 20px;
+      font: 600 28px/1.25 "Geist", sans-serif; width: 800px; box-shadow: 0 20px 50px -20px rgba(16,33,30,.5); }
+    .a-call b { color: #ff8a73; }
+</style>
+  <div id="root" data-composition-id="arch" data-width="1920" data-height="1080" data-duration="23.2">
+    <div id="a-title" class="clip " data-start="0.30" data-duration="22.90" style="position:absolute; left:110px; top:64px;" ><div class="display" style="font-size:54px;"><span class="mask"><span class="w">One</span></span> <span class="mask"><span class="w">service.</span></span> <span class="mask"><span class="w">One</span></span> <span class="mask"><span class="w">database.</span></span></div></div>
+    <div id="a-eng" class="clip " data-start="0.60" data-duration="22.60" style="position:absolute; inset:0;" data-layout-allow-overlap><div id="a-engine" class="a-box"><div id="a-engine-title">One Python service <small>FastAPI</small></div><div class="a-step" id="a-step-0" style="left:28px; top:80px;"><b>Intake</b><span>Photo + place = a case</span></div><div class="a-step" id="a-step-1" style="left:438px; top:80px;"><b>Triage</b><span>Claude vision, checked</span></div><div class="a-step" id="a-step-2" style="left:28px; top:204px;"><b>Dedup</b><span>PostGIS: 200 m, 2 h</span></div><div class="a-step" id="a-step-3" style="left:438px; top:204px;"><b>Route</b><span>Nearest zone's team</span></div><div class="a-step" id="a-step-4" style="left:28px; top:328px;"><b>Escalate</b><span>No answer: next team</span></div><div class="a-step" id="a-step-5" style="left:438px; top:328px;"><b>Close the loop</b><span>Every reporter told</span></div><div id="a-states"><div class="a-state" id="a-st-0">REPORTED</div><div class="a-state" id="a-st-1">ROUTED</div><div class="a-state" id="a-st-2">ACCEPTED</div><div class="a-state" id="a-st-3">ON SITE</div><div class="a-state" id="a-st-4">RESOLVED</div></div></div></div>
+    <div id="a-db" class="clip " data-start="3.00" data-duration="20.20" style="position:absolute; inset:0;" ><div class="a-box a-store" style="left:1580px; top:200px;"><svg width="40" height="40" viewBox="0 0 256 256" ><path d="M128,24C74.17,24,32,48.6,32,80v96c0,31.4,42.17,56,96,56s96-24.6,96-56V80C224,48.6,181.83,24,128,24Zm80,104c0,9.62-7.88,19.43-21.61,26.92C170.93,163.35,150.19,168,128,168s-42.93-4.65-58.39-13.08C55.88,147.43,48,137.62,48,128V111.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64Zm-21.61,74.92C170.93,211.35,150.19,216,128,216s-42.93-4.65-58.39-13.08C55.88,195.43,48,185.62,48,176V159.36c17.06,15,46.23,24.64,80,24.64s62.94-9.68,80-24.64V176C208,185.62,200.12,195.43,186.39,202.92Z" fill="#0f6b5c"/></svg><b>Postgres + PostGIS</b><span>Cases, audit log</span></div><div class="a-box a-store" style="left:1580px; top:404px;"><svg width="40" height="40" viewBox="0 0 256 256" ><path d="M208,96a12,12,0,1,1,12,12A12,12,0,0,1,208,96ZM196,72a12,12,0,1,0-12-12A12,12,0,0,0,196,72Zm28.66,56a8,8,0,0,0-8.63,7.31A88.12,88.12,0,1,1,120.66,40,8,8,0,0,0,119.34,24,104.12,104.12,0,1,0,232,136.66,8,8,0,0,0,224.66,128ZM128,56a72,72,0,1,1-72,72A72.08,72.08,0,0,1,128,56Zm-8,72a8,8,0,0,0,8,8h48a8,8,0,0,0,0-16H136V80a8,8,0,0,0-16,0Zm40-80a12,12,0,1,0-12-12A12,12,0,0,0,160,48Z" fill="#0f6b5c"/></svg><b>Scheduler</b><span>Deadlines in the DB</span></div><div class="a-box a-store" style="left:1580px; top:608px;"><svg width="40" height="40" viewBox="0 0 256 256" ><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z" fill="#0f6b5c"/></svg><b>Dashboard</b><span>Map, audit trail</span></div></div>
+    <div id="a-chans" class="clip " data-start="5.50" data-duration="17.70" style="position:absolute; inset:0;" ><div class="a-box a-chan" style="left:110px; top:220px;"><svg width="46" height="46" viewBox="0 0 256 256" ><path d="M152.58,145.23l23,11.48A24,24,0,0,1,152,176a72.08,72.08,0,0,1-72-72A24,24,0,0,1,99.29,80.46l11.48,23L101,118a8,8,0,0,0-.73,7.51,56.47,56.47,0,0,0,30.15,30.15A8,8,0,0,0,138,155ZM232,128A104,104,0,0,1,79.12,219.82L45.07,231.17a16,16,0,0,1-20.24-20.24l11.35-34.05A104,104,0,1,1,232,128Zm-40,24a8,8,0,0,0-4.42-7.16l-32-16a8,8,0,0,0-8,.5l-14.69,9.8a40.55,40.55,0,0,1-16-16l9.8-14.69a8,8,0,0,0,.5-8l-16-32A8,8,0,0,0,104,64a40,40,0,0,0-40,40,88.1,88.1,0,0,0,88,88A40,40,0,0,0,192,152Z" fill="#0f6b5c"/></svg>WhatsApp</div><div class="a-box a-chan" style="left:110px; top:400px;"><svg width="46" height="46" viewBox="0 0 256 256" ><path d="M228.88,26.19a9,9,0,0,0-9.16-1.57L17.06,103.93a14.22,14.22,0,0,0,2.43,27.21L72,141.45V200a15.92,15.92,0,0,0,10,14.83,15.91,15.91,0,0,0,17.51-3.73l25.32-26.26L165,220a15.88,15.88,0,0,0,10.51,4,16.3,16.3,0,0,0,5-.79,15.85,15.85,0,0,0,10.67-11.63L231.77,35A9,9,0,0,0,228.88,26.19ZM175.53,208,92.85,135.5l119-85.29Z" fill="#0f6b5c"/></svg>Telegram</div><div class="a-box a-chan" style="left:110px; top:580px;"><svg width="46" height="46" viewBox="0 0 256 256" ><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V88H40V56Z" fill="#0f6b5c"/></svg>Web demo</div><div class="mono soft" style="position:absolute; left:110px; top:712px; font-size:28px;">all become one message</div></div>
+    <div id="a-tokens" class="clip " data-start="7.40" data-duration="2.80" style="position:absolute; inset:0;" data-layout-allow-overlap><div class="a-token" id="a-tok-0" style="left:389px; top:261px;"></div><div class="a-token" id="a-tok-1" style="left:389px; top:441px;"></div><div class="a-token" id="a-tok-2" style="left:389px; top:621px;"></div></div>
+    <div id="a-call1" class="clip " data-start="15.40" data-duration="7.80" style="position:absolute; left:1000px; top:800px;" ><div class="a-call"><b>Model slow or down?</b> The case is routed anyway, flagged for a person.</div></div>
+    <div id="a-end" class="clip " data-start="20.90" data-duration="2.30" style="position:absolute; left:1060px; top:96px;" ><div class="display teal" style="font-size:40px;"><span class="mask"><span class="w">Nothing</span></span> <span class="mask"><span class="w">waits.</span></span> <span class="mask"><span class="w">Nothing</span></span> <span class="mask"><span class="w">is</span></span> <span class="mask"><span class="w">lost.</span></span></div></div>
+    <div id="a-call2" class="clip " data-start="18.70" data-duration="4.50" style="position:absolute; left:110px; top:800px;" ><div class="a-call"><b>A message fails to send?</b> The case is already saved. A job picks it up.</div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#a-title .w", { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "expo.out", stagger: 0.06 }, 0.3);
+    tl.fromTo("#a-engine", { opacity: 0, scale: 0.97, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.7, ease: "expo.out" }, 0.6);
+    tl.fromTo(".a-step", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.08 }, 1.0);
+    tl.fromTo(".a-state", { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.05 }, 1.6);
+    tl.fromTo(".a-store", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.5, ease: "expo.out", stagger: 0.12 }, 3.0);
+    tl.fromTo(".a-chan", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.5, ease: "expo.out", stagger: 0.4 }, 5.5);
+    // Three messages travel in, become one, and enter the engine.
+    [0, 1, 2].forEach((i) => {
+      tl.fromTo(`#a-tok-${i}`, { x: 0, y: 0, scale: 0 }, { scale: 1, duration: 0.2 }, 7.4 + i * 0.12);
+      tl.to(`#a-tok-${i}`, { x: 180, y: 400 - [220, 400, 580][i], duration: 0.8, ease: "power3.inOut" }, 7.6 + i * 0.12);
+      tl.to(`#a-tok-${i}`, { x: 330, duration: 0.6, ease: "power2.in" }, 8.7);
+      tl.to(`#a-tok-${i}`, { scale: 0, duration: 0.2 }, 9.25);
+    });
+    [0, 1, 2, 3, 4, 5].forEach((i) => {
+      tl.to(`#a-step-${i}`, { borderColor: "#0f6b5c", backgroundColor: "#f6fbf9", duration: 0.25 }, 9.4 + i * 0.32);
+    });
+    [0, 1, 2, 3, 4].forEach((i) => {
+      tl.to(`#a-st-${i}`, { backgroundColor: "#0f6b5c", color: "#f3f6f4", borderColor: "#0f6b5c", duration: 0.2 }, 11.9 + i * 0.5);
+    });
+    tl.to("#a-step-1", { borderColor: "#d8432a", duration: 0.25 }, 15.4);
+    document.querySelectorAll(".a-call").forEach((c) => {
+      const host = c.parentElement; const s = +host.dataset.start;
+      tl.fromTo(c, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, s);
+    });
+    tl.fromTo("#a-end .w", { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "expo.out", stagger: 0.06 }, 20.9);
+
+    window.__timelines["arch"] = tl;
+  </script>
+</template>

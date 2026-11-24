@@ -1,0 +1,37 @@
+<template>
+  <style>
+@font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/BricolageGrotesque.woff2") format("woff2"); font-weight: 500 800; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist.woff2") format("woff2"); font-weight: 400 600; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 500; }
+
+#root { position: absolute; inset: 0; overflow: hidden; background: #f3f6f4; color: #10211e;
+  font-family: "Geist", sans-serif; }
+.display { font-family: "Bricolage Grotesque", sans-serif; font-weight: 780; letter-spacing: -0.03em; }
+.mono { font-family: "Geist Mono", monospace; font-weight: 500; }
+.coral { color: #d8432a; } .teal { color: #0f6b5c; } .soft { color: #4a5c57; }
+.mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.mask > span { display: inline-block; }
+
+    .hn-row { display: flex; align-items: center; gap: 30px; }
+    .hn-row b { display: block; font: 780 52px "Bricolage Grotesque", sans-serif; letter-spacing: -0.02em; }
+    .hn-row span { font: 500 34px "Geist", sans-serif; color: #4a5c57; }
+</style>
+  <div id="root" data-composition-id="honest" data-width="1920" data-height="1080" data-duration="8.2">
+    <div id="hn-title" class="clip " data-start="0.20" data-duration="8.00" style="position:absolute; left:160px; top:150px;" ><div class="display" style="font-size:72px;"><span class="mask"><span class="w">What</span></span> <span class="mask"><span class="w">is</span></span> <span class="mask"><span class="w">real</span></span> <span class="mask"><span class="w">today.</span></span></div></div>
+    <div id="hn-r0" class="clip " data-start="0.50" data-duration="7.70" style="position:absolute; left:160px; top:330px;" ><div class="hn-row"><svg width="72" height="72" viewBox="0 0 256 256" ><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z" fill="#4a5c57"/></svg><div><b>Placeholders</b><span>Rescue teams, zones and health centres in this demo.</span></div></div></div>
+    <div id="hn-r1" class="clip " data-start="2.90" data-duration="5.30" style="position:absolute; left:160px; top:520px;" ><div class="hn-row"><svg width="72" height="72" viewBox="0 0 256 256" ><path d="M200,75.64V40a16,16,0,0,0-16-16H72A16,16,0,0,0,56,40V76a16.07,16.07,0,0,0,6.4,12.8L114.67,128,62.4,167.2A16.07,16.07,0,0,0,56,180v36a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V180.36a16.09,16.09,0,0,0-6.35-12.77L141.27,128l52.38-39.59A16.09,16.09,0,0,0,200,75.64ZM184,180.36V216H72V180l48-36v24a8,8,0,0,0,16,0V144.08Zm0-104.72L178.23,80H77.33L72,76V40H184Z" fill="#b07d00"/></svg><div><b>Waiting</b><span>WhatsApp replies, until Meta verifies the business.</span></div></div></div>
+    <div id="hn-r2" class="clip " data-start="5.60" data-duration="2.60" style="position:absolute; left:160px; top:710px;" ><div class="hn-row"><svg width="72" height="72" viewBox="0 0 256 256" ><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z" fill="#0f6b5c"/></svg><div><b>Working today</b><span>Report, triage, merge, route, escalate, resolve.</span></div></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#hn-title .w", { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "expo.out", stagger: 0.06 }, 0.2);
+    document.querySelectorAll(".hn-row").forEach((r) => {
+      const s = +r.parentElement.dataset.start;
+      tl.fromTo(r, { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "expo.out" }, s);
+    });
+    tl.to(".hn-row, #hn-title > div", { opacity: 0, duration: 0.35, ease: "power2.in" }, 7.8);
+
+    window.__timelines["honest"] = tl;
+  </script>
+</template>

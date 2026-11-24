@@ -1,0 +1,164 @@
+{
+  "l01": {
+    "duration": 3.482,
+    "edges": [],
+    "heard": "Every 27 minutes someone in Goa is bitten by a dog.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l02": {
+    "duration": 6.172,
+    "edges": [],
+    "heard": "In 2025 alone, that was 19,368 bite cases.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l03": {
+    "duration": 3.831,
+    "edges": [],
+    "heard": "And when you find an injured animal on the road, who do you even call?",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l04": {
+    "duration": 4.591,
+    "edges": [],
+    "heard": "Every municipality runs its own helpline. Some close at 8:00 in the evening.",
+    "match": 0.963,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l05": {
+    "duration": 6.16,
+    "edges": [],
+    "heard": "And last year, Canacona, Sanghalem, Valpoi and Mapsa held no sterilization camps at all.",
+    "match": 0.786,
+    "attempt": 3,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l06": {
+    "duration": 6.475,
+    "edges": [],
+    "heard": "Meet Paw SOS Goa. One WhatsApp number for every animal emergency in the state. No app to install.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l07": {
+    "duration": 4.92,
+    "edges": [],
+    "heard": "Here it is working. You send a photo of the animal and your location.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l08": {
+    "duration": 10.363,
+    "edges": [],
+    "heard": "Within seconds, Claude looks at the photo and replies, \"How urgent it seems.\" And two or three safe things to do while you wait. It is guidance, never a diagnosis.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l09": {
+    "duration": 8.654,
+    "edges": [],
+    "heard": "If someone else reports the same animal nearby, Pa SOS merges it into the same case. The team gets one alert, not two.",
+    "match": 0.933,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l10": {
+    "duration": 5.603,
+    "edges": [],
+    "heard": "The nearest partner team gets the photo, a map link, and two buttons, accept or decline.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l11": {
+    "duration": 6.98,
+    "edges": [],
+    "heard": "If nobody answers in time, the case moves on to the next team, and then to the Taluka officer. Nothing waits forever.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l12": {
+    "duration": 6.508,
+    "edges": [],
+    "heard": "accepted, on site, resolved. And the person who reported it, hears every single step.",
+    "match": 1.0,
+    "attempt": 2,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l13": {
+    "duration": 7.792,
+    "edges": [],
+    "heard": "For officials, every case sits on one map with a full order trail and a suggestion for where the next sterilization camp is needed.",
+    "match": 0.958,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l14": {
+    "duration": 4.5,
+    "edges": [],
+    "heard": "Under the hood, it is one Python service and one PostGIS database.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l15": {
+    "duration": 5.701,
+    "edges": [],
+    "heard": "WhatsApp, Telegram, and this web demo all arrive as the same message. So they run the same logic.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l16": {
+    "duration": 11.057,
+    "edges": [],
+    "heard": "One state machine owns every case and records every change. If the AI is slow, the case is rooted anyway. If a message fails to send, the case is never lost.",
+    "match": 0.968,
+    "attempt": 2,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l17": {
+    "duration": 7.18,
+    "edges": [],
+    "heard": "The teams in this demo are placeholders and the WhatsApp line is waiting on meta's business verification. But the whole loop works today.",
+    "match": 1.0,
+    "attempt": 1,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "l18": {
+    "duration": 4.768,
+    "edges": [],
+    "heard": "This is PAWS SOS Goa. One number, every report heard.",
+    "match": 0.842,
+    "attempt": 4,
+    "voice": "Charon",
+    "model": "gemini-3.8-flash-tts"
+  }
+}
