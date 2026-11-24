@@ -97,14 +97,35 @@ def local(sid: str, t: float) -> float:
 # ================================================================ 1. hook
 def build_hook() -> None:
     sid, dur = "hook", 11.4
+    # A 27-minute timer: the ring fills while the readout counts 00:00 -> 27:00, then a bite lands.
+    R = 190
+    circ = 2 * 3.14159265 * R
     ticks = "".join(
-        f'<line x1="0" y1="-190" x2="0" y2="{-168 if i % 3 else -156}" stroke="#10211e" stroke-width="{6 if i % 3 == 0 else 3}" '
-        f'transform="rotate({i * 30})" stroke-linecap="round"/>' for i in range(12))
+        f'<line x1="0" y1="{-R - 34}" x2="0" y2="{-R - (48 if i % 9 == 0 else 40)}" stroke="#10211e" '
+        f'stroke-width="{5 if i % 9 == 0 else 2.5}" stroke-linecap="round" opacity="{0.9 if i % 9 == 0 else 0.35}" '
+        f'transform="rotate({i * 360 / 27:.3f})"/>' for i in range(27))
+    css = """
+    #h-ring-arc { stroke-dasharray: %(c).1f; stroke-dashoffset: %(c).1f; }
+    #h-read { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font: 500 92px "Geist Mono", monospace;
+      font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: #10211e; }
+    #h-read small { display: block; font: 500 28px "Geist", sans-serif; letter-spacing: 0; color: #4a5c57; margin-top: 2px; }
+    #h-bite { position: absolute; left: 50%%; top: 50%%; width: 0; height: 0; }
+    #h-bite i { position: absolute; left: -230px; top: -230px; width: 460px; height: 460px; border-radius: 50%%;
+      border: 6px solid #d8432a; opacity: 0; }
+    #h-tag { position: absolute; left: 0; right: 0; top: 520px; text-align: center; }
+    #h-tag span { display: inline-block; background: #d8432a; color: #fff; font: 600 32px "Geist", sans-serif;
+      padding: 10px 22px; border-radius: 999px; }
+""" % {"c": circ}
     body = "\n".join([
-        clip("h-clock", 0.0, 4.5, f'''<svg width="460" height="460" viewBox="-230 -230 460 460">
-          <circle r="208" fill="#ffffff" stroke="#10211e" stroke-width="8"/>{ticks}
-          <g id="h-hand"><line x1="0" y1="18" x2="0" y2="-150" stroke="#d8432a" stroke-width="9" stroke-linecap="round"/></g>
-          <circle r="14" fill="#10211e"/></svg>''', style="position:absolute; left:1280px; top:310px; width:460px; height:460px;"),
+        clip("h-clock", 0.0, 4.5, f'''<div id="h-timer" style="position:relative; width:560px; height:600px;">
+          <svg width="560" height="560" viewBox="-280 -280 560 560" style="position:absolute; left:0; top:0;">
+            <circle r="{R}" fill="#ffffff" stroke="#dfe9e5" stroke-width="26"/>
+            <circle id="h-ring-arc" r="{R}" fill="none" stroke="#0f6b5c" stroke-width="26" stroke-linecap="round" transform="rotate(-90)"/>
+            {ticks}</svg>
+          <div id="h-read"><span id="h-mm">00:00</span><small>minutes pass</small></div>
+          <div id="h-bite"><i id="h-ring1"></i><i id="h-ring2"></i></div>
+          <div id="h-tag"><span>Another dog bite.</span></div>
+        </div>''', style="position:absolute; left:1200px; top:210px; width:560px; height:600px;", attrs="data-layout-allow-overflow"),
         clip("h-every", 0.5, 4.0, f'<div class="display" style="font-size:124px; line-height:1.02;">{words("Every")} <span class="mask"><span class="w coral">27</span></span><br>{words("minutes")}</div>',
              style="position:absolute; left:160px; top:300px;"),
         clip("h-bitten", 1.9, 2.6, f'<div style="font-size:46px; font-weight:500;" class="soft">{words("someone in Goa is bitten by a dog.")}</div>',
@@ -117,11 +138,23 @@ def build_hook() -> None:
              style="position:absolute; left:164px; top:880px;"),
     ])
     js = """
-    tl.fromTo("#h-clock svg", { scale: 0.92, opacity: 1 }, { scale: 1, opacity: 1, duration: 0.9, ease: "expo.out", transformOrigin: "50% 50%" }, 0);
-    tl.fromTo("#h-hand", { rotation: -40 }, { rotation: 320, duration: 3.4, ease: "power1.inOut", svgOrigin: "0 0" }, 0.6);
+    tl.fromTo("#h-timer", { scale: 0.96, opacity: 1 }, { scale: 1, opacity: 1, duration: 0.8, ease: "expo.out", transformOrigin: "50%% 46%%" }, 0);
+    // 27 minutes, compressed into 2.3 seconds: the ring fills and the readout counts.
+    const m = { v: 0 };
+    tl.fromTo("#h-ring-arc", { strokeDashoffset: %(c).1f }, { strokeDashoffset: 0, duration: 2.3, ease: "power1.in" }, 0.3);
+    tl.fromTo(m, { v: 0 }, { v: 27 * 60, duration: 2.3, ease: "power1.in",
+      onUpdate: () => { const s = Math.round(m.v); document.getElementById("h-mm").textContent =
+        String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s %% 60).padStart(2, "0"); } }, 0.3);
+    // At 27:00 the ring turns coral and a bite pulses out.
+    tl.to("#h-ring-arc", { stroke: "#d8432a", duration: 0.15 }, 2.6);
+    tl.to("#h-mm", { color: "#d8432a", duration: 0.15 }, 2.6);
+    tl.to("#h-timer", { scale: 1.04, duration: 0.12, ease: "power2.out", yoyo: true, repeat: 1 }, 2.6);
+    tl.fromTo("#h-ring1", { scale: 0.85, opacity: 0.9 }, { scale: 1.35, opacity: 0, duration: 0.9, ease: "power2.out", immediateRender: false }, 2.6);
+    tl.fromTo("#h-ring2", { scale: 0.85, opacity: 0.7 }, { scale: 1.6, opacity: 0, duration: 1.1, ease: "power2.out", immediateRender: false }, 2.75);
+    tl.fromTo("#h-tag span", { y: 14, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, 2.65);
     tl.fromTo("#h-every .w", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "expo.out", stagger: 0.09 }, 0.5);
     tl.fromTo("#h-bitten .w", { yPercent: 110 }, { yPercent: 0, duration: 0.55, ease: "expo.out", stagger: 0.04 }, 1.9);
-    tl.to(["#h-every > div", "#h-bitten > div", "#h-clock svg"], { yPercent: -12, opacity: 0, duration: 0.35, ease: "power2.in" }, 4.05);
+    tl.to(["#h-every > div", "#h-bitten > div", "#h-timer"], { yPercent: -8, opacity: 0, duration: 0.35, ease: "power2.in" }, 4.05);""" % {"c": circ} + """
     const n = { v: 0 };
     tl.fromTo("#h-num > div", { yPercent: 18, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 4.4);
     tl.fromTo(n, { v: 0 }, { v: 19368, duration: 2.1, ease: "power3.out",
@@ -130,7 +163,7 @@ def build_hook() -> None:
     tl.fromTo("#h-src > div", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 7.0);
     tl.to(["#h-num > div", "#h-numlabel > div", "#h-src > div"], { opacity: 0, duration: 0.35, ease: "power2.in" }, 11.0);
 """
-    scene(sid, dur, "", body, js)
+    scene(sid, dur, css, body, js)
 
 
 # ================================================================ 2. tension
@@ -285,10 +318,23 @@ CARD_CSS = """
       box-shadow: 0 24px 60px -24px rgba(16,33,30,.55); }
     .card small { display: block; margin-top: 8px; font: 500 28px/1.3 "Geist", sans-serif; letter-spacing: 0; color: #b9cdc6; }
     .card .coral { color: #ff8a73; }
-    .speed { position: absolute; right: 110px; top: 104px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
+    .speed { position: absolute; right: 110px; top: 134px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
       background: #0f6b5c; border-radius: 10px; padding: 8px 16px; }
     .steps span { display: inline-block; margin-right: 18px; }
     .card.low { top: auto; bottom: 200px; }   /* team views: the alert is at the top, the bottom is empty */
+    .pt-wrap { position: absolute; z-index: 60; left: 0; right: 0; top: 0; padding: 18px 0; display: flex; justify-content: center;
+      background: #f3f6f4; border-bottom: 1px solid #d5dfdb; box-shadow: 0 10px 30px -20px rgba(16,33,30,.4); }
+    #p-tracker { display: flex; align-items: center; gap: 0;
+      background: #ffffff; border: 1px solid #d5dfdb; border-radius: 999px; padding: 8px 10px;
+      box-shadow: 0 14px 40px -18px rgba(16,33,30,.45); white-space: nowrap; }
+    .pt { display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 10px; border-radius: 999px; border: 2px solid transparent;
+      font: 600 28px "Geist", sans-serif; color: #56655f; }
+    .pt i { width: 14px; height: 14px; border-radius: 50%; background: currentColor; opacity: .55; }
+    .pt-bar { width: 22px; height: 2px; background: #c9d6d1; }
+    .pt-who { display: grid; margin-right: 12px; }
+    .pt-who span { grid-area: 1 / 1; background: #10211e; color: #f3f6f4; border-radius: 999px; padding: 8px 18px;
+      font: 600 28px "Geist", sans-serif; text-align: center; }
+    #pw-t { background: #d8432a; opacity: 0; }
 """
 CARD_JS = """
     document.querySelectorAll(".card, .speed").forEach((c) => {
@@ -315,8 +361,27 @@ def build_product() -> None:
              '<div class="card steps"><span id="p-s1">Accepted.</span><span id="p-s2">On site.</span><span id="p-s3">Resolved.</span>'
              '<small>Everyone who reported it is told each step.</small></div>', style="z-index:50;"),
     ] + speed_tags("product", "p")
-    body = video_clips("product", "p") + "\n" + "\n".join(cards)
-    js = CARD_JS + f"""
+    # A tracker along the top, so the viewer always knows which step of the journey this is.
+    steps = [("Report", 0.0), ("Triage", t_triage), ("Merge", t_merge), ("Team alert", 26.1),
+             ("Escalate", 31.6), ("Resolved", t_acc)]
+    tracker = clip("p-track", 0.0, dur, '<div class="pt-wrap"><div id="p-tracker"><div class="pt-who">'
+                   '<span id="pw-c">Citizen\'s phone</span><span id="pw-t">Rescue team\'s phone</span></div>' + "".join(
+        f'<div class="pt" id="pt-{i}"><i></i>{name}</div>' + ('<b class="pt-bar"></b>' if i < len(steps) - 1 else "")
+        for i, (name, _) in enumerate(steps)) + "</div></div>", style="z-index:60;")
+    body = video_clips("product", "p") + "\n" + "\n".join(cards + [tracker])
+    track_js = "".join(
+        f'\n    tl.to("#pt-{i}", {{ backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }}, {t:.2f});'
+        + (f'\n    tl.to("#pt-{i - 1}", {{ backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }}, {t:.2f});' if i else "")
+        + (f'\n    tl.fromTo("#pt-{i}", {{ scale: 1 }}, {{ scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }}, {t:.2f});' if i else "")
+        for i, (_, t) in enumerate(steps))
+    who = "".join(
+        f'\n    tl.set("#pw-c", {{ opacity: {0 if c["frame"].startswith("team") else 1} }}, {c["start"]:.2f});'
+        f'\n    tl.set("#pw-t", {{ opacity: {1 if c["frame"].startswith("team") else 0} }}, {c["start"]:.2f});'
+        for c in CLIPS["product"])
+    track_js += who
+    js = CARD_JS + """
+    tl.fromTo(".pt-wrap", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 0.2);
+    tl.to(".pt-wrap", { opacity: 0, duration: 0.3 }, %.2f);""" % (dur - 0.35) + track_js + f"""
     tl.fromTo(["#p-s2", "#p-s3"], {{ opacity: 0.2 }}, {{ opacity: 0.2, duration: 0.01 }}, 0);
     tl.to("#p-s2", {{ opacity: 1, duration: 0.3 }}, {t_on});
     tl.to("#p-s3", {{ opacity: 1, duration: 0.3 }}, {t_res});
