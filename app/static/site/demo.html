@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PawSOS Goa demo</title>
+  <meta name="description" content="A two-minute film of PawSOS Goa working: a real report, real Claude triage, duplicate merging, escalation and the officials' dashboard.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:title" content="PawSOS Goa: the demo">
+  <meta property="og:description" content="One WhatsApp number for every animal emergency in Goa. Watch it handle a real report end to end.">
+  <meta property="og:image" content="/static/site/film/poster.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <link rel="stylesheet" href="/static/site/site.css">
+  <style>
+    .demo-page { padding-block: 48px 96px; }
+    .demo-page h1 { font-size: clamp(34px, 4.4vw, 60px); max-width: 22ch; margin-bottom: 14px; }
+    .demo-page .lede { margin-bottom: 32px; max-width: 60ch; }
+    .player { border-radius: 22px; overflow: hidden; background: #0b1513; border: 1px solid var(--line); box-shadow: var(--shadow); aspect-ratio: 16 / 9; }
+    .player video { width: 100%; height: 100%; display: block; }
+    .demo-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <div class="wrap nav-row">
+      <a class="brand" href="/" aria-label="PawSOS Goa home">
+        <span class="brand-mark" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+        <span>PawSOS <span class="brand-goa">Goa</span></span>
+      </a>
+      <div class="nav-end">
+        <a class="icon-btn" href="https://github.com/ayushcody/PawSOS-Goa" aria-label="Source code on GitHub"><i class="ph ph-github-logo"></i></a>
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch colour theme"><i class="ph ph-moon"></i></button>
+      </div>
+    </div>
+  </header>
+  <main id="main" class="wrap demo-page">
+    <h1 class="h2">PawSOS Goa, working end to end.</h1>
+    <p class="lede section-lede">A real report from a street-dog photo: Claude triage, a second report merged, a team that does not answer, escalation, and the case closed. Two minutes, narrated.</p>
+    <div class="player">
+      <video controls playsinline preload="metadata" poster="/static/site/film/poster.jpg">
+        <source src="/static/site/film/PawSOS_Goa_demo.mp4" type="video/mp4">
+        <track kind="captions" src="/static/site/film/captions.vtt" srclang="en-IN" label="English">
+        Your browser cannot play this video. <a href="/static/site/film/PawSOS_Goa_demo.mp4">Download the film (MP4)</a>.
+      </video>
+    </div>
+    <div class="demo-links">
+      <a class="btn btn-primary" href="/#try">Try it live <i class="ph ph-arrow-right"></i></a>
+      <a class="btn btn-ghost" href="/dashboard"><i class="ph ph-map-trifold"></i> Officials' dashboard</a>
+      <a class="btn btn-ghost" href="/"><i class="ph ph-house"></i> Product page</a>
+    </div>
+    <p class="small-note">Teams and phone numbers in the demo are placeholders. Parts of the recording are sped up and labelled so. Triage is guidance from a photo, not a diagnosis.</p>
+  </main>
+  <script src="/static/site/site.js" defer></script>
+</body>
+</html>

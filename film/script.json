@@ -1,0 +1,92 @@
+[
+  {
+    "id": "l01",
+    "scene": "hook",
+    "text": "Every twenty-seven minutes, someone in Goa is bitten by a dog."
+  },
+  {
+    "id": "l02",
+    "scene": "hook",
+    "text": "In 2025 alone, that was nineteen thousand, three hundred and sixty-eight bite cases."
+  },
+  {
+    "id": "l03",
+    "scene": "tension",
+    "text": "And when you find an injured animal on the road, who do you even call?"
+  },
+  {
+    "id": "l04",
+    "scene": "tension",
+    "text": "Every municipality runs its own helpline. Some close at eight in the evening."
+  },
+  {
+    "id": "l05",
+    "scene": "tension",
+    "text": "And last year, Canacona, Sankhalim, Valpoi and Mapusa held no sterilisation camps at all."
+  },
+  {
+    "id": "l06",
+    "scene": "reveal",
+    "text": "Meet Paw S.O.S. Goa: one WhatsApp number for every animal emergency in the state. No app to install."
+  },
+  {
+    "id": "l07",
+    "scene": "report",
+    "text": "Here it is, working. You send a photo of the animal, and your location."
+  },
+  {
+    "id": "l08",
+    "scene": "report",
+    "text": "Within seconds, Claude looks at the photo and replies: how urgent it seems, and two or three safe things to do while you wait. It is guidance, never a diagnosis."
+  },
+  {
+    "id": "l09",
+    "scene": "merge",
+    "text": "If someone else reports the same animal nearby, Paw S.O.S. merges it into the same case. The team gets one alert, not two."
+  },
+  {
+    "id": "l10",
+    "scene": "team",
+    "text": "The nearest partner team gets the photo, a map link, and two buttons: accept, or decline."
+  },
+  {
+    "id": "l11",
+    "scene": "team",
+    "text": "If nobody answers in time, the case moves on to the next team, and then to the taluka officer. Nothing waits forever."
+  },
+  {
+    "id": "l12",
+    "scene": "close",
+    "text": "Accepted. On site. Resolved. And the person who reported it hears every single step."
+  },
+  {
+    "id": "l13",
+    "scene": "officials",
+    "text": "For officials, every case sits on one map, with a full audit trail, and a suggestion for where the next sterilisation camp is needed."
+  },
+  {
+    "id": "l14",
+    "scene": "arch",
+    "text": "Under the hood, it is one Python service and one PostGIS database."
+  },
+  {
+    "id": "l15",
+    "scene": "arch",
+    "text": "WhatsApp, Telegram and this web demo all arrive as the same message, so they run the same logic."
+  },
+  {
+    "id": "l16",
+    "scene": "arch",
+    "text": "One state machine owns every case and records every change. If the AI is slow, the case is routed anyway. If a message fails to send, the case is never lost."
+  },
+  {
+    "id": "l17",
+    "scene": "honest",
+    "text": "The teams in this demo are placeholders, and the WhatsApp line is waiting on Meta's business verification. But the whole loop works today."
+  },
+  {
+    "id": "l18",
+    "scene": "end",
+    "text": "This is Paw S.O.S. Goa. One number. Every report heard."
+  }
+]

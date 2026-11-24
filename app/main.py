@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401  (registers every table)
@@ -65,8 +65,9 @@ def create_app() -> FastAPI:
         return FileResponse(STATIC_DIR / "site" / "index.html")
 
     @app.get("/demo", include_in_schema=False)
-    def demo() -> RedirectResponse:
-        return RedirectResponse("/#try", status_code=307)
+    def demo() -> FileResponse:
+        # The demo film, with links to the live sandbox and the dashboard.
+        return FileResponse(STATIC_DIR / "site" / "demo.html")
 
     @app.get("/health")
     def health() -> dict[str, str | bool]:

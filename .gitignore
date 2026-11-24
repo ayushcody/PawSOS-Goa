@@ -25,3 +25,15 @@ uploads/
 .DS_Store
 .idea/
 .vscode/
+
+# Film project: keys and heavy media stay local
+film/.env
+film/raw/
+film/renders/
+film/.gemini_key_state.json
+film/hf/renders/
+film/hf/assets/video/
+film/hf/.hyperframes/
+app/static/site/film/*.mp4
+film/hf/.thumbnails/
+film/hf/.waveform-cache/

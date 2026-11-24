@@ -1,0 +1,113 @@
+WEBVTT
+
+1
+00:00:00.700 --> 00:00:03.930
+Every twenty-seven minutes, someone in Goa is bitten by a dog.
+
+2
+00:00:04.700 --> 00:00:10.620
+In 2025 alone, that was nineteen thousand, three hundred and sixty-eight bite cases.
+
+3
+00:00:11.900 --> 00:00:15.480
+And when you find an injured animal on the road, who do you even call?
+
+4
+00:00:16.100 --> 00:00:18.440
+Every municipality runs its own helpline.
+
+5
+00:00:18.440 --> 00:00:20.440
+Some close at eight in the evening.
+
+6
+00:00:21.100 --> 00:00:27.010
+And last year, Canacona, Sankhalim, Valpoi and Mapusa held no sterilisation camps at all.
+
+7
+00:00:28.300 --> 00:00:33.350
+Meet PawSOS Goa: one WhatsApp number for every animal emergency in the state.
+
+8
+00:00:33.350 --> 00:00:34.530
+No app to install.
+
+9
+00:00:35.500 --> 00:00:36.830
+Here it is, working.
+
+10
+00:00:36.830 --> 00:00:40.170
+You send a photo of the animal, and your location.
+
+11
+00:00:40.700 --> 00:00:48.660
+Within seconds, Claude looks at the photo and replies: how urgent it seems, and two or three safe things to do while you wait.
+
+12
+00:00:48.660 --> 00:00:50.810
+It is guidance, never a diagnosis.
+
+13
+00:00:51.500 --> 00:00:57.530
+If someone else reports the same animal nearby, PawSOS merges it into the same case.
+
+14
+00:00:57.530 --> 00:00:59.900
+The team gets one alert, not two.
+
+15
+00:01:00.600 --> 00:01:05.950
+The nearest partner team gets the photo, a map link, and two buttons: accept, or decline.
+
+16
+00:01:06.600 --> 00:01:12.050
+If nobody answers in time, the case moves on to the next team, and then to the taluka officer.
+
+17
+00:01:12.050 --> 00:01:13.330
+Nothing waits forever.
+
+18
+00:01:14.100 --> 00:01:16.210
+Accepted. On site. Resolved.
+
+19
+00:01:16.210 --> 00:01:20.360
+And the person who reported it hears every single step.
+
+20
+00:01:21.700 --> 00:01:29.240
+For officials, every case sits on one map, with a full audit trail, and a suggestion for where the next sterilisation camp is needed.
+
+21
+00:01:30.600 --> 00:01:34.850
+Under the hood, it is one Python service and one PostGIS database.
+
+22
+00:01:35.500 --> 00:01:40.950
+WhatsApp, Telegram and this web demo all arrive as the same message, so they run the same logic.
+
+23
+00:01:41.600 --> 00:01:45.710
+One state machine owns every case and records every change.
+
+24
+00:01:45.710 --> 00:01:48.850
+If the AI is slow, the case is routed anyway.
+
+25
+00:01:48.850 --> 00:01:52.410
+If a message fails to send, the case is never lost.
+
+26
+00:01:53.700 --> 00:01:59.060
+The teams in this demo are placeholders, and the WhatsApp line is waiting on Meta's business verification.
+
+27
+00:01:59.060 --> 00:02:00.630
+But the whole loop works today.
+
+28
+00:02:01.900 --> 00:02:06.420
+This is PawSOS Goa. One number. Every report heard.
