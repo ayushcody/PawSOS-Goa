@@ -17,10 +17,23 @@
       box-shadow: 0 24px 60px -24px rgba(16,33,30,.55); }
     .card small { display: block; margin-top: 8px; font: 500 28px/1.3 "Geist", sans-serif; letter-spacing: 0; color: #b9cdc6; }
     .card .coral { color: #ff8a73; }
-    .speed { position: absolute; right: 110px; top: 104px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
+    .speed { position: absolute; right: 110px; top: 134px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
       background: #0f6b5c; border-radius: 10px; padding: 8px 16px; }
     .steps span { display: inline-block; margin-right: 18px; }
     .card.low { top: auto; bottom: 200px; }   /* team views: the alert is at the top, the bottom is empty */
+    .pt-wrap { position: absolute; z-index: 60; left: 0; right: 0; top: 0; padding: 18px 0; display: flex; justify-content: center;
+      background: #f3f6f4; border-bottom: 1px solid #d5dfdb; box-shadow: 0 10px 30px -20px rgba(16,33,30,.4); }
+    #p-tracker { display: flex; align-items: center; gap: 0;
+      background: #ffffff; border: 1px solid #d5dfdb; border-radius: 999px; padding: 8px 10px;
+      box-shadow: 0 14px 40px -18px rgba(16,33,30,.45); white-space: nowrap; }
+    .pt { display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 10px; border-radius: 999px; border: 2px solid transparent;
+      font: 600 28px "Geist", sans-serif; color: #56655f; }
+    .pt i { width: 14px; height: 14px; border-radius: 50%; background: currentColor; opacity: .55; }
+    .pt-bar { width: 22px; height: 2px; background: #c9d6d1; }
+    .pt-who { display: grid; margin-right: 12px; }
+    .pt-who span { grid-area: 1 / 1; background: #10211e; color: #f3f6f4; border-radius: 999px; padding: 8px 18px;
+      font: 600 28px "Geist", sans-serif; text-align: center; }
+    #pw-t { background: #d8432a; opacity: 0; }
 
     .card { left: 110px; right: auto; top: auto; bottom: 150px; }
 </style>

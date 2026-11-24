@@ -17,10 +17,23 @@
       box-shadow: 0 24px 60px -24px rgba(16,33,30,.55); }
     .card small { display: block; margin-top: 8px; font: 500 28px/1.3 "Geist", sans-serif; letter-spacing: 0; color: #b9cdc6; }
     .card .coral { color: #ff8a73; }
-    .speed { position: absolute; right: 110px; top: 104px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
+    .speed { position: absolute; right: 110px; top: 134px; font: 500 28px "Geist Mono", monospace; color: #f3f6f4; z-index: 50;
       background: #0f6b5c; border-radius: 10px; padding: 8px 16px; }
     .steps span { display: inline-block; margin-right: 18px; }
     .card.low { top: auto; bottom: 200px; }   /* team views: the alert is at the top, the bottom is empty */
+    .pt-wrap { position: absolute; z-index: 60; left: 0; right: 0; top: 0; padding: 18px 0; display: flex; justify-content: center;
+      background: #f3f6f4; border-bottom: 1px solid #d5dfdb; box-shadow: 0 10px 30px -20px rgba(16,33,30,.4); }
+    #p-tracker { display: flex; align-items: center; gap: 0;
+      background: #ffffff; border: 1px solid #d5dfdb; border-radius: 999px; padding: 8px 10px;
+      box-shadow: 0 14px 40px -18px rgba(16,33,30,.45); white-space: nowrap; }
+    .pt { display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 10px; border-radius: 999px; border: 2px solid transparent;
+      font: 600 28px "Geist", sans-serif; color: #56655f; }
+    .pt i { width: 14px; height: 14px; border-radius: 50%; background: currentColor; opacity: .55; }
+    .pt-bar { width: 22px; height: 2px; background: #c9d6d1; }
+    .pt-who { display: grid; margin-right: 12px; }
+    .pt-who span { grid-area: 1 / 1; background: #10211e; color: #f3f6f4; border-radius: 999px; padding: 8px 18px;
+      font: 600 28px "Geist", sans-serif; text-align: center; }
+    #pw-t { background: #d8432a; opacity: 0; }
 </style>
   <div id="root" data-composition-id="product" data-width="1920" data-height="1080" data-duration="46.0">
     <video id="p-a1" class="clip" src="assets/video/clips/a1.mp4" muted playsinline data-start="0.00" data-duration="1.40" data-track-index="0" style="position:absolute; left:0; top:0; width:1920px; height:1080px; object-fit:cover; z-index:1;"></video>
@@ -41,6 +54,7 @@
     <div id="p-sp-d" class="clip " data-start="31.60" data-duration="7.00" style="z-index:40;" ><div class="speed">Sped up 2.2x</div></div>
     <div id="p-sp-e1" class="clip " data-start="38.60" data-duration="4.30" style="z-index:40;" ><div class="speed">Sped up 2.0x</div></div>
     <div id="p-sp-e2" class="clip " data-start="42.90" data-duration="3.10" style="z-index:40;" ><div class="speed">Sped up 1.6x</div></div>
+    <div id="p-track" class="clip " data-start="0.00" data-duration="46.00" style="z-index:60;" ><div class="pt-wrap"><div id="p-tracker"><div class="pt-who"><span id="pw-c">Citizen's phone</span><span id="pw-t">Rescue team's phone</span></div><div class="pt" id="pt-0"><i></i>Report</div><b class="pt-bar"></b><div class="pt" id="pt-1"><i></i>Triage</div><b class="pt-bar"></b><div class="pt" id="pt-2"><i></i>Merge</div><b class="pt-bar"></b><div class="pt" id="pt-3"><i></i>Team alert</div><b class="pt-bar"></b><div class="pt" id="pt-4"><i></i>Escalate</div><b class="pt-bar"></b><div class="pt" id="pt-5"><i></i>Resolved</div></div></div></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
@@ -51,6 +65,40 @@
       tl.to(c, { opacity: 0, duration: 0.28, ease: "power2.in" }, s + d - 0.3);
     });
 
+    tl.fromTo(".pt-wrap", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 0.2);
+    tl.to(".pt-wrap", { opacity: 0, duration: 0.3 }, 45.65);
+    tl.to("#pt-0", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 0.00);
+    tl.to("#pt-1", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 12.13);
+    tl.to("#pt-0", { backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }, 12.13);
+    tl.fromTo("#pt-1", { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 12.13);
+    tl.to("#pt-2", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 21.07);
+    tl.to("#pt-1", { backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }, 21.07);
+    tl.fromTo("#pt-2", { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 21.07);
+    tl.to("#pt-3", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 26.10);
+    tl.to("#pt-2", { backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }, 26.10);
+    tl.fromTo("#pt-3", { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 26.10);
+    tl.to("#pt-4", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 31.60);
+    tl.to("#pt-3", { backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }, 31.60);
+    tl.fromTo("#pt-4", { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 31.60);
+    tl.to("#pt-5", { backgroundColor: "#0f6b5c", color: "#ffffff", borderColor: "#0f6b5c", duration: 0.3 }, 39.05);
+    tl.to("#pt-4", { backgroundColor: "#ffffff", color: "#0f6b5c", borderColor: "#0f6b5c", duration: 0.3 }, 39.05);
+    tl.fromTo("#pt-5", { scale: 1 }, { scale: 1.08, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 39.05);
+    tl.set("#pw-c", { opacity: 1 }, 0.00);
+    tl.set("#pw-t", { opacity: 0 }, 0.00);
+    tl.set("#pw-c", { opacity: 1 }, 1.40);
+    tl.set("#pw-t", { opacity: 0 }, 1.40);
+    tl.set("#pw-c", { opacity: 1 }, 16.00);
+    tl.set("#pw-t", { opacity: 0 }, 16.00);
+    tl.set("#pw-c", { opacity: 1 }, 21.50);
+    tl.set("#pw-t", { opacity: 0 }, 21.50);
+    tl.set("#pw-c", { opacity: 0 }, 26.10);
+    tl.set("#pw-t", { opacity: 1 }, 26.10);
+    tl.set("#pw-c", { opacity: 0 }, 31.60);
+    tl.set("#pw-t", { opacity: 1 }, 31.60);
+    tl.set("#pw-c", { opacity: 0 }, 38.60);
+    tl.set("#pw-t", { opacity: 1 }, 38.60);
+    tl.set("#pw-c", { opacity: 1 }, 42.90);
+    tl.set("#pw-t", { opacity: 0 }, 42.90);
     tl.fromTo(["#p-s2", "#p-s3"], { opacity: 0.2 }, { opacity: 0.2, duration: 0.01 }, 0);
     tl.to("#p-s2", { opacity: 1, duration: 0.3 }, 40.59);
     tl.to("#p-s3", { opacity: 1, duration: 0.3 }, 42.11);
