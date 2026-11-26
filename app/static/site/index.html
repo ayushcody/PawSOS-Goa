@@ -6,74 +6,71 @@
   <title>PawSOS Goa</title>
   <meta name="description" content="One WhatsApp number for every animal emergency in Goa. Report, triage, merge duplicates, alert the nearest team, close the loop.">
   <meta name="color-scheme" content="light dark">
-  <!-- Mock stage: fonts from Google Fonts. Build stage self-hosts them under /static/site/fonts. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..500;1,400&family=Inter:wght@400..600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/static/site/img/art/ganges.jpg">
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
-  <link rel="stylesheet" href="/static/site/site.css">
+  <link rel="stylesheet" href="/static/site/site.css?v=6">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="nav">
-    <div class="wrap nav-row">
-      <a class="brand" href="/" aria-label="PawSOS Goa home">
-        <span class="brand-mark" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
-        <span>PawSOS <span class="brand-goa">Goa</span></span>
-      </a>
-      <nav aria-label="Sections">
-        <ul class="nav-links">
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#try">Try it</a></li>
-          <li><a href="#officials">For officials</a></li>
-          <li><a href="#architecture">Architecture</a></li>
-        </ul>
-      </nav>
-      <div class="nav-end">
-        <a class="icon-btn" href="https://github.com/ayushcody/PawSOS-Goa" aria-label="Source code on GitHub"><i class="ph ph-github-logo"></i></a>
-        <button class="icon-btn" id="theme" type="button" aria-label="Switch colour theme"><i class="ph ph-moon"></i></button>
-      </div>
-    </div>
+    <a class="nav-pill brand" href="/" aria-label="PawSOS Goa home">
+      <i class="ph-fill ph-paw-print brand-mark" aria-hidden="true"></i>
+      <span>PawSOS Goa</span>
+    </a>
+    <nav class="nav-pill nav-end" aria-label="Sections">
+      <ul class="nav-links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#officials">For officials</a></li>
+        <li><a href="#film">Film</a></li>
+      </ul>
+      <a class="icon-btn" href="https://github.com/ayushcody/PawSOS-Goa" aria-label="Source code on GitHub"><i class="ph ph-github-logo"></i></a>
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch colour theme"><i class="ph ph-moon"></i></button>
+      <a class="btn btn-primary btn-sm" href="#try">Try it live</a>
+    </nav>
   </header>
 
   <main id="main">
-    <!-- 1. HERO -->
-    <section class="hero wrap" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <h1 id="hero-title">One number for every animal emergency in Goa.</h1>
-        <p class="lede">Send a photo and your location on WhatsApp. PawSOS assesses it, finds the nearest rescue team and keeps you posted.</p>
-        <div class="ctas">
-          <a class="btn btn-primary" href="#try">Try it live <i class="ph ph-arrow-right"></i></a>
-          <a class="btn btn-ghost" href="#film"><i class="ph ph-play-circle"></i> Watch the film</a>
-        </div>
-      </div>
-
-      <figure class="phone" aria-label="Example conversation with PawSOS">
-        <div class="phone-top">
-          <span class="avatar" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
-          <div>
-            <b>PawSOS Goa</b>
-            <small id="phone-status">online</small>
+    <!-- 1. HERO: a framed painting, the headline on it, the chat floating over it -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-art art-frame" style="--art: url('/static/site/img/art/ganges.jpg')">
+        <div class="hero-copy">
+          <h1 id="hero-title">One number for every animal emergency in Goa.</h1>
+          <p class="lede">Send a photo and your location on WhatsApp. PawSOS assesses it, finds the nearest rescue team and keeps you posted.</p>
+          <div class="ctas">
+            <a class="btn btn-primary" href="#try">Try it live</a>
+            <a class="btn btn-light" href="#film"><i class="ph-fill ph-play"></i> Watch the film</a>
           </div>
         </div>
-        <ol class="chat" id="chat" aria-live="off"></ol>
-        <figcaption>Example run in the simulator, using PawSOS's own message text. Triage steps vary with each photo.</figcaption>
-      </figure>
+
+        <figure class="phone" aria-label="Example conversation with PawSOS">
+          <div class="phone-top">
+            <span class="avatar" aria-hidden="true"><i class="ph-fill ph-paw-print"></i></span>
+            <div>
+              <b>PawSOS Goa</b>
+              <small id="phone-status">online</small>
+            </div>
+          </div>
+          <ol class="chat" id="chat" aria-live="off"></ol>
+          <figcaption>Example run in the simulator, using PawSOS's own message text. Triage steps vary with each photo.</figcaption>
+        </figure>
+        <a class="scroll-cue" href="#problem" aria-label="Scroll to the problem"><i class="ph ph-caret-down"></i></a>
+      </div>
     </section>
 
     <!-- 2. PROBLEM -->
-    <section class="problem wrap" aria-labelledby="problem-title">
-      <h2 id="problem-title" class="sr-only">The problem</h2>
-      <div class="stat-lead">
-        <p class="big-num"><span data-count="19368">19,368</span></p>
-        <p class="stat-text">dog bite cases in Goa in 2025. About one every 27 minutes.</p>
+    <section id="problem" class="problem wrap" aria-labelledby="problem-title">
+      <h2 id="problem-title" class="h2">Goa has no single number to call.</h2>
+      <div class="stats">
+        <div><p class="stat"><span data-count="19368">19,368</span></p><p class="stat-label">dog bite cases in Goa in 2025</p></div>
+        <div><p class="stat">27 <small>min</small></p><p class="stat-label">between bites, on average</p></div>
+        <div><p class="stat">4 <small>towns</small></p><p class="stat-label">with no sterilisation camp in 2025: Canacona, Sankhalim, Valpoi and Mapusa</p></div>
       </div>
-      <div class="stat-side">
-        <p><b>Four towns, zero camps.</b> Canacona, Sankhalim, Valpoi and Mapusa held no sterilisation camps in 2025.</p>
-        <p><b>A different helpline in every town.</b> Each municipality runs its own number. Panaji's closes at 8 pm.</p>
-      </div>
+      <p class="problem-note">And a different helpline in every town. Each municipality runs its own number; Panaji's closes at 8 pm.</p>
       <p class="source">Sources: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn, January 2026.</p>
     </section>
 
@@ -90,8 +87,10 @@
           <li data-shot="citizen"><i class="ph ph-check-circle"></i><div><h3>Close the loop</h3><p>Accepted, on site, resolved. Every reporter hears each step, then rates how it went.</p></div></li>
         </ol>
         <figure class="how-shot" aria-live="polite">
+          <div class="shot-art art-frame" style="--art: url('/static/site/img/art/currah.jpg')">
           <img data-shot="citizen" src="/static/site/img/2_citizen_report_and_triage.jpg" alt="Citizen chat: case PAW-0051 triaged with three safe steps, routed to Panaji, and merged with a second report" width="860" height="1800" loading="lazy">
           <img data-shot="team" src="/static/site/img/3_escalated_alert_to_officer.jpg" alt="Escalated alert for case PAW-0051 reaching the Tiswadi taluka officer with Accept and Decline buttons" width="860" height="1800" loading="lazy" hidden>
+          </div>
           <figcaption>Real screens from a run on 24 Nov: a street-dog photo, real Claude triage, two reports merged, two teams timed out, the taluka officer resolved it.</figcaption>
         </figure>
       </div>
@@ -162,7 +161,7 @@
         <p><b>Where the next camp should go.</b> Bite reports by area beside 2025 sterilisation figures. A simple count, with the rule printed on the page.</p>
       </div>
       <div class="ctas">
-        <a class="btn btn-primary" href="/dashboard">Open the live dashboard <i class="ph ph-arrow-up-right"></i></a>
+        <a class="btn btn-primary" href="/dashboard">Open the live dashboard</a>
       </div>
       <p class="small-note">Most cases on the dashboard are invented demo data and are tagged "demo". Reporters' photos are shown to staff only.</p>
     </section>
@@ -237,13 +236,37 @@
         <p class="small-note">Goa AI Hackathon 2026, Track 3: AI-powered emergency management for animal welfare operations.</p>
       </div>
     </section>
+    <!-- 9. CLOSE -->
+    <section class="close" aria-labelledby="close-title">
+      <div class="close-art art-frame" style="--art: url('/static/site/img/art/malabar.jpg')">
+        <h2 id="close-title">Report it once. Every case heard.</h2>
+        <div class="ctas">
+          <a class="btn btn-primary" href="#try">Try it live</a>
+          <a class="btn btn-light" href="/dashboard">Open the dashboard</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="foot wrap">
-    <p>PawSOS Goa. Goa AI Hackathon 2026, Track 3.</p>
-    <p>Figures: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn.</p>
+  <footer class="foot">
+    <div class="foot-grid">
+      <div>
+        <p class="foot-brand"><i class="ph-fill ph-paw-print" aria-hidden="true"></i> PawSOS Goa</p>
+        <p>Goa AI Hackathon 2026, Track 3.</p>
+      </div>
+      <ul>
+        <li><a href="#try">Try it live</a></li>
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/demo">Film</a></li>
+        <li><a href="https://github.com/ayushcody/PawSOS-Goa">GitHub</a></li>
+      </ul>
+      <div class="foot-credits">
+        <p>Figures: Health Intelligence Bureau data tabled in the Goa Legislative Assembly (LAQ 097), reported by Goemkarponn.</p>
+        <p>Paintings, all public domain: William Daniell, <i>The Banks of the Ganges</i> (c. 1825); Thomas Daniell, <i>Near Currah, on the River Ganges</i> (1796); William Daniell, <i>Boats off the Malabar Coast</i> (1833). Via Wikimedia Commons.</p>
+      </div>
+    </div>
   </footer>
 
-  <script src="/static/site/site.js" defer></script>
+  <script src="/static/site/site.js?v=4" defer></script>
 </body>
 </html>
