@@ -8,6 +8,9 @@
      so the page works with no internet; only the map tiles need a connection. -->
 <link rel="stylesheet" href="/static/leaflet/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..600&display=swap">
 <script src="/static/leaflet/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <style>
@@ -16,7 +19,9 @@
     --accent: #0f6b5c; --accent-deep: #0a4f44;
     --critical: #c4281c; --high: #e0701a; --medium: #c99a0c; --low: #4b8f4b; --closed: #9aa5a2;
     --bite: #6b3fa0; --camp: #1f5fbf;
-    --radius: 12px; --gutter: 24px;
+    --radius: 14px; --gutter: 28px;
+    --display: "EB Garamond", "Iowan Old Style", Palatino, Georgia, serif;
+    --sp-dog: #8b6a47; --sp-cat: #5f7286; --sp-cow: #8f7f5c; --sp-bird: #4f8578; --sp-other: #b0a891;
   }
   * { box-sizing: border-box; }
   html { scrollbar-color: #b9b3a2 var(--paper); }
@@ -30,7 +35,7 @@
   header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
            padding: 14px var(--gutter); border-bottom: 1px solid var(--line); }
   header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
-  header h1 span { color: var(--accent); }
+  header h1 span span { color: var(--accent); }
   header .sub { color: var(--soft); font-size: 14px; }
   header { position: relative; }
   header .right { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
@@ -205,6 +210,39 @@
   .grid.top.no-map .side { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
   .grid.pair.one { grid-template-columns: minmax(0, 1fr); }
   [hidden] { display: none !important; }
+  /* ---- the finer layer: serif headings, numbered sections, animal glyphs ---- */
+  header h1 { font: 500 24px/1 var(--display); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+  header h1 .sp { color: var(--accent); opacity: 1; width: 20px; height: 20px; }
+  .status .now { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.12; letter-spacing: -0.015em; }
+  .status .now b { font-weight: 600; }
+  .card { box-shadow: 0 1px 0 #fff inset, 0 1px 2px #1c28260a, 0 12px 28px -22px #1c282640; }
+  .card h2, h2.legend-title { font-family: var(--display); font-weight: 500; font-size: 21px; letter-spacing: -0.005em; }
+  h2.legend-title { font-size: 17px; }
+  .eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font: 600 10.5px/1 ui-monospace, "SF Mono", Menlo, monospace;
+             letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); }
+  .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .map-col > .eyebrow { margin-bottom: 10px; }
+  /* an animal glyph: small, quiet, in the text's own colour */
+  .sp { display: inline-block; width: 1.05em; height: 1.05em; vertical-align: -0.17em; fill: currentColor; opacity: 0.62; flex: none; }
+  .what-line { display: inline-flex; gap: 7px; align-items: baseline; }
+  .what-line .sp { align-self: center; }
+  .attention-item .sp { margin-right: 4px; color: var(--soft); }
+  /* the case pin: a white disc ringed in its urgency colour, the animal drawn inside */
+  .pin-case { --u: var(--closed); width: 26px; height: 26px; border-radius: 50%; background: #fffdf8; border: 2px solid var(--u);
+              display: grid; place-items: center; color: var(--u); box-shadow: 0 1px 3px #1c282640; }
+  .pin-case .sp { width: 15px; height: 15px; opacity: 1; }
+  .pin-case.attn { box-shadow: 0 0 0 2.5px #1c2826, 0 1px 4px #1c282666; }
+  .legend .pin-case { width: 18px; height: 18px; border-width: 1.5px; box-shadow: none; }
+  .legend .pin-case .sp { width: 11px; height: 11px; }
+  /* which animals: one thin bar, then the counts as filters */
+  .mix-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--wash); gap: 2px; margin: 4px 0 12px; }
+  .mix-bar i { display: block; height: 100%; min-width: 3px; }
+  .mix { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+  .mix .fchip { justify-content: flex-start; gap: 7px; border-radius: 10px; padding: 6px 10px; font-weight: 500; }
+  .mix .fchip .sp { width: 16px; height: 16px; opacity: 0.85; color: var(--sw); }
+  .mix .fchip b { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 650; }
+  .mix .fchip[aria-pressed="true"] .sp { color: #fff; }
+  .fchip.sp-chip .sp { width: 14px; height: 14px; opacity: 0.8; }
   .chip { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px 1px 7px; border-radius: 99px;
           font-size: 12.5px; font-weight: 600; color: var(--ink);
           background: color-mix(in srgb, var(--u, var(--closed)) 16%, var(--card)); }
@@ -277,12 +315,12 @@
   @media (max-width: 960px) {
     .grid.top, .grid.pair { grid-template-columns: minmax(0, 1fr); }
     #map { flex: none; height: 440px; min-height: 0; }
-    .status .now { font-size: 26px; }
+    .status .now { font-size: 30px; }
   }
   @media (max-width: 560px) {
     :root { --gutter: 16px; }
     .status { padding-top: 18px; }
-    .status .now { font-size: 22px; }
+    .status .now { font-size: 26px; }
     .status .then { font-size: 15px; }
     #map { height: 360px; }
     .field { flex: 1 1 calc(50% - 5px); }
@@ -320,7 +358,7 @@
 <body>
 
 <header>
-  <h1>Paw<span>SOS</span> Goa</h1>
+  <h1><svg class="sp" viewBox="0 0 256 256" aria-hidden="true"><path d="M212,80a28,28,0,1,0,28,28A28,28,0,0,0,212,80Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,120ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM44,120a12,12,0,1,1,12-12A12,12,0,0,1,44,120ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm0-40A12,12,0,1,1,80,60,12,12,0,0,1,92,48Zm72,40a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm0-40a12,12,0,1,1-12,12A12,12,0,0,1,164,48Zm23.12,100.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72ZM168,208a24,24,0,0,1-9.45-1.93,80.14,80.14,0,0,0-61.19,0,24,24,0,0,1-20.71-43.26,51.22,51.22,0,0,0,24.46-30.67,28,28,0,0,1,53.78,0,51.27,51.27,0,0,0,24.53,30.71A24,24,0,0,1,168,208Z"/></svg><span>Paw<span>SOS</span> Goa</span></h1>
   <span class="sub">Operations dashboard</span>
   <div class="right">
     <span id="updated">Loading…</span>
@@ -395,18 +433,20 @@
 
 <section class="grid top" id="grid-top">
   <div class="map-col" id="sec-map">
+    <p class="eyebrow">01 · Live map</p>
     <div class="map-wrap">
       <div id="map" role="region" aria-label="Map of cases, bite reports and camps"></div>
       <div class="map-empty" id="map-empty" role="status" hidden></div>
     </div>
     <h2 class="legend-title" id="legend-title">Map key</h2>
     <ul class="legend" aria-labelledby="legend-title">
-      <li><span class="key"><i class="dot open" style="background:var(--critical)"></i></span>Open case, critical</li>
-      <li><span class="key"><i class="dot open" style="background:var(--high)"></i></span>Open case, high</li>
-      <li><span class="key"><i class="dot open" style="background:var(--medium)"></i></span>Open case, medium</li>
-      <li><span class="key"><i class="dot open" style="background:var(--low)"></i></span>Open case, low</li>
-      <li><span class="key"><i class="dot open" style="background:var(--closed)"></i></span>Open case, urgency not known yet</li>
-      <li><span class="key"><i class="dot ring"></i></span>Dark ring: needs a person to look</li>
+      <li><span class="key"><i class="pin-case" style="--u:var(--critical)" data-glyph="dog"></i></span>Open case, critical</li>
+      <li><span class="key"><i class="pin-case" style="--u:var(--high)" data-glyph="dog"></i></span>Open case, high</li>
+      <li><span class="key"><i class="pin-case" style="--u:var(--medium)" data-glyph="dog"></i></span>Open case, medium</li>
+      <li><span class="key"><i class="pin-case" style="--u:var(--low)" data-glyph="dog"></i></span>Open case, low</li>
+      <li><span class="key"><i class="pin-case" style="--u:var(--closed)" data-glyph="dog"></i></span>Open case, urgency not known yet</li>
+      <li><span class="key" id="legend-animals"></span>The animal inside: dog, cat, cow, bird; a paw for monkeys, snakes and anything unclear</li>
+      <li><span class="key"><i class="pin-case attn" data-glyph="paw"></i></span>Dark ring: needs a person to look</li>
       <li><span class="key"><i class="dot shut"></i></span>Small grey dot: resolved or cancelled</li>
       <li><span class="key"><i class="dot bite"></i></span>Diamond: bite report to PawSOS</li>
       <li><span class="key"><i class="dot hot"></i></span>Shaded circle: bite hotspot (3 or more within 500 m in 30 days)</li>
@@ -417,14 +457,22 @@
   </div>
   <div class="side">
     <div class="card" id="sec-attention">
+      <p class="eyebrow">02 · Attention</p>
       <h2>Need a person to look <span class="count" id="attention-count"></span></h2>
       <div id="attention"><span class="muted">Loading…</span></div>
     </div>
+    <div class="card" id="sec-animals">
+      <p class="eyebrow">03 · Animals</p>
+      <h2>Which animals</h2>
+      <div id="animals"><span class="muted">Loading…</span></div>
+    </div>
     <div class="card suggest" id="sec-camp">
+      <p class="eyebrow">04 · Planning</p>
       <h2>Where the next camp should go</h2>
       <div id="suggestion"><span class="muted">Loading…</span></div>
     </div>
     <div class="card">
+      <p class="eyebrow">05 · Calendar</p>
       <h2>Upcoming camps</h2>
       <div id="camps"><span class="muted">Loading…</span></div>
     </div>
@@ -433,6 +481,7 @@
 
 <section class="grid" id="sec-cases">
   <div class="card">
+    <p class="eyebrow">06 · Cases</p>
     <div class="cases-head">
       <h2>Cases</h2>
       <span class="count" id="case-count" role="status"></span>
@@ -478,6 +527,9 @@
         <button type="button" class="fchip" data-filter="urgencies" data-value="low" data-u style="--u:var(--low)" aria-pressed="false">Low</button>
         <button type="button" class="fchip" data-filter="attention" aria-pressed="false" style="margin-left:10px">Needs a person</button>
       </div>
+      <div class="chip-row" role="group" aria-label="Filter by animal" id="species-chips">
+        <span class="chip-label">Animal</span>
+      </div>
     </div>
     <div class="scroll">
       <table class="cases" id="cases-table">
@@ -499,10 +551,12 @@
 
 <section class="grid pair" id="grid-pair">
   <div class="card" id="sec-times">
+    <p class="eyebrow">07 · Performance</p>
     <h2>Response times</h2>
     <div id="response-times"><span class="muted">Loading…</span></div>
   </div>
   <div class="card">
+    <p class="eyebrow">08 · Sterilisation</p>
     <h2>Sterilisation in <span id="ster-year">2025</span>, by municipality</h2>
     <div id="sterilisation"></div>
     <p class="note">Only figures we have a source for. "No figure" means not known to us; it does not mean zero.</p>
@@ -626,9 +680,34 @@ if (HAS_MAP) {
 }
 const caseMarkers = {};
 
+// ---------- animals ----------
+// Outline glyphs from Phosphor Icons (MIT, phosphoricons.com), regular weight, kept in this page
+// so the dashboard still works offline. Monkeys, snakes and anything unclear share the paw.
+const SPECIES_PATHS = {
+  dog: '<path d="M239.71,125l-16.42-88a16,16,0,0,0-19.61-12.58l-.31.09L150.85,40h-45.7L52.63,24.56l-.31-.09A16,16,0,0,0,32.71,37.05L16.29,125a15.77,15.77,0,0,0,9.12,17.52A16.26,16.26,0,0,0,32.12,144,15.48,15.48,0,0,0,40,141.84V184a40,40,0,0,0,40,40h96a40,40,0,0,0,40-40V141.85a15.5,15.5,0,0,0,7.87,2.16,16.31,16.31,0,0,0,6.72-1.47A15.77,15.77,0,0,0,239.71,125ZM32,128h0L48.43,40,90.5,52.37Zm144,80H136V195.31l13.66-13.65a8,8,0,0,0-11.32-11.32L128,180.69l-10.34-10.35a8,8,0,0,0-11.32,11.32L120,195.31V208H80a24,24,0,0,1-24-24V123.11L107.92,56h40.15L200,123.11V184A24,24,0,0,1,176,208Zm48-80L165.5,52.37,207.57,40,224,128ZM104,140a12,12,0,1,1-12-12A12,12,0,0,1,104,140Zm72,0a12,12,0,1,1-12-12A12,12,0,0,1,176,140Z"/>',
+  cat: '<path d="M96,140a12,12,0,1,1-12-12A12,12,0,0,1,96,140Zm76-12a12,12,0,1,0,12,12A12,12,0,0,0,172,128Zm60-80v88c0,52.93-46.65,96-104,96S24,188.93,24,136V48A16,16,0,0,1,51.31,36.69c.14.14.26.27.38.41L69,57a111.22,111.22,0,0,1,118.1,0L204.31,37.1c.12-.14.24-.27.38-.41A16,16,0,0,1,232,48Zm-16,0-21.56,24.8A8,8,0,0,1,183.63,74,88.86,88.86,0,0,0,168,64.75V88a8,8,0,1,1-16,0V59.05a97.43,97.43,0,0,0-16-2.72V88a8,8,0,1,1-16,0V56.33a97.43,97.43,0,0,0-16,2.72V88a8,8,0,1,1-16,0V64.75A88.86,88.86,0,0,0,72.37,74a8,8,0,0,1-10.81-1.17L40,48v88c0,41.66,35.21,76,80,79.67V195.31l-13.66-13.66a8,8,0,0,1,11.32-11.31L128,180.68l10.34-10.34a8,8,0,0,1,11.32,11.31L136,195.31v20.36c44.79-3.69,80-38,80-79.67Z"/>',
+  cow: '<path d="M104,192a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16H96A8,8,0,0,1,104,192Zm72-8H160a8,8,0,0,0,0,16h16a8,8,0,0,0,0-16Zm-76-48a12,12,0,1,0-12-12A12,12,0,0,0,100,136Zm56,0a12,12,0,1,0-12-12A12,12,0,0,0,156,136Zm88.39-13.88A16,16,0,0,1,232,128H200v32a40,40,0,0,1-24,72H80a40,40,0,0,1-24-72V128H24A16,16,0,0,1,8.31,109,56.13,56.13,0,0,1,63.22,64h1.64A55.83,55.83,0,0,1,48,24a8,8,0,0,1,16,0,40,40,0,0,0,40,40h48a40,40,0,0,0,40-40,8,8,0,0,1,16,0,55.83,55.83,0,0,1-16.86,40h1.64a56.13,56.13,0,0,1,54.91,45A15.82,15.82,0,0,1,244.39,122.12ZM72,152.8a40.57,40.57,0,0,1,8-.8h96a40.57,40.57,0,0,1,8,.8V104a24,24,0,0,0-24-24H96a24,24,0,0,0-24,24ZM56,112v-8a39.81,39.81,0,0,1,8-24h-.8A40.09,40.09,0,0,0,24,112Zm144,80a24,24,0,0,0-24-24H80a24,24,0,0,0,0,48h96A24,24,0,0,0,200,192Zm32-80a40.08,40.08,0,0,0-39.2-32H192a39.81,39.81,0,0,1,8,24v8Z"/>',
+  bird: '<path d="M176,68a12,12,0,1,1-12-12A12,12,0,0,1,176,68Zm64,12a8,8,0,0,1-3.56,6.66L216,100.28V120A104.11,104.11,0,0,1,112,224H24a16,16,0,0,1-12.49-26l.1-.12L96,96.63V76.89C96,43.47,122.79,16.16,155.71,16H156a60,60,0,0,1,57.21,41.86l23.23,15.48A8,8,0,0,1,240,80Zm-22.42,0L201.9,69.54a8,8,0,0,1-3.31-4.64A44,44,0,0,0,156,32h-.22C131.64,32.12,112,52.25,112,76.89V99.52a8,8,0,0,1-1.85,5.13L24,208h26.9l70.94-85.12a8,8,0,1,1,12.29,10.24L71.75,208H112a88.1,88.1,0,0,0,88-88V96a8,8,0,0,1,3.56-6.66Z"/>',
+  paw: '<path d="M212,80a28,28,0,1,0,28,28A28,28,0,0,0,212,80Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,120ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM44,120a12,12,0,1,1,12-12A12,12,0,0,1,44,120ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm0-40A12,12,0,1,1,80,60,12,12,0,0,1,92,48Zm72,40a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm0-40a12,12,0,1,1-12,12A12,12,0,0,1,164,48Zm23.12,100.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72ZM168,208a24,24,0,0,1-9.45-1.93,80.14,80.14,0,0,0-61.19,0,24,24,0,0,1-20.71-43.26,51.22,51.22,0,0,0,24.46-30.67,28,28,0,0,1,53.78,0,51.27,51.27,0,0,0,24.53,30.71A24,24,0,0,1,168,208Z"/>',
+};
+const SPECIES_ORDER = ["dog", "cat", "cow", "bird", "other"];
+const SPECIES_LABEL = { dog: "Dogs", cat: "Cats", cow: "Cattle", bird: "Birds", other: "Other" };
+const speciesGroup = (species) => (["dog", "cat", "cow", "bird"].includes(species) ? species : "other");
+function glyph(species, title) {
+  const key = species === "paw" ? "paw" : speciesGroup(species);
+  const path = SPECIES_PATHS[key === "other" ? "paw" : key];
+  const label = title ? `<title>${esc(title)}</title>` : "";
+  return `<svg class="sp" viewBox="0 0 256 256" ${title ? 'role="img"' : 'aria-hidden="true"'}>${label}${path}</svg>`;
+}
+// Fill the legend and the animal filter row once, from the same glyphs.
+document.querySelectorAll("[data-glyph]").forEach((el) => { el.innerHTML = glyph(el.dataset.glyph); });
+$("legend-animals").innerHTML = '<span style="display:inline-flex;gap:1px;color:var(--soft)">' + glyph("dog") + glyph("cat") + "</span>";
+$("species-chips").insertAdjacentHTML("beforeend", SPECIES_ORDER.map((g) =>
+  `<button type="button" class="fchip sp-chip" data-filter="species" data-value="${g}" aria-pressed="false">${glyph(g)}${SPECIES_LABEL[g]}</button>`).join(""));
+
 function casePopup(c, now) {
-  const animal = c.species ? esc(c.species) : "animal not identified";
-  return `<b>${esc(c.id)}</b>${c.is_demo ? ' <span class="tag">demo</span>' : ""}<br>
+  const animal = (c.species ? esc(c.species) : "animal not identified");
+  return `<b>${esc(c.id)}</b> <span style="color:var(--soft)">${glyph(c.species)}</span>${c.is_demo ? ' <span class="tag">demo</span>' : ""}<br>
     ${animal}: ${esc(c.injury_type || "no description")}<br>
     Urgency: ${esc(c.urgency || "unknown")} · ${esc(STATE_LABEL[c.state] || c.state)}<br>
     ${c.team ? "Team: " + esc(c.team) + "<br>" : ""}
@@ -644,11 +723,19 @@ function drawCaseMarkers(cases, now) {
   layers.rescues.clearLayers();
   for (const key in caseMarkers) delete caseMarkers[key];
   cases.forEach((c) => {
-    const colour = c.open ? (URGENCY_COLOUR[c.urgency] || "#9aa5a2") : "#9aa5a2";
-    caseMarkers[c.id] = L.circleMarker([c.latitude, c.longitude], {
-      radius: c.open ? 8 : 5, color: c.attention ? "#1c2826" : "#fff", weight: c.attention ? 3 : 1.5,
-      fillColor: colour, fillOpacity: c.open ? 0.95 : 0.55,
-    }).bindPopup(casePopup(c, now)).addTo(layers.rescues);
+    if (c.open || c.attention) {
+      const colour = c.open ? (URGENCY_COLOUR[c.urgency] || "#9aa5a2") : "#9aa5a2";
+      const html = `<div class="pin-case${c.attention ? " attn" : ""}" style="--u:${colour}">${glyph(c.species)}</div>`;
+      caseMarkers[c.id] = L.marker([c.latitude, c.longitude], {
+        icon: L.divIcon({ className: "", html, iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -12] }),
+        title: `${c.id}: ${c.species || "animal not identified"}, ${c.urgency || "urgency unknown"}`,
+        zIndexOffset: c.attention ? 600 : (4 - (URGENCY_RANK[c.urgency] ?? 4)) * 100,
+      }).bindPopup(casePopup(c, now)).addTo(layers.rescues);
+    } else {
+      caseMarkers[c.id] = L.circleMarker([c.latitude, c.longitude], {
+        radius: 5, color: "#fff", weight: 1.5, fillColor: "#9aa5a2", fillOpacity: 0.55,
+      }).bindPopup(casePopup(c, now)).addTo(layers.rescues);
+    }
   });
 }
 
@@ -748,12 +835,26 @@ function drawSuggestion(data) {
     <p class="note"><b>How this is chosen.</b> ${esc(s.rule)} It is a count, not a prediction.</p>`;
 }
 
+function drawAnimals(cases) {
+  const counts = Object.fromEntries(SPECIES_ORDER.map((g) => [g, 0]));
+  cases.forEach((c) => { counts[speciesGroup(c.species)] += 1; });
+  const total = cases.length;
+  if (!total) { $("animals").innerHTML = '<span class="muted">No cases yet.</span>'; return; }
+  const shown = SPECIES_ORDER.filter((g) => counts[g]);
+  const bar = shown.map((g) => `<i style="flex:${counts[g]};background:var(--sp-${g})" title="${SPECIES_LABEL[g]}: ${counts[g]}"></i>`).join("");
+  const chips = shown.map((g) => `<button type="button" class="fchip" data-filter="species" data-value="${g}" aria-pressed="false"
+      style="--sw:var(--sp-${g})">${glyph(g)}${SPECIES_LABEL[g]}<b>${counts[g]}</b></button>`).join("");
+  $("animals").innerHTML = `<div class="mix-bar" role="img" aria-label="${shown.map((g) =>
+      `${SPECIES_LABEL[g]} ${counts[g]}`).join(", ")}">${bar}</div><div class="mix">${chips}</div>
+    <p class="note" style="margin:10px 0 0">Every case in the last ${lastData ? lastData.window_days : 30} days, as triage saw the photo. Choose one to filter the map and the list.</p>`;
+}
+
 function drawAttention(data, now) {
   const flagged = data.attention;  // every flagged case, whatever the list is filtered to
   $("attention-count").textContent = flagged.length ? `(${flagged.length})` : "";
   $("attention").innerHTML = flagged.length
     ? flagged.map((c) => `<button type="button" class="attention-item" data-case="${esc(c.id)}">
-        <span class="id">${esc(c.id)}</span> · ${esc(c.zone_name || "No area")} · ${timeAgo(c.created_at, now)}
+        ${glyph(c.species)}<span class="id">${esc(c.id)}</span> · ${esc(c.zone_name || "No area")} · ${timeAgo(c.created_at, now)}
         <span class="why">${esc(ATTENTION_LABEL[c.attention])}</span></button>`).join("")
     : '<span class="muted">Nothing needs a person right now. Cases that no team has taken, or whose photo ' +
       'could not be read, appear here.</span>';
@@ -767,7 +868,7 @@ function drawCamps(data) {
 }
 
 // ---------- filters, search and sorting (all in the browser, on what /dashboard/data returned) ----------
-const noFilters = () => ({ q: "", states: [], urgencies: [], attention: false, zone: "", range: "all", sort: "newest" });
+const noFilters = () => ({ q: "", states: [], urgencies: [], species: [], attention: false, zone: "", range: "all", sort: "newest" });
 const goaDay = (date) => new Date(date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
 function matches(c, f, now) {
@@ -775,6 +876,7 @@ function matches(c, f, now) {
   if (q && ![c.id, c.zone_name, c.species].some((v) => v && String(v).toLowerCase().includes(q))) return false;
   if (f.states.length && !f.states.some((group) => STATE_GROUP[group].includes(c.state))) return false;
   if (f.urgencies.length && !f.urgencies.includes(c.urgency)) return false;
+  if (f.species.length && !f.species.includes(speciesGroup(c.species))) return false;
   if (f.attention && !c.attention) return false;
   if (f.zone && c.zone !== f.zone) return false;
   if (f.range === "today") return goaDay(c.created_at) === goaDay(now);
@@ -819,7 +921,7 @@ const COMPARE = {
 const SORT_HEADER = { id: ["id", "ascending"], urgent: ["urgent", "descending"], area: ["area", "ascending"],
                       status: ["status", "ascending"], newest: ["newest", "descending"], oldest: ["newest", "ascending"] };
 
-const activeFilterCount = (f) => (f.q.trim() ? 1 : 0) + f.states.length + f.urgencies.length
+const activeFilterCount = (f) => (f.q.trim() ? 1 : 0) + f.states.length + f.urgencies.length + f.species.length
   + (f.attention ? 1 : 0) + (f.zone ? 1 : 0) + (f.range !== "all" ? 1 : 0);
 
 function filterWords(f) {
@@ -827,6 +929,7 @@ function filterWords(f) {
   const parts = [
     ...f.states.map((group) => STATE_GROUP_LABEL[group]),
     ...f.urgencies.map((u) => u[0].toUpperCase() + u.slice(1)),
+    ...f.species.map((g) => SPECIES_LABEL[g]),
     f.attention ? "Needs a person" : null,
     zone || null,
     f.range !== "all" ? RANGE_LABEL[f.range] : null,
@@ -883,7 +986,7 @@ function drawCases(cases, now) {
       <td class="col-id"><button type="button" class="id-btn" data-act="open" data-id="${esc(c.id)}"
             aria-label="Open ${esc(c.id)}">${esc(c.id)}</button>${c.is_demo ? '<span class="tag">demo</span>' : ""}</td>
       <td class="col-urgency"><span class="chip ${c.urgency ? esc(c.urgency) : "none"}">${esc(c.urgency || "unknown")}</span></td>
-      <td class="col-what">${c.species ? esc(c.species) + ": " : ""}${esc(c.injury_type || "not described")}
+      <td class="col-what"><span class="what-line">${glyph(c.species)}<span>${c.species ? esc(c.species) + ": " : ""}${esc(c.injury_type || "not described")}</span></span>
           ${c.attention ? '<br><span class="warn">' + esc(ATTENTION_LABEL[c.attention]) + "</span>" : ""}</td>
       <td class="col-area">${esc(c.zone_name || "–")}${c.zone_is_approximate ? ' <span class="tag">nearest</span>' : ""}</td>
       <td class="col-status">${esc(STATE_LABEL[c.state] || c.state)}${c.team ? '<br><span class="muted">' + esc(c.team) + "</span>" : ""}</td>
@@ -1021,7 +1124,7 @@ function drawDetail(c) {
   let triage;
   if (t.status === "ok") {
     triage = `<dl class="facts">
-        <dt>Animal</dt><dd>${esc(t.species || "not identified")}</dd>
+        <dt>Animal</dt><dd>${glyph(t.species)} ${esc(t.species || "not identified")}</dd>
         <dt>What was seen</dt><dd>${esc(t.injury_type || "not described")}</dd>
         <dt>Urgency</dt><dd>${esc(t.urgency || "unknown")}</dd>
         <dt>Aggression risk</dt><dd>${esc(t.aggression_risk || "unknown")}</dd>
@@ -1208,6 +1311,7 @@ function cleanFilters(saved) {
   if (!saved || typeof saved !== "object") return f;
   if (Array.isArray(saved.states)) f.states = saved.states.filter((v) => v in STATE_GROUP);
   if (Array.isArray(saved.urgencies)) f.urgencies = saved.urgencies.filter((v) => v in URGENCY_RANK);
+  if (Array.isArray(saved.species)) f.species = saved.species.filter((v) => SPECIES_ORDER.includes(v));
   f.attention = saved.attention === true;
   if (typeof saved.zone === "string") f.zone = saved.zone;
   if (String(saved.range) in RANGE_LABEL) f.range = String(saved.range);
@@ -1293,7 +1397,7 @@ async function load(force) {
       zonesFilled = true;
       applySettings();  // the saved default may name an area, which only now has words
     }
-    drawTiles(data); drawMap(data, now); drawSuggestion(data); drawAttention(data, now);
+    drawTiles(data); drawMap(data, now); drawSuggestion(data); drawAttention(data, now); drawAnimals(data.cases);
     drawCamps(data); drawSterilisation(data); drawResponseTimes(data);
     render();
     const at = now.toLocaleTimeString("en-IN",
