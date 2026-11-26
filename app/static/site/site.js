@@ -84,6 +84,8 @@
       await wait(4000);
     }
   }
+  // Show a finished exchange straight away so the phone is never empty, then loop.
+  script.slice(0, 4).forEach((m) => { const b = bubble(m); b.style.animation = "none"; chat.append(b); });
   // Only animate while the phone is on screen.
   let started = false;
   new IntersectionObserver(([e]) => { if (e.isIntersecting && !started) { started = true; run(); } }, { threshold: .3 }).observe(chat);
@@ -129,7 +131,8 @@
     if (!res.ok) {
       let detail = "";
       try { detail = (await res.json()).detail; } catch {}
-      throw new Error(typeof detail === "string" && detail ? detail : `The demo server answered ${res.status}.`);
+      if (res.status >= 500) throw new Error("The live demo is not reachable right now. Please try again in a minute.");
+      throw new Error(typeof detail === "string" && detail ? detail : "That did not work. Please try again.");
     }
     return res.json();
   }
@@ -324,8 +327,8 @@
 (() => {
   const frame = document.getElementById("film-frame");
   if (!frame) return;
-  fetch("/static/site/film/PawSOS_Goa_demo.mp4", { method: "HEAD" }).then((r) => {
+  fetch("/static/site/film/PawSOS_Goa_demo.mp4?v=3", { method: "HEAD" }).then((r) => {
     if (!r.ok) return;
-    frame.innerHTML = '<video controls preload="metadata" poster="/static/site/film/poster.jpg" src="/static/site/film/PawSOS_Goa_demo.mp4"><track kind="captions" src="/static/site/film/captions.vtt" srclang="en-IN" label="English" default></video>';
+    frame.innerHTML = '<video controls preload="metadata" poster="/static/site/film/poster.jpg?v=3" src="/static/site/film/PawSOS_Goa_demo.mp4?v=3"><track kind="captions" src="/static/site/film/captions.vtt?v=3" srclang="en-IN" label="English"></video>';
   }).catch(() => {});
 })();
