@@ -69,6 +69,11 @@ def create_app() -> FastAPI:
         # The demo film, with links to the live sandbox and the dashboard.
         return FileResponse(STATIC_DIR / "site" / "demo.html")
 
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon() -> FileResponse:
+        # Browsers ask for this on every page; the pages also link the SVG and PNG icons.
+        return FileResponse(STATIC_DIR / "site" / "img" / "favicon-32.png", media_type="image/png")
+
     @app.get("/health")
     def health() -> dict[str, str | bool]:
         return {
