@@ -228,6 +228,12 @@ h1 { font-size: clamp(44px, 6.4vw, 88px); line-height: 1.02; margin: 0 0 20px; m
 :root[data-theme="dark"] .pill-part { color: #e8c35a; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill-part { color: #e8c35a; } }
 
+.next-title { font: 400 clamp(26px, 2.6vw, 34px)/1.15 var(--display); letter-spacing: -.015em; margin: 48px 0 16px; }
+.next { list-style: none; counter-reset: n; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.next li { counter-increment: n; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 18px 20px; font-size: 15px; color: var(--ink-soft); }
+.next li::before { content: "0" counter(n); display: block; font: 500 12px var(--mono); color: var(--ink-soft); margin-bottom: 8px; letter-spacing: .08em; }
+.next li b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+
 /* 8. Film and code */
 .film { display: grid; grid-template-columns: 1.45fr 1fr; gap: 56px; align-items: center; padding-block: 112px; }
 .film-frame { aspect-ratio: 16 / 9; border-radius: var(--r-card); overflow: hidden; background: #0b0f17; color: #eceef3; box-shadow: var(--shadow); display: grid; place-items: center; }

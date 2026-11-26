@@ -25,7 +25,7 @@ The source of truth for every claim on the product website and in the demo film.
 | The dashboard works without internet except the map tiles | D-095, checked in the browser with Leaflet removed |
 | Dashboard data never shows a phone number; logs mask numbers | Audit test `test_dashboard_data_has_no_phone_numbers` |
 | Every state change goes through one state machine and writes an audit event | `app/cases/state_machine.py`; tests |
-| Test suite | 464 passed, 11 skipped on 24 Nov (`freeze-fixes` plus the uncommitted triage-timeout work); re-count before publishing |
+| Test suite | 480 passed, 11 skipped on 26 Nov (`main`); also run on every push by GitHub Actions |
 
 ## 2. Built, tested only against stand-ins (say "not yet live-tested")
 
