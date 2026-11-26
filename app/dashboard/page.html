@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PawSOS Goa: operations dashboard</title>
+<link rel="icon" href="/static/site/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/static/site/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/static/site/img/apple-touch-icon.png">
 <!-- Leaflet draws the map. It is served from this app (app/static/leaflet, version 1.9.4),
      so the page works with no internet; only the map tiles need a connection. -->
 <link rel="stylesheet" href="/static/leaflet/leaflet.css"
@@ -212,7 +215,7 @@
   [hidden] { display: none !important; }
   /* ---- the finer layer: serif headings, numbered sections, animal glyphs ---- */
   header h1 { font: 500 24px/1 var(--display); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
-  header h1 .sp { color: var(--accent); opacity: 1; width: 20px; height: 20px; }
+  header h1 .mark { width: 26px; height: 26px; display: block; }
   .status .now { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.12; letter-spacing: -0.015em; }
   .status .now b { font-weight: 600; }
   .card { box-shadow: 0 1px 0 #fff inset, 0 1px 2px #1c28260a, 0 12px 28px -22px #1c282640; }
@@ -358,7 +361,7 @@
 <body>
 
 <header>
-  <h1><svg class="sp" viewBox="0 0 256 256" aria-hidden="true"><path d="M212,80a28,28,0,1,0,28,28A28,28,0,0,0,212,80Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,212,120ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM44,120a12,12,0,1,1,12-12A12,12,0,0,1,44,120ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm0-40A12,12,0,1,1,80,60,12,12,0,0,1,92,48Zm72,40a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm0-40a12,12,0,1,1-12,12A12,12,0,0,1,164,48Zm23.12,100.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72ZM168,208a24,24,0,0,1-9.45-1.93,80.14,80.14,0,0,0-61.19,0,24,24,0,0,1-20.71-43.26,51.22,51.22,0,0,0,24.46-30.67,28,28,0,0,1,53.78,0,51.27,51.27,0,0,0,24.53,30.71A24,24,0,0,1,168,208Z"/></svg><span>Paw<span>SOS</span> Goa</span></h1>
+  <h1><img class="mark" src="/static/site/img/pawsos-mark.svg" alt="" width="26" height="26"><span>Paw<span>SOS</span> Goa</span></h1>
   <span class="sub">Operations dashboard</span>
   <div class="right">
     <span id="updated">Loading…</span>

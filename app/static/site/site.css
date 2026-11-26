@@ -68,7 +68,7 @@ section[id] { scroll-margin-top: 84px; }
   border-radius: 999px; background: var(--glass); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
   box-shadow: var(--shadow-soft); }
 .brand { padding: 0 18px 0 14px; gap: 8px; white-space: nowrap; text-decoration: none; font: 500 23px/1 var(--display); letter-spacing: -.01em; }
-.brand-mark { color: var(--brand); font-size: 20px; }
+.brand-mark { width: 24px; height: 24px; display: block; flex: none; }
 .nav-links { display: flex; gap: 2px; list-style: none; margin: 0 4px 0 0; padding: 0; }
 .nav-links a { display: block; padding: 8px 12px; border-radius: 999px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--ink); }
 .nav-links a:hover { background: var(--surface-2); }
@@ -259,7 +259,7 @@ h1 { font-size: clamp(44px, 6.4vw, 88px); line-height: 1.02; margin: 0 0 20px; m
 .foot-grid { display: grid; grid-template-columns: 1fr auto 1.6fr; gap: 48px; max-width: 1200px; margin-inline: auto; }
 .foot p { margin: 0 0 8px; }
 .foot-brand { font: 400 26px/1 var(--display); color: #fff; display: flex; align-items: center; gap: 8px; }
-.foot-brand i { color: #4cc3a9; font-size: 20px; }
+.foot-brand img { display: block; flex: none; }
 .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .foot a { text-decoration: none; color: #fff; }
 .foot a:hover { text-decoration: underline; }
