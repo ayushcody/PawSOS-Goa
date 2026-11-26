@@ -1,0 +1,72 @@
+# Every push to main: run the tests, then put that exact commit live on goa.ayushchougula.in.
+# How it works and how to undo a deploy: deploy/README.md.
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:          # pull requests get the tests only, never a deploy
+  workflow_dispatch:     # a "Run workflow" button in the Actions tab, to redeploy by hand
+
+# Two quick pushes never deploy over each other; the newer one waits.
+concurrency:
+  group: ${{ github.event_name == 'push' && 'deploy-production' || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: postgis/postgis:17-3.5   # the same image as docker-compose.yml
+        env:
+          POSTGRES_USER: pawsos
+          POSTGRES_PASSWORD: pawsos
+          POSTGRES_DB: pawsos_test
+        ports: ["5440:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pawsos -d pawsos_test"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://pawsos:pawsos@localhost:5440/pawsos_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://goa.ayushchougula.in
+    steps:
+      - name: Load the deploy key and the server's pinned fingerprint
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Deploy ${{ github.sha }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        # The key can only run /usr/local/bin/pawsos-deploy; the commit id is its one argument.
+        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes "deployer@$DEPLOY_HOST" "${{ github.sha }}"
+      - name: Check the live site
+        run: |
+          for path in /health /dashboard /demo /; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://goa.ayushchougula.in$path")
+            echo "$code $path"; [ "$code" = 200 ] || exit 1
+          done
