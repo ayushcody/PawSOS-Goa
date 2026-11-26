@@ -13,6 +13,8 @@ Goa AI Hackathon 2026, Track 3: AI-Powered Emergency Management Platform for Ani
 | Evidence and status (PDF) | [PawSOS_Goa_Evidence_and_Status.pdf](app/static/site/files/PawSOS_Goa_Evidence_and_Status.pdf) |
 | Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), diagram: [architecture.jpg](app/static/site/img/architecture.jpg) |
 
+**Team:** Ayush Chougula, Arnav Bule, Samrat Naik and Omkar Pardeshi.
+
 ## The problem
 
 - Goa recorded 19,368 dog bite cases in 2025, about one every 27 minutes (Health Intelligence Bureau data tabled in the Goa Legislative Assembly, LAQ 097; reported by Goemkarponn, January 2026).
